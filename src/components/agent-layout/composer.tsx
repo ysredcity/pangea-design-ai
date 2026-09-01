@@ -37,6 +37,24 @@ const contextMenus: Array<{ label: Exclude<ContextType, "upload" | "连接器">;
 
 const inlineMenus = contextMenus.filter((menu): menu is { label: InlineContextType; items: string[] } => inlineContextTypes.includes(menu.label as InlineContextType))
 
+/**
+ * 输入框快捷键：`/` 引用能力，`@` 引用上下文。
+ * 只收录能以 badge 形式插入输入框的类型，因此不含专家、连接器和本地文件。
+ */
+const triggerMenus = {
+  "/": { hint: "能力", types: ["技能"] satisfies InlineContextType[] },
+  "@": { hint: "上下文", types: ["文件库", "最近的对话"] satisfies InlineContextType[] },
+} as const
+
+type TriggerKey = keyof typeof triggerMenus
+type TriggerState = { key: TriggerKey; node: Text; offset: number }
+
+/**
+ * 引用菜单的展开方向由页面决定，同一页面内 `/` 与 `@` 必须一致：
+ * 对话页 Composer 在底部，向上展开；新对话页 Composer 居中，向下展开才不会被 Header 裁掉。
+ */
+export type MenuSide = "above" | "below"
+
 const connectorOptions = [
   { label: "飞书云文档", initials: "飞", className: "bg-blue-500 text-white!" },
   { label: "企业知识库", initials: "知", className: "bg-violet-500 text-white!" },
@@ -51,16 +69,19 @@ type ComposerProps = {
   onDraftChange?: (value: string) => void
   selectedExpert?: string | null
   onSelectedExpertChange?: (expert: string | null) => void
+  /** `/` 与 `@` 引用菜单的展开方向，默认向上 */
+  menuSide?: MenuSide
 }
 
 const formatFileSize = (size: number) => size >= 1024 * 1024 ? `${(size / 1024 / 1024).toFixed(1)} MB` : `${(size / 1024).toFixed(1)} KB`
 const fileTypeLabel = (name: string) => name.split(".").pop()?.toUpperCase() ?? "文件"
 
-export function Composer({ onSend, draft, onDraftChange, selectedExpert, onSelectedExpertChange }: ComposerProps) {
+export function Composer({ onSend, draft, onDraftChange, selectedExpert, onSelectedExpertChange, menuSide = "above" }: ComposerProps) {
   const [uploads, setUploads] = useState<UploadItem[]>([])
   const [experts, setExperts] = useState<ContextItem[]>([])
   const [recording, setRecording] = useState(false)
   const [hasContent, setHasContent] = useState(false)
+  const [trigger, setTrigger] = useState<TriggerState | null>(null)
   const [enabledConnectors, setEnabledConnectors] = useState<Set<string>>(() => new Set())
   const fileInputRef = useRef<HTMLInputElement>(null)
   const editorRef = useRef<HTMLDivElement>(null)
@@ -167,6 +188,36 @@ export function Composer({ onSend, draft, onDraftChange, selectedExpert, onSelec
     if (editorRef.current?.contains(range.commonAncestorContainer)) savedRangeRef.current = range.cloneRange()
   }
 
+  /**
+   * 检测光标前一个字符是否为 `/` 或 `@`，是则打开对应的引用菜单。
+   * 要求触发符位于行首或空白之后，避免 a/b、邮箱这类正常输入误触发。
+   */
+  const detectTrigger = () => {
+    const selection = window.getSelection()
+    const node = selection?.anchorNode
+    if (!selection?.isCollapsed || !(node instanceof Text) || !editorRef.current?.contains(node)) {
+      setTrigger(null)
+      return
+    }
+    const offset = selection.anchorOffset - 1
+    const char = node.data[offset]
+    const before = offset > 0 ? node.data[offset - 1] : ""
+    const atBoundary = offset === 0 || /\s|\u00A0/.test(before)
+    if (offset >= 0 && atBoundary && (char === "/" || char === "@")) setTrigger({ key: char as TriggerKey, node, offset })
+    else setTrigger(null)
+  }
+
+  /** 选中引用项：用标签替换掉触发符本身 */
+  const insertAtTrigger = (label: string, type: InlineContextType) => {
+    if (!trigger) return
+    const range = document.createRange()
+    range.setStart(trigger.node, trigger.offset)
+    range.setEnd(trigger.node, trigger.offset + 1)
+    savedRangeRef.current = range
+    setTrigger(null)
+    insertInlineTag(label, type)
+  }
+
   const toggleRecording = async () => {
     if (recording) {
       mediaStreamRef.current?.getTracks().forEach((track) => track.stop())
@@ -197,7 +248,9 @@ export function Composer({ onSend, draft, onDraftChange, selectedExpert, onSelec
   }
 
   return (
-    <div className="flex max-h-52 w-full flex-col overflow-hidden rounded-3xl border bg-background shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-shadow hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] focus-within:border-input min-[660px]:max-h-60">
+    <div className="relative w-full">
+      {trigger && <TriggerMenu triggerKey={trigger.key} side={menuSide} onSelect={insertAtTrigger} />}
+      <div className="flex max-h-52 w-full flex-col overflow-hidden rounded-3xl border bg-background shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-shadow hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] focus-within:border-input min-[660px]:max-h-60">
       {/* 内联标签图标模板：插入标签时克隆这里的 SVG，保证与菜单图标一致 */}
       <div ref={iconTemplatesRef} className="hidden" aria-hidden="true">
         {inlineMenus.flatMap(({ items, label: type }) => items.map((item) => {
@@ -219,11 +272,16 @@ export function Composer({ onSend, draft, onDraftChange, selectedExpert, onSelec
             contentEditable={!recording}
             suppressContentEditableWarning
             className={cn("min-h-12 w-full whitespace-pre-wrap break-words text-base leading-6 outline-none", recording && "invisible")}
-            onInput={syncEditorState}
-            onKeyUp={saveSelection}
-            onMouseUp={saveSelection}
-            onBlur={saveSelection}
+            onInput={() => { syncEditorState(); detectTrigger() }}
+            onKeyUp={() => { saveSelection(); detectTrigger() }}
+            onMouseUp={() => { saveSelection(); setTrigger(null) }}
+            onBlur={() => { saveSelection(); setTrigger(null) }}
             onKeyDown={(event) => {
+              if (event.key === "Escape" && trigger) {
+                event.preventDefault()
+                setTrigger(null)
+                return
+              }
               if (event.key === "Enter" && !event.shiftKey) {
                 event.preventDefault()
                 send()
@@ -232,7 +290,7 @@ export function Composer({ onSend, draft, onDraftChange, selectedExpert, onSelec
           />
           {(recording || !hasText) && (
             <span aria-hidden="true" className="pointer-events-none absolute left-5 top-4 text-base leading-6 text-muted-foreground">
-              {recording ? "语音录入中..." : "发送消息给我"}
+              {recording ? "语音录入中..." : "今天帮你做些什么？@引用内容，/调用能力"}
             </span>
           )}
         </div>
@@ -266,6 +324,50 @@ export function Composer({ onSend, draft, onDraftChange, selectedExpert, onSelec
           </Tooltip>
         </div>
       </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * `/` 与 `@` 的引用菜单：与 Composer 同宽，浮在其上方，按分组排列。
+ * onMouseDown 阻止默认行为以避免点击时输入框失焦，否则 blur 会先关掉菜单。
+ */
+function TriggerMenu({ onSelect, side, triggerKey }: { onSelect: (label: string, type: InlineContextType) => void; side: MenuSide; triggerKey: TriggerKey }) {
+  const { hint, types } = triggerMenus[triggerKey]
+  const groups = types.map((type) => ({ type, items: contextMenus.find((menu) => menu.label === type)?.items ?? [] }))
+
+  return (
+    <div
+      role="listbox"
+      aria-label={`引用${hint}`}
+      className={cn(
+        "absolute left-0 z-30 max-h-72 w-full overflow-y-auto rounded-2xl border bg-popover p-1.5 shadow-lg",
+        side === "below" ? "top-full mt-2" : "bottom-full mb-2",
+      )}
+      onMouseDown={(event) => event.preventDefault()}
+    >
+      {groups.map(({ items, type }) => {
+        const ContextIcon = contextIcons[type]
+        return (
+          <div key={type} className="pb-1 last:pb-0">
+            <p className="px-2.5 py-1.5 text-xs text-muted-foreground">{type} ({items.length})</p>
+            {items.map((item) => (
+              <button
+                key={item}
+                type="button"
+                role="option"
+                aria-selected="false"
+                className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:outline-none"
+                onClick={() => onSelect(item, type)}
+              >
+                {type === "文件库" ? <LibraryFileIcon fileName={item} /> : <ContextIcon className="size-4 shrink-0" />}
+                <span className="min-w-0 truncate">{item}</span>
+              </button>
+            ))}
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -425,15 +527,19 @@ function AddContextMenu({ disabled, onLocalUpload, onSelect }: { disabled?: bool
         {contextMenus.map(({ items, label }) => {
           const ContextIcon = contextIcons[label]
           return (
-          <DropdownMenuSub key={label}>
-            <DropdownMenuSubTrigger><ContextIcon />{label}</DropdownMenuSubTrigger>
-            <DropdownMenuSubContent className="w-60">
-              {items.map((item) => <DropdownMenuItem key={item} onClick={() => onSelect(item, label)}>
-                {label === "文件库" ? <LibraryFileIcon fileName={item} /> : label === "专家" ? <ExpertAvatar expert={item} /> : <ContextIcon />}
-                <span className="min-w-0 truncate">{item}</span>
-              </DropdownMenuItem>)}
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
+          <div key={label} className="contents">
+            {/* 分割线区分「上下文」与「能力」两类 */}
+            {label === "专家" && <DropdownMenuSeparator />}
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger><ContextIcon />{label}</DropdownMenuSubTrigger>
+              <DropdownMenuSubContent className="w-60">
+                {items.map((item) => <DropdownMenuItem key={item} onClick={() => onSelect(item, label)}>
+                  {label === "文件库" ? <LibraryFileIcon fileName={item} /> : label === "专家" ? <ExpertAvatar expert={item} /> : <ContextIcon />}
+                  <span className="min-w-0 truncate">{item}</span>
+                </DropdownMenuItem>)}
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          </div>
           )
         })}
       </DropdownMenuContent>

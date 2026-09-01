@@ -50,7 +50,7 @@ export function NewConversationPage({ isSidebarDocked, onOpenSidebar, onStartCon
         <div className="flex w-full max-w-3xl flex-1 flex-col items-center justify-center py-3">
           <div className="w-full translate-y-[-4%]">
             <h1 className="text-center text-2xl font-medium leading-9 tracking-[-0.48px] md:text-3xl md:tracking-[-0.6px]">👋 Hey！有什么需要我搞定的？</h1>
-            <div className="mt-4"><Composer onSend={onStartConversation} draft={draft} onDraftChange={setDraft} selectedExpert={selectedExpert} onSelectedExpertChange={handleExpertChange} /></div>
+            <div className="mt-4"><Composer onSend={onStartConversation} draft={draft} onDraftChange={setDraft} selectedExpert={selectedExpert} onSelectedExpertChange={handleExpertChange} menuSide="below" /></div>
             {recommendationMode === "initial" && (
               <div className="mt-8 flex flex-wrap justify-center gap-2">
                 {experts.map(({ label, icon: ExpertIcon }) => (
