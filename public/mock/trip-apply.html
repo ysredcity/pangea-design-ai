@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>新建出差申请_海信集团差旅平台</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+        background: #f5f6f7;
+        color: #262626;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      .topbar {
+        height: 44px;
+        background: #00857d;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        gap: 12px;
+        font-size: 14px;
+      }
+      .topbar .logo { font-weight: 600; }
+      .topbar .spacer { flex: 1; }
+      .topbar .chip {
+        background: rgba(255,255,255,.18);
+        border-radius: 4px;
+        padding: 2px 8px;
+        font-size: 12px;
+      }
+      .wrap { max-width: 760px; margin: 0 auto; padding: 20px 16px 40px; }
+      .crumb { color: #8c8c8c; font-size: 12px; margin-bottom: 12px; }
+      h1 { font-size: 18px; margin-bottom: 16px; }
+      .card {
+        background: #fff;
+        border: 1px solid #e8e8e8;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+      .card h2 {
+        font-size: 14px;
+        margin-bottom: 16px;
+        padding-left: 8px;
+        border-left: 3px solid #00857d;
+      }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+      .field label { display: block; color: #8c8c8c; font-size: 12px; margin-bottom: 4px; }
+      .field .val {
+        border-bottom: 1px solid #e8e8e8;
+        padding: 4px 0;
+        color: #262626;
+      }
+      .field .val.muted { color: #bfbfbf; }
+      .full { grid-column: 1 / -1; }
+      .tag {
+        display: inline-block;
+        background: #e6f7f5;
+        color: #00857d;
+        border-radius: 4px;
+        padding: 2px 8px;
+        font-size: 12px;
+        margin-right: 6px;
+      }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { border: 1px solid #e8e8e8; padding: 8px 10px; text-align: left; }
+      th { background: #fafafa; font-weight: 500; color: #595959; }
+      .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+      .btn {
+        border-radius: 6px;
+        padding: 7px 18px;
+        font-size: 14px;
+        cursor: pointer;
+        border: 1px solid #d9d9d9;
+        background: #fff;
+        color: #262626;
+      }
+      .btn.primary { background: #00857d; border-color: #00857d; color: #fff; }
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #fffbe6;
+        border: 1px solid #ffe58f;
+        border-radius: 6px;
+        padding: 10px 12px;
+        margin-bottom: 16px;
+        color: #ad6800;
+        font-size: 13px;
+      }
+      .dot { width: 6px; height: 6px; border-radius: 50%; background: #fa8c16; }
+    </style>
+  </head>
+  <body>
+    <div class="topbar">
+      <span class="logo">海信集团差旅平台</span>
+      <span class="spacer"></span>
+      <span class="chip">简体中文</span>
+      <span class="chip">杨硕</span>
+    </div>
+
+    <div class="wrap">
+      <div class="crumb">差旅管理 / 出差申请 / 新建</div>
+      <h1>新建出差申请</h1>
+
+      <div class="status">
+        <span class="dot"></span>
+        当前状态：待直属领导审批（已在 2026-08-30 18:12 提交）
+      </div>
+
+      <div class="card">
+        <h2>基本信息</h2>
+        <div class="grid">
+          <div class="field">
+            <label>申请人</label>
+            <div class="val">杨硕（yangshuo4）</div>
+          </div>
+          <div class="field">
+            <label>所属部门</label>
+            <div class="val">质量与流程管理部</div>
+          </div>
+          <div class="field">
+            <label>出差城市</label>
+            <div class="val">杭州</div>
+          </div>
+          <div class="field">
+            <label>出差天数</label>
+            <div class="val">2 天</div>
+          </div>
+          <div class="field">
+            <label>出发日期</label>
+            <div class="val">2026-09-07</div>
+          </div>
+          <div class="field">
+            <label>返回日期</label>
+            <div class="val">2026-09-08</div>
+          </div>
+          <div class="field full">
+            <label>出差事由</label>
+            <div class="val">供应商现场审厂</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>同行人员</h2>
+        <div class="grid">
+          <div class="field full">
+            <label>同行人</label>
+            <div class="val"><span class="tag">王工</span><span class="tag">李工</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>费用预算</h2>
+        <table>
+          <thead>
+            <tr><th>费用类型</th><th>标准</th><th>预算金额</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>交通费</td><td>高铁二等座</td><td>¥ 1,240.00</td></tr>
+            <tr><td>住宿费</td><td>500 元/晚</td><td>¥ 500.00</td></tr>
+            <tr><td>市内交通</td><td>据实报销</td><td>¥ 200.00</td></tr>
+            <tr><td>伙食补助</td><td>120 元/天</td><td>¥ 240.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>备注</h2>
+        <div class="field">
+          <div class="val muted">由 HiMate 智能工作台自动填充，如有出入请手动修改</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn">保存草稿</button>
+        <button class="btn primary">提交审批</button>
+      </div>
+    </div>
+  </body>
+</html>
