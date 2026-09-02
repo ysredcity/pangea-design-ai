@@ -152,3 +152,9 @@ meta:
 ### 数据模型（不在本目录，单独归属）
 
 `conversation-data.ts` 导出的全部数据模型类型（`ExecutionData` / `ExecutionTaskData` / `ExecutionStepData` / `ExecutionActionData` / `ReasoningData` / `ClarificationFormData` / `ClarificationField` / `MessageAttachment` / `AssistantAttachment` / `ConversationTurnData` / `ConversationScene` 等）属于**剧本数据契约**，文档归 [mock-script-engine 方案](../../../../docs/proposals/mock-script-engine.md)与后续的剧本引擎文档，不重复写进组件文档。
+
+## Phase 2 共享域边界
+
+`packages/agent-ui/src/conversation/` 的 `ConversationFlow`、`Composer`、`ArtifactTarget`、`ArtifactRouter` 与 `ProductBlockRenderer` 是两种形态共用的公共入口。`ArtifactTarget` 是中立交付物语义；沉浸式将它转为 Panel Tab/图片蒙层，Copilot 将它转为左侧画布内容。壳层不得反向被共享域 import。
+
+产品块位于 assistant 正文/附件之后、续流程之前。产品 registry 对未知 block type 开发期警告并安全跳过；`AgentResponseBlock`、`ConversationTurn`、`AssistantContinuation` 继续作为私有实现，不能直接组合。

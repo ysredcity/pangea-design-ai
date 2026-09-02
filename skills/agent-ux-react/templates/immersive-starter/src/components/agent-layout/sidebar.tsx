@@ -38,7 +38,8 @@ import { cn } from "@/lib/utils"
 import { navigationIcons } from "./icon-registry"
 import { IconButton } from "./icon-button"
 import { AgentAvatar } from "./resource-visuals"
-import { DEFAULT_AGENT_NAME, type ConversationScene } from "./conversation-data"
+import type { ConversationScene } from "./conversation-data"
+import type { AppConfig } from "./app-config"
 
 export type Conversation = {
   id: string
@@ -76,6 +77,7 @@ export const initialConversations: Conversation[] = [
 ]
 
 type AgentSidebarProps = {
+  config: Pick<AppConfig, "identity" | "navigation">
   activeConversationId: string | null
   className?: string
   darkMode: boolean
@@ -93,6 +95,7 @@ type AgentSidebarProps = {
 }
 
 export function AgentSidebar({
+  config,
   activeConversationId,
   className,
   darkMode,
@@ -128,9 +131,9 @@ export function AgentSidebar({
       >
         {/* 产品身份与对话流里的智能体身份共用同一头像与名称 */}
         <div className="flex min-w-0 flex-1 items-center gap-2 text-sidebar-accent-foreground">
-          <AgentAvatar className="size-7 [&_svg]:size-4" />
+          <AgentAvatar productAvatar={config.identity.avatar} className="size-7 [&_svg]:size-4" />
           <span className={cn("truncate font-semibold", drawer ? "text-lg tracking-[-0.18px]" : "text-base")}>
-            {DEFAULT_AGENT_NAME}
+            {config.identity.name}
           </span>
         </div>
         <Tooltip>
@@ -155,10 +158,16 @@ export function AgentSidebar({
       <SidebarContent>
         <SidebarGroup className={cn("gap-0.5 p-2", drawer && "gap-2 p-3")}>
           <SidebarMenu>
-            <PrimaryMenuItem drawer={drawer} icon={navigationIcons.newConversation} label="新对话" outline onClick={onNewChat} />
-            <PrimaryMenuItem drawer={drawer} icon={navigationIcons.capabilityHub} label="智能体 · 技能 · 连接器" />
-            <PrimaryMenuItem drawer={drawer} icon={navigationIcons.scheduledTask} label="定时任务" />
-            <PrimaryMenuItem drawer={drawer} icon={navigationIcons.fileLibrary} label="文件库" />
+            {config.navigation.map((item) => (
+              <PrimaryMenuItem
+                key={item.id}
+                drawer={drawer}
+                icon={navigationIcons[item.visualKey]}
+                label={item.label}
+                outline={item.id === "new-conversation"}
+                onClick={item.id === "new-conversation" ? onNewChat : undefined}
+              />
+            ))}
           </SidebarMenu>
         </SidebarGroup>
 

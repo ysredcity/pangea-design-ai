@@ -74,6 +74,13 @@ export type ClarificationFormData = {
   title: string
 }
 
+/** 产品自定义对话块的中立数据载体；具体渲染由应用配置提供。 */
+export type ProductConversationBlock = {
+  id: string
+  type: string
+  data?: unknown
+}
+
 export type AssistantMessageData = {
   attachments?: AssistantAttachment[]
   clarification?: ClarificationFormData
@@ -100,6 +107,7 @@ export type ConversationTurnData = {
   }
   execution: ExecutionData
   assistant?: AssistantMessageData
+  productBlock?: ProductConversationBlock
 }
 
 /** 生成与场景数据一致的时间戳格式，用于新发送的消息 */

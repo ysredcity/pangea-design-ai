@@ -13,6 +13,7 @@ import { ArtifactPanel } from "./artifact-panel"
 import { ChatWorkspace } from "./chat-workspace"
 import { AgentSidebar, initialConversations, initialPinnedConversations, type Conversation } from "./sidebar"
 import { conversationScenes, createDraftScene } from "./conversation-data"
+import type { AppConfig } from "./app-config"
 import { splitSentContext } from "./message-context"
 import { ImageViewer } from "./image-viewer"
 import { panelViewKey, type ArtifactTarget, type ImageView, type PanelTab, type PanelView } from "./panel-types"
@@ -21,7 +22,7 @@ const SIDEBAR_WIDTH = 240
 const PANEL_MIN_WIDTH = 320
 const CHAT_MIN_WIDTH = 420
 
-export function AgentShell() {
+export function AgentShell({ config }: { config: AppConfig }) {
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null)
   const [pinnedConversations, setPinnedConversations] = useState<Conversation[]>(() => initialPinnedConversations.map((item) => ({ ...item, scene: conversationScenes[item.id] })))
   const [conversations, setConversations] = useState<Conversation[]>(() => initialConversations.map((item) => ({ ...item, scene: conversationScenes[item.id] })))
@@ -224,6 +225,7 @@ export function AgentShell() {
             )}
           >
             <AgentSidebar
+              config={config}
               activeConversationId={activeConversation?.id ?? null}
               darkMode={darkMode}
               onCollapse={() => setSidebarOpen(false)}
@@ -250,6 +252,7 @@ export function AgentShell() {
           )}
         >
           <ChatWorkspace
+            config={config}
             activeConversation={activeConversation}
             isSidebarDocked={sidebarDocked}
             onNewChat={() => openConversation(null)}
@@ -331,6 +334,7 @@ export function AgentShell() {
             }}
           >
             <AgentSidebar
+              config={config}
               activeConversationId={activeConversation?.id ?? null}
               darkMode={darkMode}
               drawer

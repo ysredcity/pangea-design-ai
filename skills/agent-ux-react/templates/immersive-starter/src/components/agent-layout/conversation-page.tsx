@@ -10,9 +10,11 @@ import type { Conversation } from "./sidebar"
 import { ConversationFlow, UserMessage } from "./conversation-flow"
 import { createDraftScene, formatTimestamp, type MessageAttachment } from "./conversation-data"
 import { splitSentContext } from "./message-context"
+import type { AppConfig } from "./app-config"
 import type { ArtifactTarget } from "./panel-types"
 
 type ConversationPageProps = {
+  config: AppConfig
   conversation: Conversation
   isSidebarDocked: boolean
   onNewChat: () => void
@@ -23,7 +25,7 @@ type ConversationPageProps = {
   pinned: boolean
 }
 
-export function ConversationPage({ conversation, isSidebarDocked, onNewChat, onOpenArtifact, onOpenSidebar, onPinnedChange, onRename, pinned }: ConversationPageProps) {
+export function ConversationPage({ config, conversation, isSidebarDocked, onNewChat, onOpenArtifact, onOpenSidebar, onPinnedChange, onRename, pinned }: ConversationPageProps) {
   const mobile = useMediaQuery("(max-width: 659px)")
   const contentRef = useRef<HTMLDivElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
@@ -76,7 +78,7 @@ export function ConversationPage({ conversation, isSidebarDocked, onNewChat, onO
         {/* 隐藏滚动条：滚动能力保留，靠内容截断和「定位到底部」按钮提示可滚动 */}
         <div ref={contentRef} className="no-scrollbar min-h-0 w-full flex-1 overflow-y-auto px-4" onScroll={updateScrollButton}>
           <div className="mx-auto min-h-full w-full max-w-3xl py-3">
-            <ConversationFlow key={conversation.id} scene={conversation.scene ?? createDraftScene(conversation.initialMessage || conversation.title, conversation.expert)} onOpenArtifact={onOpenArtifact} />
+            <ConversationFlow key={conversation.id} scene={conversation.scene ?? createDraftScene(conversation.initialMessage || conversation.title, conversation.expert)} identity={config.identity} experts={config.experts} renderProductBlock={config.renderProductBlock} onOpenArtifact={onOpenArtifact} />
             {sentMessages.length > 0 && <div className="mt-10 space-y-10 text-[15px]">{sentMessages.map((message, index) => <UserMessage key={`${message.content}-${index}`} message={message} onOpenArtifact={onOpenArtifact} />)}</div>}
           </div>
         </div>

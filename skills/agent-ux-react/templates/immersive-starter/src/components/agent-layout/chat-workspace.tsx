@@ -2,10 +2,12 @@ import { ConversationPage } from "./conversation-page"
 import { NewConversationPage } from "./new-conversation-page"
 import type { Conversation } from "./sidebar"
 import type { ContextItem } from "./composer"
+import type { AppConfig } from "./app-config"
 import type { ArtifactTarget } from "./panel-types"
 import { cn } from "@/lib/utils"
 
 type ChatWorkspaceProps = {
+  config: AppConfig
   activeConversation: Conversation | null
   activeConversationPinned: boolean
   isSidebarDocked: boolean
@@ -20,6 +22,7 @@ type ChatWorkspaceProps = {
 }
 
 export function ChatWorkspace({
+  config,
   activeConversation,
   activeConversationPinned,
   isSidebarDocked,
@@ -41,6 +44,7 @@ export function ChatWorkspace({
     )}>
       {activeConversation ? (
         <ConversationPage
+          config={config}
           conversation={activeConversation}
           pinned={activeConversationPinned}
           isSidebarDocked={isSidebarDocked}
@@ -52,6 +56,7 @@ export function ChatWorkspace({
         />
       ) : (
         <NewConversationPage
+          config={config}
           isSidebarDocked={isSidebarDocked}
           onOpenSidebar={onOpenSidebar}
           onStartConversation={onStartConversation}

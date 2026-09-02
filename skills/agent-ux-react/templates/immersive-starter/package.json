@@ -1,5 +1,5 @@
 {
-  "name": "agent-layout",
+  "name": "immersive-starter",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "gate": "npm run lint && npm run build",
     "preview": "vite preview"
   },
   "dependencies": {

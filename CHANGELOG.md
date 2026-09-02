@@ -16,14 +16,20 @@
 
 本 skill 正在按 `docs/proposals/agent-layout-integration.md` 分七阶段重构，采纳一个已成型的沉浸式工作台成品作为沉浸式形态的事实源。剩余阶段：
 
-- **Phase 1–2**：沉浸式脚手架整合（技术栈切换到 shadcn v4 / Base UI）+ 应用配置化改造。
 - **Phase 3**：约 30 份组件文档正文 + 扩展点地图的文件级路径回填。
 - **Phase 4**：补三个规范缺口组件（确认卡片 / 异常状态 / 后续引导）+ 无障碍补齐。
 - **Phase 5**：剧本引擎适配双数据源。
-- **Phase 6**：助手式脚手架迁移到 Base UI。
 - **Phase 7**：`website/` 文档站 + 组件画廊 + 沉浸式在线编辑器。
+- 将完整沉浸式 `AgentApp` 壳层抽取进 package；当前成熟的 panel/image adapter 仍留在模板形态层。
 - 补全视觉 token：字体、间距、圆角、阴影（等待设计稿）。
 - 需求规格化流程补一节"生成剧本数据的映射规则"。
+
+### Changed（沉浸式 Base UI 脚手架已整合）
+
+- **沉浸式脚手架已切换为完整 Base UI 应用底座**：`templates/immersive-starter/` 由成熟的 `agent-layout` 通过 Git subtree（非 squash）导入，保留上游提交历史；原 Radix 骨架归档为 `archive/immersive-starter-radix/`，不再作为分发模板。
+- **模板可独立运行且进入根 workspace 验证**：包名统一为 `immersive-starter`，新增 `npm run gate`（Oxlint + TypeScript + Vite 构建）；根 `npm run gate` 先验证 Base UI 沉浸式，再验证 legacy Copilot。
+- **隔离 Base UI 与旧 Radix 同步机制**：`sync-agent-ui.mjs` 现仅同步 Copilot，不能再覆盖沉浸式模板的 Base UI `src/components/ui/`；后续 Phase 2 才会建立新的分层导出与同源机制。
+- **清理上游项目专属资料并补充模板说明**：不再分发上游 `AGENTS.md`、`HANDOFF.md` 与工具状态；模板 README 说明独立使用、真实修改入口与纯前端边界。
 
 ### Changed（设计规则与文档体系升级）
 
@@ -66,3 +72,10 @@
 - **需求规格化流程 `requirement-intake.md`**：含界面形态判定、澄清问题清单、需求文档模板、确认闸门。
 - **元数据 Schema `metadata-schema.md`**：布局外壳（`layout-shell`）与组件（`component`）两类 frontmatter 规范。
 - **PM Demo 自动化预览约定**：明确要求 agent 首次生成后自动 `npm install` + `npm run dev`，每轮修改后自动确认/重启 dev server，不需要用户手动触发预览（与 Pangea 因安全扫描收紧的做法刻意不同）。
+
+### Changed（Phase 2：双形态 Base UI 对话域）
+
+- **共享对话域与双壳层迁移**：`packages/agent-ui` 现在提供 `conversation`、`immersive`、`copilot` 分层入口；所有 active manifest 已移除 Radix 依赖。
+- **Copilot 改用 Base UI 对话域**：合同审阅示例由 `CopilotApp` 装配，共享消息/执行/Composer 与中立交付物入口；交付物点击只更新左侧合同工作区，不会出现沉浸式右侧产物面板。
+- **同步与验证重建**：同步脚本同时物化两个模板的 Base UI 源码和零依赖质量脚本，并可用 `--check` 验证漂移；根 gate 固定执行 package 类型检查、双模板 drift、沉浸式与 Copilot 验证。复制模板后可独立运行 `npm install && npm run gate`。
+- **扩展边界明确**：`AppConfig` 保持身份/导航/欢迎页职责；业务场景、面板容器与产品专属对话块仍走 TypeScript 扩展点。

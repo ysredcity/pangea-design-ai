@@ -84,7 +84,7 @@ description: "⚠️ 硬约束（最高优先级）：任何「生成/新建智�
 
 **一句话选型**：AI 是主角还是配角？配角就别抢主工作区。
 
-> 两套脚手架是**独立起始工程**，不是同一工程里切换的 Layout——产品通常在立项时就确定形态。**两者成熟度不同**：沉浸式是经过实测的完整成品，助手式是轻量骨架，沉浸式的部分契约（产物容器 Tab/蒙层判定、420/800/320 宽度）在助手式未验证，参照时注意 design.md 的来源标记。
+> 两套脚手架是**独立起始工程**，不是同一工程里切换的 Layout——产品通常在立项时就确定形态。**两者共享同一 Base UI 对话域，但壳层不统一：沉浸式把产物适配到右侧 Tab/图片蒙层，Copilot 把产物适配到左侧画布；共享域只认识中立的 `ArtifactRouter(target)`，不认识任一容器实现。
 
 > ⚑ **动手前先过 G0**，生成或修改后按 [质量门禁 G1–G9 + 反面清单](references/overview/quality-gates.md) 逐项自检再交付。
 
@@ -187,16 +187,15 @@ description: "⚠️ 硬约束（最高优先级）：任何「生成/新建智�
 
 ## 当前状态与后续补充
 
-本 skill 正在按 [agent-layout 整合方案](../../docs/proposals/agent-layout-integration.md) 分阶段重构。已完成 **Phase 0（设计规则合并 + 质量门禁升级 + 组件文档体系骨架）**。
+本 skill 正在按 [agent-layout 整合方案](../../docs/proposals/agent-layout-integration.md) 分阶段重构，已完成 **Phase 0–2**：设计规则与质量门禁升级、沉浸式 Base UI 成品整合，以及共享对话域和 Copilot Base UI 迁移。两套模板均会物化 Base UI 源码与零依赖质量脚本，复制后可独立执行 `npm install && npm run gate`。
 
 尚未完成：
 
 - **组件文档正文**（Phase 3）：`components/` 六个子目录当前只有索引与骨架，约 30 份组件文档待写。**写作时必须逐个核对源码，不能照抄上游交接文档的叙述**——已实测发现三处描述与实际导出不符。
-- **扩展点地图**（Phase 3）：`overview/extension-map.md` 待建。
-- **脚手架整合**（Phase 1–2）：`templates/immersive-starter/` 将替换为实测成品并做配置化改造；`templates/copilot-starter/` 待迁移到 Base UI。
+- **扩展点地图补全**（Phase 3）：当前共享域、沉浸式与 Copilot 路由已回填；其余组件的文件级说明待随正文补齐。
 - **三个指南缺口组件**（Phase 4）：确认卡片、异常状态、后续引导。
 - **无障碍补齐**（Phase 4）：见 design.md 5.3 的提示。
 - **视觉 token 全量**：字体/间距/圆角/阴影/组件级 token，等待设计稿。
-- **剧本引擎适配**（Phase 5）、**website**（Phase 7）。
+- **剧本引擎适配**（Phase 5）、**website**（Phase 7），以及完整沉浸式 `AgentApp` 壳层的 package 抽取。
 
 在组件文档补齐之前，涉及具体组件用法时**直接读工程源码**（路径见 [components/README.md](references/components/README.md) 的组件清单表），不要凭猜测调用 API。

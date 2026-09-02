@@ -11,10 +11,13 @@ import { CopyAction, FeedbackActions } from "./message-actions"
 import { MarkdownContent } from "./markdown-content"
 import { AgentAvatar, LibraryFileIcon } from "./resource-visuals"
 import { ClarificationFormCard } from "./clarification-form-card"
-import { DEFAULT_AGENT_NAME, type AssistantAttachment, type ClarificationFollowUpData, type ClarificationFormData, type ConversationScene, type ConversationTurnData, type ExecutionActionData, type ExecutionData, type ExecutionStepData, type ExecutionTaskData, type ReasoningData } from "./conversation-data"
+import { type AssistantAttachment, type ClarificationFollowUpData, type ClarificationFormData, type ConversationScene, type ConversationTurnData, type ExecutionActionData, type ExecutionData, type ExecutionStepData, type ExecutionTaskData, type ProductConversationBlock, type ReasoningData } from "./conversation-data"
+import type { ProductIdentity, WelcomeExpert } from "./app-config"
 import type { ArtifactTarget } from "./panel-types"
 
-type OpenArtifact = (target: ArtifactTarget) => void
+export type ArtifactRouter = (target: ArtifactTarget) => void
+export type ProductBlockRenderer = (block: ProductConversationBlock, context: { onOpenArtifact: ArtifactRouter }) => ReactNode
+type OpenArtifact = ArtifactRouter
 
 type DisclosureContentProps = {
   children: ReactNode
@@ -86,7 +89,7 @@ function getStreamingExecution(followUp: ClarificationFollowUpData, phase: Follo
   }
 }
 
-export function ConversationFlow({ scene, onOpenArtifact }: { scene: ConversationScene; onOpenArtifact: OpenArtifact }) {
+export function ConversationFlow({ scene, identity, experts, onOpenArtifact, renderProductBlock }: { scene: ConversationScene; identity: ProductIdentity; experts: readonly WelcomeExpert[]; onOpenArtifact: ArtifactRouter; renderProductBlock?: ProductBlockRenderer }) {
   const [submittedClarificationIds, setSubmittedClarificationIds] = useState<Set<string>>(() => new Set())
   const [followUpPhases, setFollowUpPhases] = useState<Record<string, FollowUpPhase>>({})
   const prefersReducedMotion = useReducedMotion()
@@ -115,6 +118,9 @@ export function ConversationFlow({ scene, onOpenArtifact }: { scene: Conversatio
     return <ConversationTurn
       key={turn.id}
       turn={turn}
+      identity={identity}
+      experts={experts}
+      renderProductBlock={renderProductBlock}
       current={index === scene.turns.length - 1}
       onOpenArtifact={onOpenArtifact}
       onClarificationSubmit={submitClarification}
@@ -124,11 +130,15 @@ export function ConversationFlow({ scene, onOpenArtifact }: { scene: Conversatio
   })}</div>
 }
 
-function ConversationTurn({ clarificationSubmitted, current, followUpPhase, onClarificationSubmit, onOpenArtifact, turn }: { clarificationSubmitted: boolean; current: boolean; followUpPhase?: FollowUpPhase; onClarificationSubmit: (formId: string) => void; onOpenArtifact: OpenArtifact; turn: ConversationTurnData }) {
+function ConversationTurn({ clarificationSubmitted, current, experts, followUpPhase, identity, onClarificationSubmit, onOpenArtifact, renderProductBlock, turn }: { clarificationSubmitted: boolean; current: boolean; experts: readonly WelcomeExpert[]; followUpPhase?: FollowUpPhase; identity: ProductIdentity; onClarificationSubmit: (formId: string) => void; onOpenArtifact: ArtifactRouter; renderProductBlock?: ProductBlockRenderer; turn: ConversationTurnData }) {
   const continuation = clarificationSubmitted ? turn.assistant?.clarification?.followUp : undefined
   return <section className="space-y-5">
     <UserMessage message={turn.user} onOpenArtifact={onOpenArtifact} />
     <AgentResponseBlock
+      identity={identity}
+      experts={experts}
+      productBlock={turn.productBlock}
+      renderProductBlock={renderProductBlock}
       expert={turn.expert}
       execution={turn.execution}
       current={current}
@@ -138,14 +148,16 @@ function ConversationTurn({ clarificationSubmitted, current, followUpPhase, onCl
       onClarificationSubmit={onClarificationSubmit}
       needsReply={current && turn.assistant?.kind === "question" && !continuation}
     />
-    {continuation && <AssistantContinuation expert={turn.expert} followUp={continuation} phase={followUpPhase ?? "ready"} current={current} onOpenArtifact={onOpenArtifact} />}
+    {continuation && <AssistantContinuation identity={identity} experts={experts} expert={turn.expert} followUp={continuation} phase={followUpPhase ?? "ready"} current={current} onOpenArtifact={onOpenArtifact} />}
   </section>
 }
 
-function AssistantContinuation({ current, expert, followUp, onOpenArtifact, phase }: { current: boolean; expert?: string; followUp: ClarificationFollowUpData; onOpenArtifact: OpenArtifact; phase: FollowUpPhase }) {
+function AssistantContinuation({ current, expert, followUp, identity, experts, onOpenArtifact, phase }: { current: boolean; expert?: string; followUp: ClarificationFollowUpData; identity: ProductIdentity; experts: readonly WelcomeExpert[]; onOpenArtifact: ArtifactRouter; phase: FollowUpPhase }) {
   const execution = getStreamingExecution(followUp, phase)
   return <div className="animate-in fade-in-0 duration-200 motion-reduce:animate-none">
     <AgentResponseBlock
+      identity={identity}
+      experts={experts}
       expert={expert}
       execution={execution}
       current={current}
@@ -161,33 +173,43 @@ function AgentResponseBlock({
   clarificationSubmitted = false,
   current,
   execution,
+  experts,
   expert,
+  identity,
   needsReply = false,
   onClarificationSubmit,
   onOpenArtifact,
+  productBlock,
+  renderProductBlock,
 }: {
   assistant?: ConversationTurnData["assistant"]
   clarificationSubmitted?: boolean
   current: boolean
   execution: ExecutionData
+  experts: readonly WelcomeExpert[]
   expert?: string
+  identity: ProductIdentity
   needsReply?: boolean
   onClarificationSubmit?: (formId: string) => void
-  onOpenArtifact: OpenArtifact
+  onOpenArtifact: ArtifactRouter
+  productBlock?: ProductConversationBlock
+  renderProductBlock?: ProductBlockRenderer
 }) {
   return <div className="space-y-5">
     <div className="space-y-2">
-      <AgentIdentity expert={expert} />
+      <AgentIdentity identity={identity} experts={experts} expert={expert} />
       <ExecutionProcess execution={execution} current={current} onOpenArtifact={onOpenArtifact} />
     </div>
     {assistant && <AssistantMessage {...assistant} clarificationSubmitted={clarificationSubmitted} onClarificationSubmit={onClarificationSubmit} onOpenArtifact={onOpenArtifact} needsReply={needsReply} />}
+    {productBlock && renderProductBlock?.(productBlock, { onOpenArtifact })}
   </div>
 }
 
-export function AgentIdentity({ expert }: { expert?: string }) {
+export function AgentIdentity({ identity, experts, expert }: { identity: ProductIdentity; experts: readonly WelcomeExpert[]; expert?: string }) {
+  const expertConfig = experts.find((item) => item.id === expert || item.label === expert)
   return <div className="flex items-center gap-2 text-[15px] font-medium leading-6">
-    <AgentAvatar expert={expert} />
-    <span className="truncate">{expert ?? DEFAULT_AGENT_NAME}</span>
+    <AgentAvatar expertVisualKey={expertConfig?.visualKey} productAvatar={identity.avatar} />
+    <span className="truncate">{expertConfig?.label ?? expert ?? identity.name}</span>
   </div>
 }
 
