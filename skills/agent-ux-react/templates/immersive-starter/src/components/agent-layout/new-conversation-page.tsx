@@ -1,0 +1,166 @@
+import { useLayoutEffect, useRef, useState } from "react"
+import { ArrowUpLeft, BarChart3, BriefcaseBusiness, Building2, ChevronLeft, ChevronRight, FileText, IndentIncrease, Search } from "lucide-react"
+
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Composer, type ContextItem } from "./composer"
+import { IconButton } from "./icon-button"
+
+type NewConversationPageProps = {
+  isSidebarDocked: boolean
+  onOpenSidebar: () => void
+  onStartConversation: (message: string, context: ContextItem[]) => void
+}
+
+export function NewConversationPage({ isSidebarDocked, onOpenSidebar, onStartConversation }: NewConversationPageProps) {
+  const [selectedExpert, setSelectedExpert] = useState<string | null>(null)
+  const [recommendationMode, setRecommendationMode] = useState<"initial" | "expert" | "hidden">("initial")
+  const [draft, setDraft] = useState("")
+  const [page, setPage] = useState(0)
+  const suggestionPages = chunkSuggestions(defaultSuggestions, 3)
+
+  const chooseExpert = (expert: string) => {
+    setSelectedExpert(expert)
+    setRecommendationMode("expert")
+    setPage(0)
+  }
+
+  const chooseSuggestion = (suggestion: SuggestionItem) => {
+    setSelectedExpert(suggestion.expert)
+    setRecommendationMode("hidden")
+    setDraft(suggestion.prompt)
+  }
+
+  const handleExpertChange = (expert: string | null) => {
+    setSelectedExpert(expert)
+    setRecommendationMode(expert ? "expert" : "initial")
+    if (!expert) setPage(0)
+  }
+
+  return (
+    <>
+      <header className="flex h-13 shrink-0 items-center px-4">
+        {!isSidebarDocked && (
+          <Tooltip>
+            <TooltipTrigger render={<IconButton aria-label="展开导航" onClick={onOpenSidebar}><IndentIncrease /></IconButton>} />
+            <TooltipContent side="right">展开导航</TooltipContent>
+          </Tooltip>
+        )}
+      </header>
+      <div className="flex min-h-0 flex-1 flex-col items-center overflow-hidden px-4">
+        <div className="flex w-full max-w-3xl flex-1 flex-col items-center justify-center py-3">
+          <div className="w-full translate-y-[-4%]">
+            <h1 className="text-center text-2xl font-medium leading-9 tracking-[-0.48px] md:text-3xl md:tracking-[-0.6px]">👋 Hey！有什么需要我搞定的？</h1>
+            <div className="mt-4"><Composer onSend={onStartConversation} draft={draft} onDraftChange={setDraft} selectedExpert={selectedExpert} onSelectedExpertChange={handleExpertChange} menuSide="below" /></div>
+            {recommendationMode === "initial" && (
+              <div className="mt-8 flex flex-wrap justify-center gap-2">
+                {experts.map(({ label, icon: ExpertIcon }) => (
+                  <button key={label} onClick={() => chooseExpert(label)} className="flex h-9 items-center gap-1.5 rounded-full border bg-card px-3 text-sm font-medium transition-colors hover:bg-muted">
+                    <ExpertIcon className="size-3.5" />{label.replace(/专家$/, "")}
+                  </button>
+                ))}
+              </div>
+            )}
+            {recommendationMode === "initial" && <div className="group/recommendations relative mt-3">
+              {page > 0 && <PageButton label="上一页" side="left" onClick={() => setPage((value) => value - 1)}><ChevronLeft /></PageButton>}
+              <div className="overflow-hidden max-[660px]:overflow-x-auto">
+                <div
+                  className="flex transition-transform duration-300 ease-out motion-reduce:transition-none max-[660px]:w-max max-[660px]:snap-x max-[660px]:transform-none max-[660px]:gap-3 max-[660px]:pb-1"
+                  style={{ transform: `translateX(-${page * 100}%)` }}
+                >
+                  {suggestionPages.map((suggestions, pageIndex) => (
+                    <div key={pageIndex} className="grid min-w-full grid-cols-3 gap-3 max-[660px]:contents">
+                      {suggestions.map((suggestion) => <Suggestion key={suggestion.prompt} item={suggestion} onClick={() => chooseSuggestion(suggestion)} />)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {page < suggestionPages.length - 1 && <PageButton label="下一页" side="right" onClick={() => setPage((value) => value + 1)}><ChevronRight /></PageButton>}
+            </div>}
+            {recommendationMode === "expert" && selectedExpert && (
+              <ExpertSuggestionList
+                suggestions={expertSuggestions[selectedExpert] ?? genericExpertSuggestions(selectedExpert)}
+                onSelect={(suggestion) => {
+                  setDraft(suggestion.prompt)
+                  setRecommendationMode("hidden")
+                }}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
+type SuggestionItem = { expert: string; prompt: string }
+
+const experts = [
+  { label: "日常办公专家", icon: BriefcaseBusiness },
+  { label: "文档处理专家", icon: FileText },
+  { label: "数据分析专家", icon: BarChart3 },
+  { label: "市场调研专家", icon: Search },
+  { label: "园区生活专家", icon: Building2 },
+]
+
+const expertSuggestions: Record<string, SuggestionItem[]> = {
+  日常办公专家: ["创建飞书「需求内审评审流」评审内容清单文档", "整理本周工作进展并生成周报", "根据会议记录提炼待办事项"].map((prompt) => ({ expert: "日常办公专家", prompt })),
+  文档处理专家: ["将《UI Skill 使用手册》精简为设计师快速上手指南", "总结这份项目文档的核心结论", "把需求说明改写成结构化方案"].map((prompt) => ({ expert: "文档处理专家", prompt })),
+  数据分析专家: ["分析本季度业务数据并找出增长机会", "将这份表格生成可视化分析报告", "对比各区域指标并解释异常变化"].map((prompt) => ({ expert: "数据分析专家", prompt })),
+  市场调研专家: ["帮我联网调研瑞幸，对比它和星巴克的差异", "分析目标行业的市场规模与竞争格局", "整理竞品的核心功能和定价策略"].map((prompt) => ({ expert: "市场调研专家", prompt })),
+  园区生活专家: ["推荐园区附近适合团队聚餐的餐厅", "查询园区班车路线和发车时间", "帮我规划园区一天的访客接待安排"].map((prompt) => ({ expert: "园区生活专家", prompt })),
+}
+
+const defaultSuggestions = [
+  expertSuggestions.日常办公专家[0], expertSuggestions.文档处理专家[0], expertSuggestions.市场调研专家[0],
+  expertSuggestions.数据分析专家[0], expertSuggestions.园区生活专家[0], expertSuggestions.日常办公专家[1],
+]
+
+function Suggestion({ item, onClick }: { item: SuggestionItem; onClick: () => void }) {
+  const textRef = useRef<HTMLSpanElement>(null)
+  const [truncated, setTruncated] = useState(false)
+
+  useLayoutEffect(() => {
+    const text = textRef.current
+    if (!text) return
+    const check = () => setTruncated(text.scrollHeight > text.clientHeight + 1)
+    check()
+    const observer = new ResizeObserver(check)
+    observer.observe(text)
+    return () => observer.disconnect()
+  }, [item.prompt])
+
+  return (
+    <button onClick={onClick} className="h-[94px] min-w-0 snap-start overflow-hidden rounded-[10px] border bg-background p-4 text-left align-top transition-colors hover:bg-accent max-[659px]:min-w-56">
+      <span className="block h-4 truncate text-xs leading-4 tracking-[0.12px] text-muted-foreground">{item.expert.replace(/专家$/, "")}</span>
+      <Tooltip>
+        <TooltipTrigger render={<span ref={textRef} className="mt-2 line-clamp-2 block h-10 text-sm leading-5">{item.prompt}</span>} />
+        {truncated && <TooltipContent side="top" className="max-w-80 text-left leading-5">{item.prompt}</TooltipContent>}
+      </Tooltip>
+    </button>
+  )
+}
+
+function ExpertSuggestionList({ suggestions, onSelect }: { suggestions: SuggestionItem[]; onSelect: (item: SuggestionItem) => void }) {
+  return (
+    <div className="mt-10 overflow-hidden rounded-[10px]">
+      {suggestions.map((item) => (
+        <button key={item.prompt} type="button" onClick={() => onSelect(item)} className="group flex w-full items-center gap-2 rounded-[10px] px-3 py-2 text-left text-sm leading-5 transition-colors hover:bg-accent">
+          <span className="min-w-0 flex-1 truncate">{item.prompt}</span>
+          <ArrowUpLeft aria-hidden="true" className="size-4 shrink-0 text-muted-foreground opacity-80 transition-transform group-hover:-translate-x-0.5" />
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function genericExpertSuggestions(expert: string): SuggestionItem[] {
+  return ["帮我快速梳理当前问题并给出行动建议", "基于现有资料生成一份专业方案", "从专业视角检查内容并提出优化建议"].map((prompt) => ({ expert, prompt }))
+}
+
+function chunkSuggestions(items: SuggestionItem[], size: number): SuggestionItem[][] {
+  return Array.from({ length: Math.ceil(items.length / size) }, (_, index) => items.slice(index * size, (index + 1) * size))
+}
+
+function PageButton({ label, side, onClick, children }: { label: string; side: "left" | "right"; onClick: () => void; children: React.ReactNode }) {
+  return <button type="button" aria-label={label} onClick={onClick} className={`absolute ${side === "left" ? "-left-4" : "-right-4"} top-1/2 z-10 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border bg-background text-foreground opacity-0 shadow-sm transition-[color,background-color,opacity] group-hover/recommendations:opacity-100 focus-visible:opacity-100 hover:border-foreground hover:bg-foreground hover:text-background max-[660px]:hidden [&_svg]:size-4`}>{children}</button>
+}

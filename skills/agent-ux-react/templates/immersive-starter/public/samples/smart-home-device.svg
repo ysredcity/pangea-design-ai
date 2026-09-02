@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="750" height="1334" viewBox="0 0 750 1334" font-family="Geist, system-ui, sans-serif">
+  <rect width="750" height="1334" fill="#f5f5f5"/>
+  <rect width="750" height="160" fill="#ffffff"/>
+  <path d="M52 84 L76 62 M52 84 L76 106" stroke="#262626" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <text x="104" y="96" font-size="34" font-weight="600" fill="#262626">客厅空调</text>
+  <text x="590" y="96" font-size="24" fill="#0d9488">运行中</text>
+  <rect x="40" y="200" width="670" height="420" rx="20" fill="#ffffff"/>
+  <circle cx="375" cy="410" r="150" fill="none" stroke="#e5e5e5" stroke-width="20"/>
+  <path d="M375 260 A150 150 0 0 1 505 485" fill="none" stroke="#0d9488" stroke-width="20" stroke-linecap="round"/>
+  <text x="375" y="400" font-size="86" font-weight="600" fill="#262626" text-anchor="middle">26</text>
+  <text x="375" y="450" font-size="26" fill="#737373" text-anchor="middle">制冷 · 自动风</text>
+  <text x="375" y="560" font-size="24" fill="#a3a3a3" text-anchor="middle">正在调节，请稍候</text>
+  <g fill="#ffffff">
+    <rect x="40" y="652" width="322" height="130" rx="16"/>
+    <rect x="388" y="652" width="322" height="130" rx="16"/>
+    <rect x="40" y="802" width="322" height="130" rx="16"/>
+    <rect x="388" y="802" width="322" height="130" rx="16"/>
+  </g>
+  <g font-size="26" fill="#262626">
+    <text x="68" y="716">模式</text>
+    <text x="416" y="716">风速</text>
+    <text x="68" y="866">摆风</text>
+    <text x="416" y="866">定时</text>
+  </g>
+  <g font-size="22" fill="#a3a3a3">
+    <text x="68" y="752">制冷</text>
+    <text x="416" y="752">自动</text>
+    <text x="68" y="902">上下</text>
+    <text x="416" y="902">未设置</text>
+  </g>
+  <rect x="40" y="962" width="670" height="120" rx="16" fill="#ffffff"/>
+  <text x="68" y="1012" font-size="26" fill="#262626">更多设置</text>
+  <text x="68" y="1050" font-size="22" fill="#a3a3a3">睡眠曲线 · 电量统计 · 固件版本 · 设备共享</text>
+  <rect x="40" y="1112" width="670" height="120" rx="16" fill="#fef3c7"/>
+  <circle cx="86" cy="1172" r="16" fill="#f59e0b"/>
+  <text x="120" y="1164" font-size="24" fill="#92400e">滤网清洁提醒</text>
+  <text x="120" y="1200" font-size="22" fill="#b45309">已运行 320 小时，建议清洁滤网</text>
+</svg>
