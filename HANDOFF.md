@@ -1,6 +1,6 @@
 # Agent 产品前端模板开发交接文档
 
-更新日期：2026-08-31  
+更新日期：2026-09-02
 项目路径：`/Users/yangshuo/Code/agent-layout`
 
 ## 1. 项目目标
@@ -205,7 +205,10 @@ Composer 下方有两层推荐：专家推荐和指令推荐。
 
 - `ConversationFlow`：完整对话流。
 - `ConversationTurn`：一轮用户问题、执行过程和智能体回答。
-- `UserMessage`：用户消息、上下文标签及悬停操作栏（时间戳 + 复制）。
+- `UserMessage`：用户消息、附件、内联标签、上下文标签及悬停操作栏（时间戳 + 复制）。
+- `inline-tag.ts`：内联标签的单一事实源（`[[类型:名称]]` 标记格式、解析函数、标签样式类），Composer 与对话流共用。
+- `message-context.ts`：把 Composer 发出的上下文拆成附件 / 内联标记 / 专家，并丢弃不进消息流的连接器。
+- `file-meta.ts`：附件的大小与类型文案格式化。
 - `message-actions.tsx`：用户消息与智能体消息共用的操作栏动作（复制、点赞、点踩反馈对话框），两处消息组件都只引用它，不各写一套状态。
 - `ExecutionProcess`：L1 状态摘要与整个执行过程。
 - `TaskBlock`：L2 规划任务。
@@ -213,6 +216,16 @@ Composer 下方有两层推荐：专家推荐和指令推荐。
 - `ExecutionActionBadge`：技能、接口、检索、脚本等实际动作。
 - `ReasoningPanel`：可选的深度思考面板。
 - `AssistantMessage`：智能体最终回答或追问。
+- `clarification-form-card.tsx`：智能体澄清表单卡片，负责展开/折叠、字段交互、必填校验与提交后只读状态。
+
+### 9.8 智能体澄清表单
+
+当智能体识别到用户指令缺少继续执行所需的结构化信息时，可在 `assistant.clarification` 推送一张澄清表单卡片；这是消息流内的业务组件，不放入 `conversation-page.tsx`。
+
+- 数据契约位于 `conversation-data.ts`：`ClarificationFormData` 支持文本、多行文本、单选和多选字段，字段使用 `required` 标记必填；示例场景只在数据层声明字段。
+- 卡片视觉参考 Figma 节点 `11717:4222`：最大宽度 600px、12px 卡片圆角、12px 标题栏、16px 内容区；标题栏可点击展开/折叠，默认由 `defaultOpen` 控制。
+- 所有必填字段有值前，提交按钮保持禁用；点击提交后，字段替换为只读的标题和值，操作栏消失，并在标题栏右侧显示“已提交”。提交后仍可展开/收起查看记录。
+- 当前 `chat-5` 示例为“下周去上海出差，帮我发起申请”：智能体调度 `差旅助手`，针对缺失的日期、事由与交通偏好推送澄清表单。未来接真实数据时，组件可通过上层回调将提交值交给后端；模板阶段只保留本地交互状态。
 
 数据模型位于 `conversation-data.ts`。
 
@@ -293,7 +306,34 @@ Badge 设计规则：
 
 报表图标选择对话的两轮属于极简 L1 → L3：展开 L1 后直接平铺执行说明与操作 Badge，不显示中间执行摘要、步骤标题、状态节点或时间线。此类场景同时使用 `ExecutionData.showSummary: false` 和 `flat: true` 控制。
 
-### 9.5 用户消息悬停操作栏
+### 9.5 用户消息中的上下文与能力
+
+消息气泡里的呈现方式必须与 Composer 一致，按能不能内联分三类：
+
+- **本地上传文件** → `ConversationTurnData.user.attachments`，渲染为独立 `Attachment` 卡片（`w-60`，与 Composer 上传区同款），位于气泡上方、右对齐。
+- **文件库 / 最近的对话 / 技能** → 以 badge 形式显示在**气泡内**，位置由消息文本里的 `[[类型:名称]]` 标记决定。
+- **专家** → **不显示在用户消息里**，见下面的 9.6 智能体身份。
+- **连接器** → **不进消息流**。它是发送时的即时调用行为，只决定这一次请求怎么执行，不属于用户消息的内容；执行过程里的「调用连接器 x」Badge 已经体现了它。
+
+内联标记的机制：
+
+- 格式、解析和样式类集中在 `inline-tag.ts`，Composer 生成标记、对话流解析标记，两端不各写一套正则。
+- Composer 的 `readEditor()` 同时产出两种文本：`text`（标签取 label 的纯文本，用于同步 `draft`，回写编辑区时不能带标记）和 `markup`（带标记，用于发送）。
+- `MessageContent` 检测到标记时按「文本段 + badge 段」逐段渲染，文本段按纯文本处理；没有标记时走完整 `MarkdownContent`。原因是 Markdown 的块级结构无法与行内 badge 共存。
+- 气泡内的 badge 复用 `INLINE_TAG_CLASS`，但叠加 `bg-background/70`：气泡本身已经是 `primary-bg`，标签需要更亮的底色才能区分出来。
+- 实时发送链路（`conversation-page.tsx` 的 `sentMessages`、`agent-shell.tsx` 的新建对话）都通过 `splitSentContext()` 拆分上下文，保证与场景数据的结构一致。新建对话的标题会剥掉标记只留可读文本。
+
+### 9.6 智能体身份（专家）
+
+选择专家等于指定某个子智能体来执行这条指令，因此它属于**智能体侧**，不是用户消息的上下文：
+
+- 数据挂在轮次级别 `ConversationTurnData.expert`（可选、单值），不在 `user` 里。Composer 同时只能选一个专家，所以用单值而不是数组。
+- 每一轮的智能体侧统一以身份开头：`AgentIdentity` 渲染「头像 + 名称」，位于 `ExecutionProcess` 上方，两者间距 8px。
+- 指定了专家 → 专家头像 + 专家名；未指定 → 产品身份头像（`Bot`，`primary` 底）+ `DEFAULT_AGENT_NAME`。回退逻辑在 `resource-visuals.tsx` 的 `AgentAvatar` 里，专家头像继续复用 `ExpertAvatar`，保证与 Composer、菜单里的同一专家图标一致。
+- 左侧导航顶部的产品身份与对话流共用同一套：同样的 `AgentAvatar` 与 `DEFAULT_AGENT_NAME`，只是尺寸放大到 28px。不要在 sidebar 里另写图标或名称。
+- 产品名与头像改动只改两处：文案改 `conversation-data.ts` 的 `DEFAULT_AGENT_NAME`，头像改 `resource-visuals.tsx` 的 `AgentAvatar`；两处都会同时影响侧栏与对话流。
+
+### 9.7 用户消息悬停操作栏
 
 参考 Figma `12651:12304`。`UserMessage` 在气泡下方常驻一段 `h-7` 的操作栏区域，默认 `opacity-0`，`group-hover/message` 或 `focus-within` 时切到 `opacity-100`；不用条件渲染切 DOM，避免悬停/移开时下方内容跳动。
 
@@ -311,6 +351,21 @@ Badge 设计规则：
 - 场景数据里的历史对话在 `ConversationTurnData.user.timestamp` 补了固定时间字符串，格式统一为 `formatTimestamp()` 输出的 `MM月DD日 HH:mm`。
 - 新发送的消息（`conversation-page.tsx` 的 `sentMessages` 和 `createDraftScene`）调用 `conversation-data.ts` 导出的 `formatTimestamp()` 生成当前时间，不再是裸字符串数组。
 - 没有 `timestamp` 时操作栏只显示复制按钮，不留分割线。
+
+### 9.8 智能体澄清表单与差旅申请续流程
+
+`assistant.clarification` 可在消息流中推送结构化补充表单，组件为 `clarification-form-card.tsx`；它属于 Agent 业务视图，不放入 `conversation-page.tsx`。
+
+- `ClarificationField` 支持文本、多行文本、单选、多选和 `date-range`。编辑态统一使用本地 shadcn Base 的 `Field`、`Input`、`Textarea`、`RadioGroup`、`Checkbox`；日期范围为 `Popover` + `Calendar`（React DayPicker）组合，不使用浏览器原生日期输入。值在组件边界以本地时区显式转换，仍保持 `{ start, end }` 的 `YYYY-MM-DD` 数据契约；必填时两个端点均有值才可提交。
+- 日期日历依赖固定为 `react-day-picker@10.0.1` 与 `date-fns@4.4.0`；新增或更新日期能力时必须保持精确版本，并避免以 `toISOString()` 序列化 date-only 值，以防跨时区日期偏移。
+- 表单标题栏可展开/折叠，默认状态由 `defaultOpen` 决定。编辑态字段间距为 16px，卡片最大宽度 600px、圆角 12px；提交按钮为 72×36。
+- 提交后字段切换为只读摘要值（14px / 20px），操作栏隐藏，标题栏右侧显示“已提交”；卡片仍允许展开和收起以查看记录。
+- `ClarificationFormData.id` 是提交状态的稳定键。`ConversationFlow` 通过已提交 id 集合派生状态，不修改 `scene.turns`，也不会因重复点击重复追加内容。
+- `chat-5` 的差旅助手示例在表单提交后固定追加 `followUp`：完成申请字段校验和申请单整理后，询问“是否现在由我帮你提交这份出差申请单？”。该演示续流程不依赖用户填写的表单值，至此结束。
+- 提交后续流程由 `ConversationFlow` 管理运行时阶段，不修改 `scene.turns`：先显示「正在校验出差信息」，等待约 1.1 秒后再插入「正在整理出差申请单」步骤，约 1.4 秒后显示最终确认问题。运行时沿用 `ExecutionProcess` 的 `running` 状态、Spinner 与 shimmer；减少动态偏好下等待压缩为即时推进。
+- `ConversationPage` 以 `conversation.id` 作为 `ConversationFlow` 的 `key`，切换对话时会卸载并清理阶段计时器，避免续流程状态泄漏到其它场景。当前行为仅模拟智能体执行，不表示真实提交申请。
+- `ConversationTurn` 只负责排列完整消息块：`UserMessage` 接收完整的 `ConversationTurnData.user` 数据对象，`AgentResponseBlock` 统一组合专家身份、执行过程和可选正文。普通智能体回复与澄清提交后的 `AssistantContinuation` 均复用 `AgentResponseBlock`，不再各自定义间距。
+- 消息块之间、以及执行过程到智能体正文的间距统一为 20px；专家身份到执行过程保持 8px。用户消息内部维持附件、气泡与操作栏的既有 8px 间距。
 
 ## 10. Figma 设计来源
 
@@ -420,19 +475,34 @@ Badge 的 `target` 类型是 `ArtifactTarget = PanelView | ImageView`，由 `Age
 
 独立面板的响应式分配规则：
 
-- 总宽度 ≥ 980px：左侧导航固定 240px；打开面板时对话区默认收缩为 420px，独立面板撑满其余空间。
-- 740px ≤ 总宽度 < 980px：左侧导航自动转为抽屉；对话区仍为 420px，独立面板撑满其余空间且不小于 320px。
-- 总宽度 < 740px：独立面板升级为全屏抽屉。
+- 总宽度 ≥ 980px：左侧导航固定 240px，剩余空间按下面的默认分栏规则切分。
+- 740px ≤ 总宽度 < 980px：左侧导航自动转为抽屉，整个视口宽度参与分栏。
+- 总宽度 < 740px：独立面板升级为全屏抽屉，不参与分栏。
+
+默认分栏规则（`chat-workspace.tsx` 里一行 CSS：`w-[clamp(420px,50%,800px)]`，独立面板 `flex-1` 承接剩余）：
+
+- 对话区取可用宽度的 **50%**，下限 **420px**，上限 **800px**。
+- 上限 800px 来自对话内容本身的 `max-w-3xl`（768px）加左右 padding，再宽也只是留白，所以富余空间全部给独立面板——网页与文档预览越宽越好读。
+- 独立面板下限 320px 由 `min-w-80` 保证。980px 与 740px 两个临界点正好落在 420 / 320，不会溢出。
+- 不用 JS 测量容器宽度，`clamp()` 与 `50%` 由布局自己解决，窗口缩放时连续变化。
 - 全屏另有手动开关：`panelFullscreenRequested` 由顶部全屏按钮切换，`panelFullscreen = panelOpen && (below740 || panelFullscreenRequested)`。窄屏（< 740px）已强制全屏且没有非全屏形态，因此不下发 `onToggleFullscreen`，按钮直接隐藏，避免出现点了没反应的死按钮。手动退出全屏后恢复此前的拖拽宽度；关闭面板会重置该状态。
 - 顶部右侧全局操作使用 Tooltip：全屏用 `MoveDiagonal`，退出全屏用 `Minimize2`，关闭用 `X`，Tooltip 文案与 `aria-label` 一致。
 - 初次打开面板使用上述默认分配；开始拖拽分隔线后，独立面板改为显式像素宽度，对话区自动承接剩余空间，且始终保留 420px 最小宽度。
 - 分隔线默认使用 border 色，悬停和拖拽时切换为 primary 并加粗。
 
-已实测的布局尺寸：
+默认分栏的实际尺寸：
 
-- 1440px：侧栏 240px / 对话区 420px / 独立面板 780px。
-- 900px：侧栏转抽屉，对话区 420px / 独立面板 480px。
-- 700px：独立面板占满 700px 视口。
+| 总宽度 | 侧栏 | 对话区 | 独立面板 |
+|---|---|---|---|
+| 2560px | 240px | 800px（触顶） | 1520px |
+| 1920px | 240px | 800px（触顶） | 880px |
+| 1440px | 240px | 600px | 600px |
+| 1280px | 240px | 520px | 520px |
+| 1100px | 240px | 430px | 430px |
+| 980px | 240px | 420px（触底） | 320px（触底） |
+| 900px | 抽屉 | 450px | 450px |
+| 740px | 抽屉 | 420px（触底） | 320px（触底） |
+| < 740px | 抽屉 | — | 全屏 |
 
 如果用户在宽屏拖动后缩小窗口，独立面板的 `maxWidth` 必须动态限制为 `calc(100% - 420px)`，避免历史像素宽度挤压对话区。
 
@@ -447,9 +517,19 @@ Badge 的 `target` 类型是 `ArtifactTarget = PanelView | ImageView`，由 `Age
 
 注意：最初使用的自定义 `execution-shimmer` 已删除。当前必须使用 shadcn 官方 utility，不要重新实现另一套关键帧。
 
+### 13.4 界面开关与折叠过渡
+
+以下交互统一采用已有的 Tailwind CSS 过渡，不引入动画库，并全部附带 `motion-reduce:transition-none`：
+
+- 桌面停靠侧栏：通过外层宽度 `0 ↔ 240px` 与内层位移/透明度同步过渡；保持原有 660px / 980px 响应式切换规则，抽屉形态不参与桌面宽度动画。
+- 独立面板：打开时从右侧轻微滑入并淡入；关闭时先切换为不可交互的退出态，保留容器 200ms 让动画完成后再清除 Tab 和全屏状态。切换对话仍调用 `closePanel(true)` 立即清理，不能短暂展示上一对话的内容。拖拽中的面板宽度不做动画，持续遵守对话区最小 420px、面板最小 320px 的约束。
+- `ExecutionProcess`、`ReasoningPanel` 与 `TaskBlock`：不再通过条件卸载内容；统一用常驻的 `grid-template-rows: 0fr ↔ 1fr`、opacity 过渡实现双向展开/收起。收起态设置 `aria-hidden`、`inert` 与禁用指针事件，避免隐藏内容获得键盘焦点。
+
+动画状态继续由 `agent-shell.tsx`（壳层）和 `conversation-flow.tsx`（执行视图）分别拥有；不要把这类状态下沉到 `artifact-panel.tsx` 或页面组件。
+
 ## 14. 最近验证结果与继续开发前检查
 
-最近一次代码验证：
+最近一次代码验证（2026-09-02，动画改动后）：
 
 - `npm run build` 通过。
 - `npm run lint` 通过，无 Error。

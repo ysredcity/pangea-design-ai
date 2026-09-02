@@ -13,6 +13,7 @@ import { ArtifactPanel } from "./artifact-panel"
 import { ChatWorkspace } from "./chat-workspace"
 import { AgentSidebar, initialConversations, initialPinnedConversations, type Conversation } from "./sidebar"
 import { conversationScenes, createDraftScene } from "./conversation-data"
+import { splitSentContext } from "./message-context"
 import { ImageViewer } from "./image-viewer"
 import { panelViewKey, type ArtifactTarget, type ImageView, type PanelTab, type PanelView } from "./panel-types"
 
@@ -40,8 +41,10 @@ export function AgentShell() {
   const [imageView, setImageView] = useState<ImageView | null>(null)
   const [panelWidth, setPanelWidth] = useState<number | null>(null)
   const [isResizing, setIsResizing] = useState(false)
+  const [panelVisible, setPanelVisible] = useState(false)
   const shellRef = useRef<HTMLDivElement>(null)
   const drawerTouchStart = useRef<number | null>(null)
+  const panelCloseTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null)
 
   const below660 = useMediaQuery("(max-width: 659px)")
   const below740 = useMediaQuery("(max-width: 739px)")
@@ -54,6 +57,16 @@ export function AgentShell() {
     document.documentElement.classList.toggle("dark", darkMode)
     window.localStorage.setItem("theme", darkMode ? "dark" : "light")
   }, [darkMode])
+
+  useEffect(() => () => {
+    if (panelCloseTimer.current !== null) window.clearTimeout(panelCloseTimer.current)
+  }, [])
+
+  const cancelPanelClose = () => {
+    if (panelCloseTimer.current === null) return
+    window.clearTimeout(panelCloseTimer.current)
+    panelCloseTimer.current = null
+  }
 
   const changePinnedState = (conversation: Conversation, pinned: boolean) => {
     if (pinned) {
@@ -93,7 +106,9 @@ export function AgentShell() {
 
   /** 打开一个容器：已存在同一容器时只切换 Tab，否则新增 Tab */
   const openPanel = (view: PanelView) => {
+    cancelPanelClose()
     if (!panelOpen) setPanelWidth(null)
+    setPanelVisible(true)
     const key = panelViewKey(view)
     const existing = panelTabs.find((tab) => panelViewKey(tab) === key)
     if (existing) {
@@ -113,14 +128,39 @@ export function AgentShell() {
   const closePanelTab = (id: string) => {
     const index = panelTabs.findIndex((tab) => tab.id === id)
     const next = panelTabs.filter((tab) => tab.id !== id)
+    if (next.length === 0) {
+      closePanel()
+      return
+    }
     setPanelTabs(next)
     if (id === activePanelTabId) setActivePanelTabId(next[Math.min(index, next.length - 1)]?.id ?? null)
   }
 
-  const closePanel = () => {
-    setPanelTabs([])
-    setActivePanelTabId(null)
-    setPanelFullscreenRequested(false)
+  const closePanel = (immediate = false) => {
+    cancelPanelClose()
+    setPanelVisible(false)
+    const clearPanel = () => {
+      setPanelTabs([])
+      setActivePanelTabId(null)
+      setPanelFullscreenRequested(false)
+      panelCloseTimer.current = null
+    }
+    if (immediate) {
+      clearPanel()
+      return
+    }
+    // 保留现有容器直到 CSS 收起动画结束，避免布局和内容瞬间消失。
+    panelCloseTimer.current = window.setTimeout(clearPanel, 200)
+  }
+
+  /**
+   * 切换对话的唯一入口：独立面板的内容只属于某个对话，
+   * 因此换对话或回到新对话页时必须收起面板，避免残留上一个对话的产物。
+   */
+  const openConversation = (conversation: Conversation | null) => {
+    setActiveConversation(conversation)
+    closePanel(true)
+    if (conversation) setReadConversationIds((ids) => new Set(ids).add(conversation.id))
   }
 
   const panelProps = {
@@ -175,23 +215,32 @@ export function AgentShell() {
             isResizing && "cursor-col-resize select-none",
           )}
         >
-        {sidebarDocked && (
-          <AgentSidebar
-            activeConversationId={activeConversation?.id ?? null}
-            darkMode={darkMode}
-            onCollapse={() => setSidebarOpen(false)}
-            onDarkModeChange={setDarkMode}
-            onNewChat={() => setActiveConversation(null)}
-            onPinnedChange={changePinnedState}
-            onRename={startRenaming}
-            onSelectConversation={(conversation) => {
-              setActiveConversation(conversation)
-              setReadConversationIds((ids) => new Set(ids).add(conversation.id))
-            }}
-            readConversationIds={readConversationIds}
-            pinnedConversations={pinnedConversations}
-            conversations={conversations}
-          />
+        {!((panelOpen ? below980 : below660)) && (
+          <div
+            aria-hidden={!sidebarOpen}
+            className={cn(
+              "shrink-0 overflow-hidden transition-[width] duration-200 ease-out motion-reduce:transition-none",
+              sidebarOpen ? "w-60" : "w-0",
+            )}
+          >
+            <AgentSidebar
+              activeConversationId={activeConversation?.id ?? null}
+              darkMode={darkMode}
+              onCollapse={() => setSidebarOpen(false)}
+              onDarkModeChange={setDarkMode}
+              onNewChat={() => openConversation(null)}
+              onPinnedChange={changePinnedState}
+              onRename={startRenaming}
+              onSelectConversation={openConversation}
+              readConversationIds={readConversationIds}
+              pinnedConversations={pinnedConversations}
+              conversations={conversations}
+              className={cn(
+                "transition-[transform,opacity] duration-200 ease-out motion-reduce:transition-none",
+                sidebarOpen ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0 pointer-events-none",
+              )}
+            />
+          </div>
         )}
 
         <div
@@ -203,7 +252,7 @@ export function AgentShell() {
           <ChatWorkspace
             activeConversation={activeConversation}
             isSidebarDocked={sidebarDocked}
-            onNewChat={() => setActiveConversation(null)}
+            onNewChat={() => openConversation(null)}
             onPinnedChange={changePinnedState}
             onRename={startRenaming}
             activeConversationPinned={activeConversationPinned}
@@ -213,16 +262,18 @@ export function AgentShell() {
               else setSidebarOpen(true)
             }}
             onStartConversation={(message, context) => {
-              const title = message || context[0]?.label || "新对话"
+              const { attachments, content, expert } = splitSentContext(message, context)
+              // 标题去掉内联标签标记，只保留可读文本
+              const title = content.replace(/\[\[[^:\]]+:([^\]]+)\]\]/g, "$1").trim() || attachments[0]?.name || context[0]?.label || "新对话"
               const newConversation: Conversation = {
                 id: `draft-${Date.now()}`,
                 title: title.slice(0, 36),
-                initialMessage: message || `已添加 ${context.map((item) => item.label).join("、")}`,
-                contextLabels: context.map((item) => item.label),
-                scene: createDraftScene(message || `已添加 ${context.map((item) => item.label).join("、")}`, context.map((item) => item.label)),
+                initialMessage: content,
+                expert,
+                scene: createDraftScene(content, expert, attachments),
               }
               setConversations((items) => [newConversation, ...items])
-              setActiveConversation(newConversation)
+              openConversation(newConversation)
             }}
             panelOpen={panelOpen}
             panelAtDefaultSplit={panelOpen && panelWidth === null}
@@ -231,7 +282,8 @@ export function AgentShell() {
           {panelOpen && !panelFullscreen && (
             <div
               className={cn(
-                "group relative flex h-full min-w-80 shrink-0",
+                "relative flex h-full min-w-80 shrink-0 transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none starting:translate-x-4 starting:opacity-0",
+                panelVisible ? "translate-x-0 opacity-100" : "translate-x-4 opacity-0 pointer-events-none",
                 panelWidth === null && "flex-1",
               )}
               style={panelWidth === null ? undefined : {
@@ -239,15 +291,21 @@ export function AgentShell() {
                 maxWidth: `calc(100% - ${CHAT_MIN_WIDTH}px)`,
               }}
             >
+              {/* group 挂在手柄自身，只有悬停这条可拖拽区域才高亮，而不是悬停整个面板 */}
               <button
                 aria-label="调整独立面板宽度"
-                className="absolute -left-1 top-0 z-20 h-full w-2 cursor-col-resize touch-none"
+                className="group/resize absolute -left-1 top-0 z-20 h-full w-2 cursor-col-resize touch-none"
                 onPointerDown={startResizing}
               >
+                {/*
+                  悬停与拖拽时用竖向渐变：中间实色、上下两端淡出。
+                  必须同时把 background-color 置为透明，否则底色会从渐变透明处透出来，两端就不是 0% 透明度。
+                */}
                 <span
                   className={cn(
-                    "absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-border transition-all group-hover:w-0.5 group-hover:bg-primary",
-                    isResizing && "w-0.5 bg-primary",
+                    "absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-border transition-all",
+                    "group-hover/resize:w-0.5 group-hover/resize:bg-transparent group-hover/resize:bg-linear-to-b group-hover/resize:from-transparent group-hover/resize:via-primary group-hover/resize:to-transparent",
+                    isResizing && "w-0.5 bg-transparent bg-linear-to-b from-transparent via-primary to-transparent",
                   )}
                 />
               </button>
@@ -280,14 +338,13 @@ export function AgentShell() {
               onCollapse={() => setSidebarDrawerOpen(false)}
               onDarkModeChange={setDarkMode}
               onNewChat={() => {
-                setActiveConversation(null)
+                openConversation(null)
                 setSidebarDrawerOpen(false)
               }}
               onPinnedChange={changePinnedState}
               onRename={startRenaming}
               onSelectConversation={(conversation) => {
-                setActiveConversation(conversation)
-                setReadConversationIds((ids) => new Set(ids).add(conversation.id))
+                openConversation(conversation)
                 setSidebarDrawerOpen(false)
               }}
               readConversationIds={readConversationIds}
@@ -304,7 +361,12 @@ export function AgentShell() {
         )}
 
         {panelFullscreen && (
-          <div className="absolute inset-0 z-50 bg-background">
+          <div
+            className={cn(
+              "absolute inset-0 z-50 bg-background transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none starting:translate-x-4 starting:opacity-0",
+              panelVisible ? "translate-x-0 opacity-100" : "translate-x-4 opacity-0 pointer-events-none",
+            )}
+          >
             <ArtifactPanel fullscreen {...panelProps} />
           </div>
         )}

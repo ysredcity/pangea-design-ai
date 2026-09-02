@@ -16,11 +16,13 @@ import { Attachment, AttachmentAction, AttachmentActions, AttachmentContent, Att
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
+import { fileTypeLabel, formatFileSize } from "./file-meta"
 import { contextIcons, type ContextType } from "./icon-registry"
+import { formatInlineTag, INLINE_TAG_CLASS } from "./inline-tag"
 import { IconButton } from "./icon-button"
 import { ExpertAvatar, LibraryFileIcon } from "./resource-visuals"
 
-export type ContextItem = { id: string; label: string; type: ContextType }
+export type ContextItem = { id: string; label: string; type: ContextType; size?: number }
 
 type UploadItem = { id: string; name: string; size: number }
 
@@ -73,9 +75,6 @@ type ComposerProps = {
   menuSide?: MenuSide
 }
 
-const formatFileSize = (size: number) => size >= 1024 * 1024 ? `${(size / 1024 / 1024).toFixed(1)} MB` : `${(size / 1024).toFixed(1)} KB`
-const fileTypeLabel = (name: string) => name.split(".").pop()?.toUpperCase() ?? "文件"
-
 export function Composer({ onSend, draft, onDraftChange, selectedExpert, onSelectedExpertChange, menuSide = "above" }: ComposerProps) {
   const [uploads, setUploads] = useState<UploadItem[]>([])
   const [experts, setExperts] = useState<ContextItem[]>([])
@@ -93,21 +92,31 @@ export function Composer({ onSend, draft, onDraftChange, selectedExpert, onSelec
   const hasText = hasContent || Boolean(draft?.trim())
   const canSend = hasText || uploads.length > 0 || experts.length > 0 || enabledConnectors.size > 0
 
-  /** 读取可编辑区：文本按原样拼接，内联标签取其 label */
+  /**
+   * 读取可编辑区，同时产出两种文本：
+   * - `text`：标签取 label 的纯文本，用于同步 `draft`（回写编辑区时不能带标记）。
+   * - `markup`：标签写成 `[[类型:名称]]` 标记，用于发送，消息气泡据此还原 badge 及其位置。
+   */
   const readEditor = () => {
     const editor = editorRef.current
-    if (!editor) return { text: "", tags: [] as ContextItem[] }
+    if (!editor) return { text: "", markup: "", tags: [] as ContextItem[] }
     const tags: ContextItem[] = []
     let text = ""
+    let markup = ""
     editor.childNodes.forEach((node) => {
       if (node instanceof HTMLElement && node.dataset.tagLabel) {
-        tags.push({ id: `${node.dataset.tagType}-${node.dataset.tagLabel}`, label: node.dataset.tagLabel, type: node.dataset.tagType as ContextType })
-        text += node.dataset.tagLabel
+        const type = node.dataset.tagType as ContextType
+        const label = node.dataset.tagLabel
+        tags.push({ id: `${type}-${label}`, label, type })
+        text += label
+        markup += formatInlineTag(type, label)
         return
       }
-      text += node.textContent ?? ""
+      const value = node.textContent ?? ""
+      text += value
+      markup += value
     })
-    return { text, tags }
+    return { text, markup, tags }
   }
 
   const syncEditorState = () => {
@@ -138,7 +147,7 @@ export function Composer({ onSend, draft, onDraftChange, selectedExpert, onSelec
     tag.contentEditable = "false"
     tag.dataset.tagLabel = label
     tag.dataset.tagType = type
-    tag.className = "mx-0.5 inline-flex max-w-60 items-center gap-1 rounded-md bg-primary-bg px-1.5 align-middle text-[15px] leading-6 text-primary"
+    tag.className = INLINE_TAG_CLASS
 
     const iconTemplate = iconTemplatesRef.current?.querySelector(`[data-icon-template="${type}:${CSS.escape(label)}"] svg`)
     if (iconTemplate) tag.append(iconTemplate.cloneNode(true))
@@ -235,10 +244,10 @@ export function Composer({ onSend, draft, onDraftChange, selectedExpert, onSelec
 
   const send = () => {
     if (!canSend) return
-    const { text, tags } = readEditor()
-    const uploadContext: ContextItem[] = uploads.map((file) => ({ id: file.id, label: file.name, type: "upload" }))
+    const { markup, tags } = readEditor()
+    const uploadContext: ContextItem[] = uploads.map((file) => ({ id: file.id, label: file.name, type: "upload", size: file.size }))
     const connectorContext: ContextItem[] = Array.from(enabledConnectors).map((label) => ({ id: `连接器-${label}`, label, type: "连接器" }))
-    onSend?.(text.trim(), [...uploadContext, ...tags, ...experts, ...connectorContext])
+    onSend?.(markup.trim(), [...uploadContext, ...tags, ...experts, ...connectorContext])
     if (editorRef.current) editorRef.current.textContent = ""
     savedRangeRef.current = null
     setHasContent(false)

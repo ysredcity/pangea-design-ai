@@ -1,6 +1,5 @@
 import { useRef, useState, type ComponentType } from "react"
 import {
-  Bot,
   ChevronRight,
   IndentDecrease,
   Moon,
@@ -38,7 +37,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { cn } from "@/lib/utils"
 import { navigationIcons } from "./icon-registry"
 import { IconButton } from "./icon-button"
-import type { ConversationScene } from "./conversation-data"
+import { AgentAvatar } from "./resource-visuals"
+import { DEFAULT_AGENT_NAME, type ConversationScene } from "./conversation-data"
 
 export type Conversation = {
   id: string
@@ -47,7 +47,7 @@ export type Conversation = {
   unread?: boolean
   waitingForReply?: boolean
   initialMessage?: string
-  contextLabels?: string[]
+  expert?: string
   scene?: ConversationScene
 }
 
@@ -66,6 +66,11 @@ export const initialConversations: Conversation[] = [
   {
     id: "chat-4",
     title: "整理本周项目进展并生成周报",
+    waitingForReply: true,
+  },
+  {
+    id: "chat-5",
+    title: "下周去上海出差，帮我发起申请",
     waitingForReply: true,
   },
 ]
@@ -121,12 +126,11 @@ export function AgentSidebar({
           drawer && "h-14 px-4 pb-2 pt-5",
         )}
       >
+        {/* 产品身份与对话流里的智能体身份共用同一头像与名称 */}
         <div className="flex min-w-0 flex-1 items-center gap-2 text-sidebar-accent-foreground">
-          <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-primary-bg text-primary">
-            <Bot className="size-4" />
-          </span>
+          <AgentAvatar className="size-7 [&_svg]:size-4" />
           <span className={cn("truncate font-semibold", drawer ? "text-lg tracking-[-0.18px]" : "text-base")}>
-            Agent Name
+            {DEFAULT_AGENT_NAME}
           </span>
         </div>
         <Tooltip>

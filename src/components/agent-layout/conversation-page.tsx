@@ -8,7 +8,8 @@ import { Composer } from "./composer"
 import { IconButton } from "./icon-button"
 import type { Conversation } from "./sidebar"
 import { ConversationFlow, UserMessage } from "./conversation-flow"
-import { createDraftScene, formatTimestamp } from "./conversation-data"
+import { createDraftScene, formatTimestamp, type MessageAttachment } from "./conversation-data"
+import { splitSentContext } from "./message-context"
 import type { ArtifactTarget } from "./panel-types"
 
 type ConversationPageProps = {
@@ -28,7 +29,7 @@ export function ConversationPage({ conversation, isSidebarDocked, onNewChat, onO
   const titleRef = useRef<HTMLHeadingElement>(null)
   const [showScrollToBottom, setShowScrollToBottom] = useState(false)
   const [titleTruncated, setTitleTruncated] = useState(false)
-  const [sentMessages, setSentMessages] = useState<{ content: string; timestamp: string }[]>([])
+  const [sentMessages, setSentMessages] = useState<{ content: string; timestamp: string; attachments: MessageAttachment[] }[]>([])
 
   const updateScrollButton = () => {
     const content = contentRef.current
@@ -72,17 +73,18 @@ export function ConversationPage({ conversation, isSidebarDocked, onNewChat, onO
       </header>
 
       <div className="relative flex min-h-0 flex-1 flex-col items-center overflow-hidden">
-        <div ref={contentRef} className="min-h-0 w-full flex-1 overflow-y-auto px-4" onScroll={updateScrollButton}>
+        {/* 隐藏滚动条：滚动能力保留，靠内容截断和「定位到底部」按钮提示可滚动 */}
+        <div ref={contentRef} className="no-scrollbar min-h-0 w-full flex-1 overflow-y-auto px-4" onScroll={updateScrollButton}>
           <div className="mx-auto min-h-full w-full max-w-3xl py-3">
-            <ConversationFlow scene={conversation.scene ?? createDraftScene(conversation.initialMessage || conversation.title, conversation.contextLabels)} onOpenArtifact={onOpenArtifact} />
-            {sentMessages.length > 0 && <div className="mt-10 space-y-10 text-[15px]">{sentMessages.map((message, index) => <UserMessage key={`${message.content}-${index}`} content={message.content} timestamp={message.timestamp} />)}</div>}
+            <ConversationFlow key={conversation.id} scene={conversation.scene ?? createDraftScene(conversation.initialMessage || conversation.title, conversation.expert)} onOpenArtifact={onOpenArtifact} />
+            {sentMessages.length > 0 && <div className="mt-10 space-y-10 text-[15px]">{sentMessages.map((message, index) => <UserMessage key={`${message.content}-${index}`} message={message} />)}</div>}
           </div>
         </div>
 
         {/* 定位到底部按钮挂在 footer 上沿，不用写死 bottom 值，Composer 高度变化时位置自动跟随 */}
         <footer className="relative w-full shrink-0 px-4">
-          {showScrollToBottom && <Tooltip><TooltipTrigger render={<IconButton aria-label="定位到底部" className="absolute bottom-full left-1/2 z-10 mb-3 size-9 -translate-x-1/2 border bg-card shadow-md [&_svg]:size-5" onClick={() => contentRef.current?.scrollTo({ top: contentRef.current.scrollHeight, behavior: "smooth" })}><ArrowDown /></IconButton>} /><TooltipContent side="top">定位到底部</TooltipContent></Tooltip>}
-          <div className="mx-auto w-full max-w-3xl py-3"><Composer onSend={(message, context) => setSentMessages((items) => [...items, { content: message || `已添加 ${context.map((item) => item.label).join("、")}`, timestamp: formatTimestamp() }])} /><p className="mt-2 text-center text-xs tracking-[0.12px] text-ring">以上内容由AI生成</p></div>
+          {showScrollToBottom && <Tooltip><TooltipTrigger render={<IconButton aria-label="定位到底部" className="absolute bottom-full left-1/2 z-10 mb-3 size-9 -translate-x-1/2 border bg-card shadow-md hover:bg-sidebar dark:hover:bg-sidebar [&_svg]:size-5" onClick={() => contentRef.current?.scrollTo({ top: contentRef.current.scrollHeight, behavior: "smooth" })}><ArrowDown /></IconButton>} /><TooltipContent side="top">定位到底部</TooltipContent></Tooltip>}
+          <div className="mx-auto w-full max-w-3xl py-3"><Composer onSend={(message, context) => setSentMessages((items) => [...items, { ...splitSentContext(message, context), timestamp: formatTimestamp() }])} /><p className="mt-2 text-center text-xs tracking-[0.12px] text-ring">以上内容由AI生成</p></div>
         </footer>
       </div>
     </>

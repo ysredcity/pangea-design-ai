@@ -1,31 +1,211 @@
-import { useState } from "react"
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react"
 import { Brain, Check, ChevronRight, Circle, Code2, Database, FileText, Globe2, Hammer, ListTodo, Plug, Puzzle, Search } from "lucide-react"
 
+import { Attachment, AttachmentContent, AttachmentDescription, AttachmentMedia, AttachmentTitle } from "@/components/ui/attachment"
 import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
+import { fileTypeLabel, formatFileSize } from "./file-meta"
+import { contextIcons, type ContextType } from "./icon-registry"
+import { hasInlineTags, INLINE_TAG_CLASS, parseInlineTags } from "./inline-tag"
 import { CopyAction, FeedbackActions } from "./message-actions"
 import { MarkdownContent } from "./markdown-content"
-import type { ConversationScene, ConversationTurnData, ExecutionActionData, ExecutionData, ExecutionStepData, ExecutionTaskData, ReasoningData } from "./conversation-data"
+import { AgentAvatar, LibraryFileIcon } from "./resource-visuals"
+import { ClarificationFormCard } from "./clarification-form-card"
+import { DEFAULT_AGENT_NAME, type ClarificationFollowUpData, type ClarificationFormData, type ConversationScene, type ConversationTurnData, type ExecutionActionData, type ExecutionData, type ExecutionStepData, type ExecutionTaskData, type ReasoningData } from "./conversation-data"
 import type { ArtifactTarget } from "./panel-types"
 
 type OpenArtifact = (target: ArtifactTarget) => void
 
-export function ConversationFlow({ scene, onOpenArtifact }: { scene: ConversationScene; onOpenArtifact: OpenArtifact }) {
-  return <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-10 py-3">{scene.turns.map((turn, index) => <ConversationTurn key={turn.id} turn={turn} current={index === scene.turns.length - 1} onOpenArtifact={onOpenArtifact} />)}</div>
+type DisclosureContentProps = {
+  children: ReactNode
+  className?: string
+  open: boolean
 }
 
-function ConversationTurn({ turn, current, onOpenArtifact }: { turn: ConversationTurnData; current: boolean; onOpenArtifact: OpenArtifact }) {
-  return <section className="space-y-6">
-    <UserMessage content={turn.user.content} contextLabels={turn.user.contextLabels} timestamp={turn.user.timestamp} />
-    <ExecutionProcess execution={turn.execution} current={current} onOpenArtifact={onOpenArtifact} />
-    {turn.assistant && <AssistantMessage {...turn.assistant} needsReply={current && turn.assistant.kind === "question"} />}
+/** 常驻内容配合 grid 行高实现展开与收起的双向过渡，避免条件卸载截断收起动画。 */
+function DisclosureContent({ children, className, open }: DisclosureContentProps) {
+  return (
+    <div
+      aria-hidden={!open}
+      inert={!open || undefined}
+      className={cn(
+        "grid transition-[grid-template-rows,opacity] duration-200 ease-out motion-reduce:transition-none",
+        open ? "grid-rows-[1fr] opacity-100" : "pointer-events-none grid-rows-[0fr] opacity-0",
+        className,
+      )}
+    >
+      <div className="min-h-0 overflow-hidden">{children}</div>
+    </div>
+  )
+}
+
+type FollowUpPhase = "validating" | "assembling" | "ready"
+
+const FOLLOW_UP_DELAYS: Record<Exclude<FollowUpPhase, "ready">, number> = {
+  validating: 1100,
+  assembling: 1400,
+}
+
+function getNextFollowUpPhase(phase: FollowUpPhase): FollowUpPhase {
+  return phase === "validating" ? "assembling" : "ready"
+}
+
+function useReducedMotion() {
+  return useSyncExternalStore(
+    (onStoreChange) => {
+      const query = window.matchMedia("(prefers-reduced-motion: reduce)")
+      query.addEventListener("change", onStoreChange)
+      return () => query.removeEventListener("change", onStoreChange)
+    },
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    () => false,
+  )
+}
+
+function getStreamingExecution(followUp: ClarificationFollowUpData, phase: FollowUpPhase): ExecutionData {
+  const [validationStep, assemblyStep] = followUp.execution.steps
+  const running = phase !== "ready"
+  const steps: ExecutionStepData[] = [
+    { ...validationStep, status: phase === "validating" ? "running" : "completed" },
+  ]
+  if (phase !== "validating") {
+    steps.push({ ...assemblyStep, status: phase === "assembling" ? "running" : "completed" })
+  }
+
+  return {
+    ...followUp.execution,
+    status: running ? "running" : "completed",
+    summary: phase === "validating"
+      ? "正在校验出差日期、目的地与交通安排"
+      : phase === "assembling"
+        ? "正在整理出差申请单数据"
+        : followUp.execution.summary,
+    duration: phase === "ready" ? followUp.execution.duration : "刚刚",
+    flat: false,
+    steps,
+  }
+}
+
+export function ConversationFlow({ scene, onOpenArtifact }: { scene: ConversationScene; onOpenArtifact: OpenArtifact }) {
+  const [submittedClarificationIds, setSubmittedClarificationIds] = useState<Set<string>>(() => new Set())
+  const [followUpPhases, setFollowUpPhases] = useState<Record<string, FollowUpPhase>>({})
+  const prefersReducedMotion = useReducedMotion()
+
+  useEffect(() => {
+    const timers = Object.entries(followUpPhases).flatMap(([formId, phase]) => {
+      if (phase === "ready") return []
+      const timer = window.setTimeout(() => {
+        setFollowUpPhases((current) => current[formId] === phase
+          ? { ...current, [formId]: getNextFollowUpPhase(phase) }
+          : current)
+      }, prefersReducedMotion ? 0 : FOLLOW_UP_DELAYS[phase])
+      return [timer]
+    })
+
+    return () => timers.forEach((timer) => window.clearTimeout(timer))
+  }, [followUpPhases, prefersReducedMotion])
+
+  const submitClarification = (formId: string) => {
+    setSubmittedClarificationIds((ids) => ids.has(formId) ? ids : new Set(ids).add(formId))
+    setFollowUpPhases((phases) => phases[formId] ? phases : { ...phases, [formId]: "validating" })
+  }
+
+  return <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-10 py-3">{scene.turns.map((turn, index) => {
+    const clarificationId = turn.assistant?.clarification?.id
+    return <ConversationTurn
+      key={turn.id}
+      turn={turn}
+      current={index === scene.turns.length - 1}
+      onOpenArtifact={onOpenArtifact}
+      onClarificationSubmit={submitClarification}
+      clarificationSubmitted={Boolean(clarificationId && submittedClarificationIds.has(clarificationId))}
+      followUpPhase={clarificationId ? followUpPhases[clarificationId] : undefined}
+    />
+  })}</div>
+}
+
+function ConversationTurn({ clarificationSubmitted, current, followUpPhase, onClarificationSubmit, onOpenArtifact, turn }: { clarificationSubmitted: boolean; current: boolean; followUpPhase?: FollowUpPhase; onClarificationSubmit: (formId: string) => void; onOpenArtifact: OpenArtifact; turn: ConversationTurnData }) {
+  const continuation = clarificationSubmitted ? turn.assistant?.clarification?.followUp : undefined
+  return <section className="space-y-5">
+    <UserMessage message={turn.user} />
+    <AgentResponseBlock
+      expert={turn.expert}
+      execution={turn.execution}
+      current={current}
+      onOpenArtifact={onOpenArtifact}
+      assistant={turn.assistant}
+      clarificationSubmitted={clarificationSubmitted}
+      onClarificationSubmit={onClarificationSubmit}
+      needsReply={current && turn.assistant?.kind === "question" && !continuation}
+    />
+    {continuation && <AssistantContinuation expert={turn.expert} followUp={continuation} phase={followUpPhase ?? "ready"} current={current} onOpenArtifact={onOpenArtifact} />}
   </section>
 }
 
-export function UserMessage({ content, contextLabels, timestamp }: { content: string; contextLabels?: string[]; timestamp?: string }) {
+function AssistantContinuation({ current, expert, followUp, onOpenArtifact, phase }: { current: boolean; expert?: string; followUp: ClarificationFollowUpData; onOpenArtifact: OpenArtifact; phase: FollowUpPhase }) {
+  const execution = getStreamingExecution(followUp, phase)
+  return <div className="animate-in fade-in-0 duration-200 motion-reduce:animate-none">
+    <AgentResponseBlock
+      expert={expert}
+      execution={execution}
+      current={current}
+      onOpenArtifact={onOpenArtifact}
+      assistant={phase === "ready" ? followUp.assistant : undefined}
+      needsReply={phase === "ready" && current}
+    />
+  </div>
+}
+
+function AgentResponseBlock({
+  assistant,
+  clarificationSubmitted = false,
+  current,
+  execution,
+  expert,
+  needsReply = false,
+  onClarificationSubmit,
+  onOpenArtifact,
+}: {
+  assistant?: ConversationTurnData["assistant"]
+  clarificationSubmitted?: boolean
+  current: boolean
+  execution: ExecutionData
+  expert?: string
+  needsReply?: boolean
+  onClarificationSubmit?: (formId: string) => void
+  onOpenArtifact: OpenArtifact
+}) {
+  return <div className="space-y-5">
+    <div className="space-y-2">
+      <AgentIdentity expert={expert} />
+      <ExecutionProcess execution={execution} current={current} onOpenArtifact={onOpenArtifact} />
+    </div>
+    {assistant && <AssistantMessage {...assistant} clarificationSubmitted={clarificationSubmitted} onClarificationSubmit={onClarificationSubmit} needsReply={needsReply} />}
+  </div>
+}
+
+export function AgentIdentity({ expert }: { expert?: string }) {
+  return <div className="flex items-center gap-2 text-[15px] font-medium leading-6">
+    <AgentAvatar expert={expert} />
+    <span className="truncate">{expert ?? DEFAULT_AGENT_NAME}</span>
+  </div>
+}
+
+export function UserMessage({ message }: { message: ConversationTurnData["user"] }) {
+  const { attachments, content, timestamp } = message
   return <div className="group/message flex flex-col items-end gap-2">
-    {contextLabels && contextLabels.length > 0 && <div className="flex max-w-[85%] flex-wrap justify-end gap-1.5">{contextLabels.map((label) => <span key={label} className="rounded-lg border bg-card px-2 py-1 text-xs text-muted-foreground">{label}</span>)}</div>}
-    <div className="max-w-[85%] rounded-[10px] bg-primary-bg px-4 py-3"><MarkdownContent>{content}</MarkdownContent></div>
+    {attachments && attachments.length > 0 && <div className="flex max-w-[85%] flex-wrap justify-end gap-2">
+      {attachments.map((file) => (
+        <Attachment key={file.name} className="w-60">
+          <AttachmentMedia><LibraryFileIcon fileName={file.name} /></AttachmentMedia>
+          <AttachmentContent>
+            <AttachmentTitle>{file.name}</AttachmentTitle>
+            <AttachmentDescription>{fileTypeLabel(file.name)} · {formatFileSize(file.size)}</AttachmentDescription>
+          </AttachmentContent>
+        </Attachment>
+      ))}
+    </div>}
+    <div className="max-w-[85%] rounded-[10px] bg-primary-bg px-4 py-3"><MessageContent content={content} /></div>
     {/* 位置始终预留（h-7），只切换透明度，避免悬停/移开时下方内容跳动 */}
     <div className="flex h-7 items-center gap-2 text-ring opacity-0 transition-opacity focus-within:opacity-100 group-hover/message:opacity-100">
       {timestamp && <time className="text-sm">{timestamp}</time>}
@@ -33,6 +213,27 @@ export function UserMessage({ content, contextLabels, timestamp }: { content: st
       <CopyAction content={content} />
     </div>
   </div>
+}
+
+/**
+ * 含内联标签的消息按「文本 + badge」逐段渲染；不含标签时走完整 Markdown。
+ * 混排时文本段按纯文本处理，因为 Markdown 的块级结构没法和行内 badge 共存。
+ */
+function MessageContent({ content }: { content: string }) {
+  if (!hasInlineTags(content)) return <MarkdownContent>{content}</MarkdownContent>
+  return <p className="whitespace-pre-wrap text-[15px] leading-6">
+    {parseInlineTags(content).map((segment, index) => segment.kind === "text"
+      ? <span key={index}>{segment.value}</span>
+      : <InlineTagBadge key={index} label={segment.label} type={segment.type} />)}
+  </p>
+}
+
+function InlineTagBadge({ label, type }: { label: string; type: ContextType }) {
+  const ContextIcon = contextIcons[type]
+  return <span className={cn(INLINE_TAG_CLASS, "bg-background/70")}>
+    {type === "文件库" ? <LibraryFileIcon fileName={label} className="size-3.5" /> : <ContextIcon className="size-3.5 shrink-0" />}
+    <span className="truncate">{label}</span>
+  </span>
 }
 
 export function ExecutionProcess({ execution, current, onOpenArtifact }: { execution: ExecutionData; current: boolean; onOpenArtifact: OpenArtifact }) {
@@ -44,14 +245,16 @@ export function ExecutionProcess({ execution, current, onOpenArtifact }: { execu
       <span className={cn(running && current && "shimmer shimmer-color-foreground shimmer-duration-1200 shimmer-spread-8")}>{statusLabel}{execution.duration ? ` ${execution.duration}` : ""}</span>
       <ChevronRight className={cn("size-4 transition-transform", open && "rotate-90")} />
     </button>
-    {open && <div className="mt-4 space-y-4">
-      {execution.reasoning && <ReasoningPanel reasoning={execution.reasoning} />}
-      {execution.showSummary !== false && <p>{execution.summary}</p>}
-      {execution.steps.length > 0 && (execution.flat
-        ? <FlatExecutionFlow steps={execution.steps} onOpenArtifact={onOpenArtifact} />
-        : <div>{execution.steps.map((step, index) => <ExecutionStep key={step.id} step={step} connected={index < execution.steps.length - 1} onOpenArtifact={onOpenArtifact} />)}</div>)}
-      {execution.tasks?.map((task) => <TaskBlock key={task.id} task={task} onOpenArtifact={onOpenArtifact} />)}
-    </div>}
+    <DisclosureContent open={open}>
+      <div className="mt-4 space-y-4">
+        {execution.reasoning && <ReasoningPanel reasoning={execution.reasoning} />}
+        {execution.showSummary !== false && <p>{execution.summary}</p>}
+        {execution.steps.length > 0 && (execution.flat
+          ? <FlatExecutionFlow steps={execution.steps} onOpenArtifact={onOpenArtifact} />
+          : <div>{execution.steps.map((step, index) => <ExecutionStep key={step.id} step={step} connected={index < execution.steps.length - 1} onOpenArtifact={onOpenArtifact} />)}</div>)}
+        {execution.tasks?.map((task) => <TaskBlock key={task.id} task={task} onOpenArtifact={onOpenArtifact} />)}
+      </div>
+    </DisclosureContent>
   </div>
 }
 
@@ -104,7 +307,11 @@ export function ReasoningPanel({ reasoning }: { reasoning: ReasoningData }) {
     <button type="button" aria-expanded={open} onClick={() => setOpen((value) => !value)} className="flex h-6 items-center gap-2 transition-colors hover:text-foreground">
       <Brain className="size-4" /><span>思考过程</span><ChevronRight className={cn("size-4 transition-transform", open && "rotate-90")} />
     </button>
-    {open && <div className="rounded-lg border bg-secondary p-3 text-muted-foreground"><MarkdownContent className="[--typeset-leading:1.4286] [--typeset-size:14px]">{reasoning.content}</MarkdownContent></div>}
+    <DisclosureContent open={open}>
+      <div className="pt-3">
+        <div className="rounded-lg border bg-secondary p-3 text-muted-foreground"><MarkdownContent className="[--typeset-leading:1.4286] [--typeset-size:14px]">{reasoning.content}</MarkdownContent></div>
+      </div>
+    </DisclosureContent>
   </div>
 }
 
@@ -115,10 +322,12 @@ export function TaskBlock({ task, onOpenArtifact }: { task: ExecutionTaskData; o
       {task.status === "running" ? <Spinner className="mt-1 size-4 shrink-0" /> : <span className="mt-1 grid size-3.5 shrink-0 place-items-center rounded-full border border-primary text-primary"><Check className="size-2.5" /></span>}
       <span className="flex w-fit min-w-0 max-w-full items-center gap-1 font-medium leading-6"><span className="truncate">{task.title}</span><ChevronRight className={cn("size-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-90")} /></span>
     </button>
-    {open && <div className="ml-6 mt-3 space-y-4">
-      {task.steps.map((step) => <TaskExecutionStep key={step.id} step={step} onOpenArtifact={onOpenArtifact} />)}
-      <p className="leading-6 text-muted-foreground">{task.summary}</p>
-    </div>}
+    <DisclosureContent open={open}>
+      <div className="ml-6 mt-3 space-y-4">
+        {task.steps.map((step) => <TaskExecutionStep key={step.id} step={step} onOpenArtifact={onOpenArtifact} />)}
+        <p className="leading-6 text-muted-foreground">{task.summary}</p>
+      </div>
+    </DisclosureContent>
   </div>
 }
 
@@ -130,10 +339,11 @@ function TaskExecutionStep({ step, onOpenArtifact }: { step: ExecutionStepData; 
   </div>
 }
 
-export function AssistantMessage({ content, needsReply = false, timestamp }: { content: string; timestamp: string; kind?: "answer" | "question"; needsReply?: boolean }) {
+export function AssistantMessage({ clarification, clarificationSubmitted = false, content, needsReply = false, onClarificationSubmit, timestamp }: { clarification?: ClarificationFormData; clarificationSubmitted?: boolean; content: string; timestamp: string; kind?: "answer" | "question"; needsReply?: boolean; onClarificationSubmit?: (formId: string) => void }) {
   return <div className="space-y-3">
     {needsReply && <div className="flex items-center gap-2 text-sm font-medium text-primary"><ListTodo className="size-4" />需要你的回复</div>}
     <MarkdownContent>{content}</MarkdownContent>
+    {clarification && <ClarificationFormCard form={clarification} submitted={clarificationSubmitted} onSubmit={onClarificationSubmit} />}
     <div className="flex items-center gap-1 text-ring"><CopyAction content={content} /><FeedbackActions /><span className="mx-1 h-4 w-px bg-border" /><time className="text-sm">{timestamp}</time></div>
   </div>
 }

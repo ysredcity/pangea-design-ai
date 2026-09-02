@@ -42,11 +42,53 @@ export type ExecutionData = {
   tasks?: ExecutionTaskData[]
 }
 
+/** 用户消息里的本地上传文件，渲染为独立 Attachment */
+export type MessageAttachment = { name: string; size: number }
+
+export type ClarificationOption = { label: string; value: string }
+export type ClarificationFieldValue = string | string[] | { end: string; start: string }
+
+export type ClarificationField =
+  | { id: string; label: string; placeholder?: string; required?: boolean; type: "text" | "textarea" }
+  | { id: string; label: string; required?: boolean; type: "date-range" }
+  | { id: string; label: string; required?: boolean; type: "single-select" | "multi-select"; options: ClarificationOption[] }
+
+export type ClarificationFollowUpData = {
+  assistant: { content: string; timestamp: string; kind: "question" }
+  execution: ExecutionData
+  id: string
+}
+
+/** 智能体向用户补齐关键信息时推送的结构化表单。 */
+export type ClarificationFormData = {
+  defaultOpen?: boolean
+  description?: string
+  fields: ClarificationField[]
+  followUp?: ClarificationFollowUpData
+  id: string
+  initialValues?: Record<string, ClarificationFieldValue>
+  submitLabel?: string
+  title: string
+}
+
+/** 未指定专家时，智能体侧显示的产品身份 */
+export const DEFAULT_AGENT_NAME = "智能助手"
+
 export type ConversationTurnData = {
   id: string
-  user: { content: string; contextLabels?: string[]; timestamp?: string }
+  /**
+   * 这一轮由哪个专家执行。等于指定了子智能体，因此显示在智能体消息开头，
+   * 而不是用户消息上；缺省时显示产品身份 `DEFAULT_AGENT_NAME`。
+   */
+  expert?: string
+  user: {
+    /** 可内联的上下文与能力写成 `[[类型:名称]]` 标记，渲染为气泡内的 badge */
+    content: string
+    attachments?: MessageAttachment[]
+    timestamp?: string
+  }
   execution: ExecutionData
-  assistant?: { content: string; timestamp: string; kind?: "answer" | "question" }
+  assistant?: { clarification?: ClarificationFormData; content: string; timestamp: string; kind?: "answer" | "question" }
 }
 
 /** 生成与场景数据一致的时间戳格式，用于新发送的消息 */
@@ -66,7 +108,7 @@ export const conversationScenes: Record<string, ConversationScene> = {
   ] },
   "chat-1": { turns: [
     { id: "c1-1", user: { content: "帮我写个行业调研报告吧", timestamp: "08月30日 15:19" }, execution: { status: "completed", summary: "已识别需求中缺少的关键调研范围", duration: "18秒", flat: true, steps: [{ ...completed("c1-s1", "检查行业调研所需的输入信息", "检查行业调研所需的输入信息"), actions: [{ label: "调用技能 需求澄清", type: "skill" }] }, completed("c1-s2", "整理需要向用户确认的问题", "需要补充行业、市场范围、时间跨度和报告用途") ] }, assistant: { content: "没问题。为了让报告更有针对性，请告诉我行业、目标市场、时间范围，以及报告主要用于内部决策、融资还是市场进入。", timestamp: "08月30日 15:20", kind: "question" } },
-    { id: "c1-2", user: { content: "调研中国现制咖啡行业，重点看 2024—2026 年的竞争格局和消费趋势，用于新品规划。", timestamp: "08月30日 15:21" }, execution: { status: "completed", summary: "已完成行业调研并形成新品任务规划", duration: "3分42秒", reasoning: { id: "c1-r1", content: "这是一个涉及市场规模、品牌竞争和消费趋势的长链路研究任务。需要先拆分研究维度，再交叉验证行业报告、企业财报与公开经营数据，最后将结论映射到新品规划场景。" }, steps: [], tasks: [
+    { id: "c1-2", user: { content: "用 [[技能:深度研究]] 调研中国现制咖啡行业，重点看 2024—2026 年的竞争格局和消费趋势，用于新品规划。", timestamp: "08月30日 15:21" }, execution: { status: "completed", summary: "已完成行业调研并形成新品任务规划", duration: "3分42秒", reasoning: { id: "c1-r1", content: "这是一个涉及市场规模、品牌竞争和消费趋势的长链路研究任务。需要先拆分研究维度，再交叉验证行业报告、企业财报与公开经营数据，最后将结论映射到新品规划场景。" }, steps: [], tasks: [
       { id: "c1-task-market", title: "汇总 2024—2026 年市场数据", summary: "已完成行业规模、增速和门店数量的交叉验证", status: "completed", steps: [
         { ...completed("c1-market-1", "检索行业规模与增长数据", "覆盖公开研究报告、统计数据和行业资讯"), actions: [{ label: "检索 中国现制咖啡市场规模", type: "knowledge", target: coffeeMarketSearch }, { label: "浏览 国家统计局行业数据", type: "web", target: coffeeStatsPage }, { label: "查询行业数据库", type: "api" }] },
         { ...completed("c1-market-2", "读取并核对核心报告", "对不同来源的统计口径进行统一"), actions: [{ label: "已读取 2025 咖啡行业报告", type: "file", target: coffeeReportFile }, { label: "已读取 现制饮品消费趋势白皮书", type: "file", target: freshDrinkWhitepaperFile }, { label: "执行脚本 数据口径校准", type: "script" }] },
@@ -83,19 +125,73 @@ export const conversationScenes: Record<string, ConversationScene> = {
   ] },
   "chat-2": { turns: [
     { id: "c2-1", user: { content: "你能读取飞书文档吗？", timestamp: "08月31日 09:29" }, execution: { status: "completed", summary: "已确认飞书云文档连接器可用", duration: "12秒", flat: true, steps: [{ ...completed("c2-s1", "检查当前可用连接器", "检查当前可用连接器"), actions: [{ label: "查询连接器列表", type: "api" }, { label: "调用连接器 飞书", type: "connector" }] }, { ...completed("c2-s2", "确认文档读取权限范围", "确认文档读取权限范围"), actions: [{ label: "查询授权状态", type: "api" }] }] }, assistant: { content: "可以。连接飞书云文档后，我可以读取你有权限访问的文档并进行总结、问答或信息提取。把文档链接发给我即可。", timestamp: "08月31日 09:30" } },
-    { id: "c2-2", user: { content: "读取《智能体产品交互设计指南》，整理 Composer 相关规范。", contextLabels: ["飞书云文档", "智能体产品交互设计指南"], timestamp: "08月31日 09:31" }, execution: { status: "running", summary: "正在整理 Composer 相关规范", duration: "1分36秒", steps: [{ ...completed("c2-s3", "连接并读取相关文档"), actions: [{ label: "调用连接器 飞书云文档", type: "connector" }, { label: "已读取 智能体产品交互设计指南", type: "file", target: agentGuidelineFile }] }, { id: "c2-s5", title: "提取 Composer 的布局、状态与交互规则", detail: "正在合并桌面端与移动端规范", status: "running", actions: [{ label: "调用技能 组件规范分析", type: "skill" }] }, { id: "c2-s6", title: "生成结构化规范清单", status: "pending" }] } },
+    { id: "c2-2", user: { content: "读取 [[文件库:智能体产品交互设计指南.pdf]]，整理 Composer 相关规范。", timestamp: "08月31日 09:31" }, execution: { status: "running", summary: "正在整理 Composer 相关规范", duration: "1分36秒", steps: [{ ...completed("c2-s3", "连接并读取相关文档"), actions: [{ label: "调用连接器 飞书云文档", type: "connector" }, { label: "已读取 智能体产品交互设计指南", type: "file", target: agentGuidelineFile }] }, { id: "c2-s5", title: "提取 Composer 的布局、状态与交互规则", detail: "正在合并桌面端与移动端规范", status: "running", actions: [{ label: "调用技能 组件规范分析", type: "skill" }] }, { id: "c2-s6", title: "生成结构化规范清单", status: "pending" }] } },
   ] },
   "chat-3": { turns: [
-    { id: "c3-1", user: { content: "你是一个挑剔且专业的用户体验专家，帮我评审智能家居 App 的核心页面", contextLabels: ["用户体验专家"], timestamp: "08月31日 11:04" }, execution: { status: "completed", summary: "已完成三个核心页面的系统性体验评审", duration: "4分08秒", reasoning: { id: "c3-r1", content: "评审范围包含多个页面和跨页面任务，需要先按核心任务拆分，再分别检查信息架构、状态反馈、错误恢复与一致性，最后按影响程度归并问题，属于规划型长链路任务。" }, steps: [], tasks: [
+    { id: "c3-1", expert: "用户体验专家", user: { content: "你是一个挑剔且专业的用户体验专家，帮我评审智能家居 App 的核心页面", timestamp: "08月31日 11:04" }, execution: { status: "completed", summary: "已完成三个核心页面的系统性体验评审", duration: "4分08秒", reasoning: { id: "c3-r1", content: "评审范围包含多个页面和跨页面任务，需要先按核心任务拆分，再分别检查信息架构、状态反馈、错误恢复与一致性，最后按影响程度归并问题，属于规划型长链路任务。" }, steps: [], tasks: [
       { id: "c3-task-1", title: "检查核心任务与信息架构", summary: "完成首页、设备页和自动化页的任务路径与层级分析", status: "completed", steps: [{ ...completed("c3-t1", "读取并识别三个核心页面"), actions: [{ label: "已读取 首页截图.png", type: "file", target: homeScreenshotImage }, { label: "已读取 设备页截图.png", type: "file", target: deviceScreenshotImage }, { label: "已读取 自动化页截图.png", type: "file", target: automationScreenshotImage }] }, { ...completed("c3-t2", "提取页面结构与关键操作入口"), actions: [{ label: "调用技能 视觉结构识别", type: "skill" }, { label: "执行脚本 页面节点聚类", type: "script" }] }, completed("c3-t3", "梳理跨页面核心任务路径", "设备控制和自动化创建存在入口层级不一致") ] },
       { id: "c3-task-2", title: "评估反馈、异常与恢复机制", summary: "发现状态反馈和错误恢复方面的 5 个高优先级问题", status: "completed", steps: [{ ...completed("c3-t4", "检查关键交互状态的反馈完整性"), actions: [{ label: "调用技能 用户体验启发式评估", type: "skill" }, { label: "检索 WCAG 状态反馈规范", type: "knowledge", target: wcagFeedbackSearch }] }, { ...completed("c3-t5", "对比智能家居竞品的异常处理"), actions: [{ label: "检索 米家异常状态设计", type: "knowledge", target: mijiaErrorSearch }, { label: "检索 Google Home UX", type: "knowledge", target: googleHomeSearch }, { label: "调用接口 竞品案例库", type: "api" }] }, { ...completed("c3-t6", "归并问题并生成优化优先级"), actions: [{ label: "执行脚本 问题影响度排序", type: "script" }, { label: "调用技能 设计评审报告", type: "skill" }] }] },
     ] }, assistant: { content: "整体视觉完成度不错，但核心任务链路仍有三个明显问题：设备状态与控制入口层级混杂；异常状态缺少可执行建议；自动化创建流程过早暴露技术概念。建议先重构首页为“空间—状态—快捷操作”三级结构，再统一离线、故障和执行中的反馈模式。", timestamp: "08月31日 11:08" } },
   ] },
   "chat-4": { turns: [
-    { id: "c4-1", user: { content: "整理本周项目进展并生成周报", contextLabels: ["最近的对话", "项目资料"], timestamp: "08月30日 18:04" }, execution: { status: "completed", summary: "已汇总项目资料，但仍缺少周报组织方式", duration: "1分25秒", steps: [{ ...completed("c4-s1", "汇总本周任务、会议和项目资料"), actions: [{ label: "查询最近的对话", type: "query" }, { label: "已读取 项目周会纪要", type: "file", target: meetingNotesFile }, { label: "已读取 本周任务清单", type: "file", target: taskListFile }] }, { ...completed("c4-s2", "识别已完成事项、风险和下周计划"), actions: [{ label: "执行脚本 项目状态归并", type: "script" }, { label: "调用技能 周报整理", type: "skill" }] }, completed("c4-s3", "检查生成周报所需信息", "缺少重点项目和下周计划的组织维度") ] }, assistant: { content: "我已经汇总了现有项目资料。当前还缺少两个关键信息：本周需要重点向管理层同步哪个项目？另外，下周计划是按负责人组织，还是按项目优先级组织？", timestamp: "08月30日 18:06", kind: "question" } },
+    { id: "c4-1", user: { content: "参考 [[最近的对话:整理本周项目进展]] 和附件里的任务清单，用 [[技能:文档总结]] 整理本周项目进展并生成周报", attachments: [{ name: "本周任务清单.xlsx", size: 18432 }, { name: "项目周会纪要.docx", size: 42137 }], timestamp: "08月30日 18:04" }, execution: { status: "completed", summary: "已汇总项目资料，但仍缺少周报组织方式", duration: "1分25秒", steps: [{ ...completed("c4-s1", "汇总本周任务、会议和项目资料"), actions: [{ label: "查询最近的对话", type: "query" }, { label: "已读取 项目周会纪要", type: "file", target: meetingNotesFile }, { label: "已读取 本周任务清单", type: "file", target: taskListFile }] }, { ...completed("c4-s2", "识别已完成事项、风险和下周计划"), actions: [{ label: "执行脚本 项目状态归并", type: "script" }, { label: "调用技能 周报整理", type: "skill" }] }, completed("c4-s3", "检查生成周报所需信息", "缺少重点项目和下周计划的组织维度") ] }, assistant: { content: "我已经汇总了现有项目资料。当前还缺少两个关键信息：本周需要重点向管理层同步哪个项目？另外，下周计划是按负责人组织，还是按项目优先级组织？", timestamp: "08月30日 18:06", kind: "question" } },
+  ] },
+  "chat-5": { turns: [
+    {
+      id: "c5-1",
+      expert: "差旅助手",
+      user: { content: "我下周要去上海出差，帮我发起申请。", timestamp: "09月02日 10:16" },
+      execution: {
+        status: "completed",
+        summary: "已识别出差申请所需信息，并发现日期、事由和出行偏好尚未明确",
+        duration: "14秒",
+        flat: true,
+        steps: [
+          { ...completed("c5-s1", "识别差旅申请中的已有信息", "已确认目的地为上海，但申请所需的出行日期、出差事由和交通偏好仍缺失"), actions: [{ label: "调用技能 差旅申请", type: "skill" }] },
+          completed("c5-s2", "生成差旅信息澄清表单", "通过结构化表单引导补齐必填信息，以便继续发起申请"),
+        ],
+      },
+      assistant: {
+        content: "我已为你调度 **差旅助手**。目前已确认目的地是上海，但发起申请还需要补充出行日期、出差事由和交通偏好；请在下方填写后提交。",
+        timestamp: "09月02日 10:17",
+        kind: "question",
+        clarification: {
+          id: "travel-application-details",
+          title: "补充出差信息",
+          defaultOpen: true,
+          submitLabel: "提交",
+          initialValues: { destination: "上海" },
+          fields: [
+            { id: "destination", label: "出差目的地", type: "text", required: true, placeholder: "请输入城市或地区" },
+            { id: "dates", label: "出发与返程日期", type: "date-range", required: true },
+            { id: "purpose", label: "出差事由", type: "textarea", required: true, placeholder: "请简要说明本次出差的工作事项" },
+            { id: "transport", label: "交通偏好", type: "single-select", required: true, options: [{ value: "train", label: "高铁/火车" }, { value: "flight", label: "飞机" }, { value: "flexible", label: "按公司差旅标准" }] },
+            { id: "services", label: "需要协助安排的事项（可选）", type: "multi-select", options: [{ value: "hotel", label: "推荐酒店" }, { value: "calendar", label: "同步日程" }, { value: "reminder", label: "设置出行提醒" }] },
+          ],
+          followUp: {
+            id: "travel-application-ready",
+            execution: {
+              status: "completed",
+              summary: "已整理出差申请单所需的全部信息",
+              duration: "26秒",
+              flat: true,
+              steps: [
+                { ...completed("c5-followup-s1", "校验出差日期、目的地与交通安排", "已完成申请字段完整性检查，并按公司差旅标准匹配出行方案"), actions: [{ label: "调用接口 差旅规则校验", type: "api" }] },
+                { ...completed("c5-followup-s2", "整理出差申请单数据", "已生成申请单草稿，包含行程、事由和需协助安排的事项"), actions: [{ label: "调用技能 出差申请整理", type: "skill" }] },
+              ],
+            },
+            assistant: {
+              content: "出差申请单所需的信息已经整理完成。是否现在由我帮你提交这份出差申请单？",
+              timestamp: "09月02日 10:19",
+              kind: "question",
+            },
+          },
+        },
+      },
+    },
   ] },
 }
 
-export function createDraftScene(message: string, contextLabels: string[] = []): ConversationScene {
-  return { turns: [{ id: "draft-turn", user: { content: message, contextLabels, timestamp: formatTimestamp() }, execution: { status: "running", summary: "正在理解你的需求", duration: "刚刚", steps: [{ id: "draft-step", title: "分析问题并规划执行步骤", status: "running" }] } }] }
+export function createDraftScene(message: string, expert?: string, attachments: MessageAttachment[] = []): ConversationScene {
+  return { turns: [{ id: "draft-turn", expert, user: { content: message, attachments, timestamp: formatTimestamp() }, execution: { status: "running", summary: "正在理解你的需求", duration: "刚刚", steps: [{ id: "draft-step", title: "分析问题并规划执行步骤", status: "running" }] } }] }
 }

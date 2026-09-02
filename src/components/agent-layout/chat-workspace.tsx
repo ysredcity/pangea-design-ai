@@ -34,7 +34,10 @@ export function ChatWorkspace({
   return (
     <section className={cn(
       "flex min-w-0 flex-1 flex-col bg-background-desktop min-[660px]:min-w-[420px]",
-      panelAtDefaultSplit && "w-[420px] flex-none",
+      // 面板默认分栏：对话区取可用宽度的一半，下限 420px，上限 800px。
+      // 上限来自对话内容本身的 max-w-3xl（768px）加左右 padding，超过就是浪费；
+      // 富余空间全部留给独立面板，因为网页与文档预览越宽越好读。
+      panelAtDefaultSplit && "w-[clamp(420px,50%,800px)] flex-none",
     )}>
       {activeConversation ? (
         <ConversationPage
