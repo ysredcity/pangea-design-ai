@@ -310,7 +310,8 @@ Badge 设计规则：
 
 消息气泡里的呈现方式必须与 Composer 一致，按能不能内联分三类：
 
-- **本地上传文件** → `ConversationTurnData.user.attachments`，渲染为独立 `Attachment` 卡片（`w-60`，与 Composer 上传区同款），位于气泡上方、右对齐。
+- **本地上传文件** → `ConversationTurnData.user.attachments`，渲染为独立 `Attachment` 卡片（`w-60`，与 Composer 上传区同款），位于气泡上方、右对齐。附件带稳定 `id` 和可选 `target`：存在目标时通过 `AttachmentTrigger` 打开现有右侧 `file-preview` 面板；场景数据可绑定示例正文，实时上传仅展示文件名、类型和大小的本地预览说明，不伪装为已解析的 Office 或二进制内容。
+- **智能体交付物** → `AssistantMessageData.attachments`，位于智能体正文下方、操作栏上方且左对齐。交付物附件必须带 `ArtifactTarget`，通过与用户附件相同的 `AttachmentTrigger` 打开右侧预览；`chat-1` 的行业调研以 `.html` 文件交付，预览正文为受控报告内容，不执行原始 HTML。
 - **文件库 / 最近的对话 / 技能** → 以 badge 形式显示在**气泡内**，位置由消息文本里的 `[[类型:名称]]` 标记决定。
 - **专家** → **不显示在用户消息里**，见下面的 9.6 智能体身份。
 - **连接器** → **不进消息流**。它是发送时的即时调用行为，只决定这一次请求怎么执行，不属于用户消息的内容；执行过程里的「调用连接器 x」Badge 已经体现了它。

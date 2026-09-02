@@ -11,6 +11,8 @@ const fileIcons: Record<string, LucideIcon> = {
   txt: FileText,
   xls: FileSpreadsheet,
   xlsx: FileSpreadsheet,
+  html: FileText,
+  htm: FileText,
   csv: FileSpreadsheet,
   ppt: FileChartColumn,
   pptx: FileChartColumn,

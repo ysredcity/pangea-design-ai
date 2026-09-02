@@ -18,7 +18,7 @@ export function splitSentContext(message: string, context: ContextItem[]): {
 } {
   const attachments = context
     .filter((item) => item.type === "upload")
-    .map((item) => ({ name: item.label, size: item.size ?? 0 }))
+    .map((item) => ({ id: item.id, name: item.label, size: item.size ?? 0, target: item.target }))
   const expert = context.find((item) => item.type === "专家")?.label
   const fallback = attachments.length > 0 ? "" : `已添加 ${context.map((item) => item.label).join("、")}`
   return { content: message || fallback, attachments, expert }

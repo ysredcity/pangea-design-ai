@@ -77,7 +77,7 @@ export function ConversationPage({ conversation, isSidebarDocked, onNewChat, onO
         <div ref={contentRef} className="no-scrollbar min-h-0 w-full flex-1 overflow-y-auto px-4" onScroll={updateScrollButton}>
           <div className="mx-auto min-h-full w-full max-w-3xl py-3">
             <ConversationFlow key={conversation.id} scene={conversation.scene ?? createDraftScene(conversation.initialMessage || conversation.title, conversation.expert)} onOpenArtifact={onOpenArtifact} />
-            {sentMessages.length > 0 && <div className="mt-10 space-y-10 text-[15px]">{sentMessages.map((message, index) => <UserMessage key={`${message.content}-${index}`} message={message} />)}</div>}
+            {sentMessages.length > 0 && <div className="mt-10 space-y-10 text-[15px]">{sentMessages.map((message, index) => <UserMessage key={`${message.content}-${index}`} message={message} onOpenArtifact={onOpenArtifact} />)}</div>}
           </div>
         </div>
 

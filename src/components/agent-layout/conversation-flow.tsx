@@ -1,7 +1,7 @@
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react"
 import { Brain, Check, ChevronRight, Circle, Code2, Database, FileText, Globe2, Hammer, ListTodo, Plug, Puzzle, Search } from "lucide-react"
 
-import { Attachment, AttachmentContent, AttachmentDescription, AttachmentMedia, AttachmentTitle } from "@/components/ui/attachment"
+import { Attachment, AttachmentContent, AttachmentDescription, AttachmentMedia, AttachmentTitle, AttachmentTrigger } from "@/components/ui/attachment"
 import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
 import { fileTypeLabel, formatFileSize } from "./file-meta"
@@ -11,7 +11,7 @@ import { CopyAction, FeedbackActions } from "./message-actions"
 import { MarkdownContent } from "./markdown-content"
 import { AgentAvatar, LibraryFileIcon } from "./resource-visuals"
 import { ClarificationFormCard } from "./clarification-form-card"
-import { DEFAULT_AGENT_NAME, type ClarificationFollowUpData, type ClarificationFormData, type ConversationScene, type ConversationTurnData, type ExecutionActionData, type ExecutionData, type ExecutionStepData, type ExecutionTaskData, type ReasoningData } from "./conversation-data"
+import { DEFAULT_AGENT_NAME, type AssistantAttachment, type ClarificationFollowUpData, type ClarificationFormData, type ConversationScene, type ConversationTurnData, type ExecutionActionData, type ExecutionData, type ExecutionStepData, type ExecutionTaskData, type ReasoningData } from "./conversation-data"
 import type { ArtifactTarget } from "./panel-types"
 
 type OpenArtifact = (target: ArtifactTarget) => void
@@ -127,7 +127,7 @@ export function ConversationFlow({ scene, onOpenArtifact }: { scene: Conversatio
 function ConversationTurn({ clarificationSubmitted, current, followUpPhase, onClarificationSubmit, onOpenArtifact, turn }: { clarificationSubmitted: boolean; current: boolean; followUpPhase?: FollowUpPhase; onClarificationSubmit: (formId: string) => void; onOpenArtifact: OpenArtifact; turn: ConversationTurnData }) {
   const continuation = clarificationSubmitted ? turn.assistant?.clarification?.followUp : undefined
   return <section className="space-y-5">
-    <UserMessage message={turn.user} />
+    <UserMessage message={turn.user} onOpenArtifact={onOpenArtifact} />
     <AgentResponseBlock
       expert={turn.expert}
       execution={turn.execution}
@@ -180,7 +180,7 @@ function AgentResponseBlock({
       <AgentIdentity expert={expert} />
       <ExecutionProcess execution={execution} current={current} onOpenArtifact={onOpenArtifact} />
     </div>
-    {assistant && <AssistantMessage {...assistant} clarificationSubmitted={clarificationSubmitted} onClarificationSubmit={onClarificationSubmit} needsReply={needsReply} />}
+    {assistant && <AssistantMessage {...assistant} clarificationSubmitted={clarificationSubmitted} onClarificationSubmit={onClarificationSubmit} onOpenArtifact={onOpenArtifact} needsReply={needsReply} />}
   </div>
 }
 
@@ -191,20 +191,10 @@ export function AgentIdentity({ expert }: { expert?: string }) {
   </div>
 }
 
-export function UserMessage({ message }: { message: ConversationTurnData["user"] }) {
+export function UserMessage({ message, onOpenArtifact }: { message: ConversationTurnData["user"]; onOpenArtifact?: OpenArtifact }) {
   const { attachments, content, timestamp } = message
   return <div className="group/message flex flex-col items-end gap-2">
-    {attachments && attachments.length > 0 && <div className="flex max-w-[85%] flex-wrap justify-end gap-2">
-      {attachments.map((file) => (
-        <Attachment key={file.name} className="w-60">
-          <AttachmentMedia><LibraryFileIcon fileName={file.name} /></AttachmentMedia>
-          <AttachmentContent>
-            <AttachmentTitle>{file.name}</AttachmentTitle>
-            <AttachmentDescription>{fileTypeLabel(file.name)} · {formatFileSize(file.size)}</AttachmentDescription>
-          </AttachmentContent>
-        </Attachment>
-      ))}
-    </div>}
+    <MessageAttachmentList attachments={attachments} onOpenArtifact={onOpenArtifact} align="end" />
     <div className="max-w-[85%] rounded-[10px] bg-primary-bg px-4 py-3"><MessageContent content={content} /></div>
     {/* 位置始终预留（h-7），只切换透明度，避免悬停/移开时下方内容跳动 */}
     <div className="flex h-7 items-center gap-2 text-ring opacity-0 transition-opacity focus-within:opacity-100 group-hover/message:opacity-100">
@@ -212,6 +202,38 @@ export function UserMessage({ message }: { message: ConversationTurnData["user"]
       {timestamp && <span className="h-4 w-px bg-border" />}
       <CopyAction content={content} />
     </div>
+  </div>
+}
+
+type PreviewAttachment = {
+  id: string
+  name: string
+  size: number
+  target?: ArtifactTarget
+}
+
+function MessageAttachmentList({
+  align,
+  attachments,
+  onOpenArtifact,
+}: {
+  align: "end" | "start"
+  attachments?: PreviewAttachment[]
+  onOpenArtifact?: OpenArtifact
+}) {
+  if (!attachments?.length) return null
+
+  return <div className={cn("flex max-w-[85%] flex-wrap gap-2", align === "end" ? "justify-end" : "justify-start")}>
+    {attachments.map((file) => (
+      <Attachment key={file.id} className="w-60">
+        <AttachmentMedia><LibraryFileIcon fileName={file.name} /></AttachmentMedia>
+        <AttachmentContent>
+          <AttachmentTitle>{file.name}</AttachmentTitle>
+          <AttachmentDescription>{fileTypeLabel(file.name)} · {formatFileSize(file.size)}</AttachmentDescription>
+        </AttachmentContent>
+        {file.target && onOpenArtifact && <AttachmentTrigger aria-label={`预览 ${file.name}`} onClick={() => onOpenArtifact(file.target!)} />}
+      </Attachment>
+    ))}
   </div>
 }
 
@@ -339,10 +361,11 @@ function TaskExecutionStep({ step, onOpenArtifact }: { step: ExecutionStepData; 
   </div>
 }
 
-export function AssistantMessage({ clarification, clarificationSubmitted = false, content, needsReply = false, onClarificationSubmit, timestamp }: { clarification?: ClarificationFormData; clarificationSubmitted?: boolean; content: string; timestamp: string; kind?: "answer" | "question"; needsReply?: boolean; onClarificationSubmit?: (formId: string) => void }) {
+export function AssistantMessage({ attachments, clarification, clarificationSubmitted = false, content, needsReply = false, onClarificationSubmit, onOpenArtifact, timestamp }: { attachments?: AssistantAttachment[]; clarification?: ClarificationFormData; clarificationSubmitted?: boolean; content: string; timestamp: string; kind?: "answer" | "question"; needsReply?: boolean; onClarificationSubmit?: (formId: string) => void; onOpenArtifact?: OpenArtifact }) {
   return <div className="space-y-3">
     {needsReply && <div className="flex items-center gap-2 text-sm font-medium text-primary"><ListTodo className="size-4" />需要你的回复</div>}
     <MarkdownContent>{content}</MarkdownContent>
+    <MessageAttachmentList attachments={attachments} onOpenArtifact={onOpenArtifact} align="start" />
     {clarification && <ClarificationFormCard form={clarification} submitted={clarificationSubmitted} onSubmit={onClarificationSubmit} />}
     <div className="flex items-center gap-1 text-ring"><CopyAction content={content} /><FeedbackActions /><span className="mx-1 h-4 w-px bg-border" /><time className="text-sm">{timestamp}</time></div>
   </div>

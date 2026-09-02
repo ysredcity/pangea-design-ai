@@ -1,5 +1,5 @@
 export type ExecutionStatus = "completed" | "running" | "waiting"
-import { agentGuidelineFile, automationScreenshotImage, brandFinancialSearch, coffeeKeywordSearch, coffeeMarketSearch, coffeeReportFile, coffeeStatsPage, deviceScreenshotImage, freshDrinkWhitepaperFile, googleHomeSearch, homeScreenshotImage, lucideIconSearch, luckinFinancialFile, meetingNotesFile, mijiaErrorSearch, reportIconSearch, taskListFile, wcagFeedbackSearch } from "./panel-data"
+import { agentGuidelineFile, automationScreenshotImage, brandFinancialSearch, coffeeIndustryResearchReport, coffeeKeywordSearch, coffeeMarketSearch, coffeeReportFile, coffeeStatsPage, deviceScreenshotImage, freshDrinkWhitepaperFile, googleHomeSearch, homeScreenshotImage, lucideIconSearch, luckinFinancialFile, meetingNotesFile, mijiaErrorSearch, reportIconSearch, taskListFile, wcagFeedbackSearch } from "./panel-data"
 import type { ArtifactTarget } from "./panel-types"
 
 export type ExecutionActionData = {
@@ -42,8 +42,11 @@ export type ExecutionData = {
   tasks?: ExecutionTaskData[]
 }
 
-/** 用户消息里的本地上传文件，渲染为独立 Attachment */
-export type MessageAttachment = { name: string; size: number }
+/** 用户消息里的本地上传文件，渲染为可打开右侧预览的独立 Attachment */
+export type MessageAttachment = { id: string; name: string; size: number; target?: ArtifactTarget }
+
+/** 智能体交付物附件必须带可打开的预览目标。 */
+export type AssistantAttachment = MessageAttachment & { target: ArtifactTarget }
 
 export type ClarificationOption = { label: string; value: string }
 export type ClarificationFieldValue = string | string[] | { end: string; start: string }
@@ -54,7 +57,7 @@ export type ClarificationField =
   | { id: string; label: string; required?: boolean; type: "single-select" | "multi-select"; options: ClarificationOption[] }
 
 export type ClarificationFollowUpData = {
-  assistant: { content: string; timestamp: string; kind: "question" }
+  assistant: AssistantMessageData & { kind: "question" }
   execution: ExecutionData
   id: string
 }
@@ -69,6 +72,14 @@ export type ClarificationFormData = {
   initialValues?: Record<string, ClarificationFieldValue>
   submitLabel?: string
   title: string
+}
+
+export type AssistantMessageData = {
+  attachments?: AssistantAttachment[]
+  clarification?: ClarificationFormData
+  content: string
+  timestamp: string
+  kind?: "answer" | "question"
 }
 
 /** 未指定专家时，智能体侧显示的产品身份 */
@@ -88,7 +99,7 @@ export type ConversationTurnData = {
     timestamp?: string
   }
   execution: ExecutionData
-  assistant?: { clarification?: ClarificationFormData; content: string; timestamp: string; kind?: "answer" | "question" }
+  assistant?: AssistantMessageData
 }
 
 /** 生成与场景数据一致的时间戳格式，用于新发送的消息 */
@@ -108,7 +119,7 @@ export const conversationScenes: Record<string, ConversationScene> = {
   ] },
   "chat-1": { turns: [
     { id: "c1-1", user: { content: "帮我写个行业调研报告吧", timestamp: "08月30日 15:19" }, execution: { status: "completed", summary: "已识别需求中缺少的关键调研范围", duration: "18秒", flat: true, steps: [{ ...completed("c1-s1", "检查行业调研所需的输入信息", "检查行业调研所需的输入信息"), actions: [{ label: "调用技能 需求澄清", type: "skill" }] }, completed("c1-s2", "整理需要向用户确认的问题", "需要补充行业、市场范围、时间跨度和报告用途") ] }, assistant: { content: "没问题。为了让报告更有针对性，请告诉我行业、目标市场、时间范围，以及报告主要用于内部决策、融资还是市场进入。", timestamp: "08月30日 15:20", kind: "question" } },
-    { id: "c1-2", user: { content: "用 [[技能:深度研究]] 调研中国现制咖啡行业，重点看 2024—2026 年的竞争格局和消费趋势，用于新品规划。", timestamp: "08月30日 15:21" }, execution: { status: "completed", summary: "已完成行业调研并形成新品任务规划", duration: "3分42秒", reasoning: { id: "c1-r1", content: "这是一个涉及市场规模、品牌竞争和消费趋势的长链路研究任务。需要先拆分研究维度，再交叉验证行业报告、企业财报与公开经营数据，最后将结论映射到新品规划场景。" }, steps: [], tasks: [
+    { id: "c1-2", user: { content: "用 [[技能:深度研究]] 调研中国现制咖啡行业，重点看 2024—2026 年的竞争格局和消费趋势，用于新品规划。", timestamp: "08月30日 15:21" }, execution: { status: "completed", summary: "已完成行业调研并输出新品规划 HTML 报告", duration: "4分08秒", reasoning: { id: "c1-r1", content: "这是一个涉及市场规模、品牌竞争和消费趋势的长链路研究任务。需要先拆分研究维度，再交叉验证行业报告、企业财报与公开经营数据，最后将结论映射到新品规划场景，并整理为可交付的 HTML 调研报告。" }, steps: [], tasks: [
       { id: "c1-task-market", title: "汇总 2024—2026 年市场数据", summary: "已完成行业规模、增速和门店数量的交叉验证", status: "completed", steps: [
         { ...completed("c1-market-1", "检索行业规模与增长数据", "覆盖公开研究报告、统计数据和行业资讯"), actions: [{ label: "检索 中国现制咖啡市场规模", type: "knowledge", target: coffeeMarketSearch }, { label: "浏览 国家统计局行业数据", type: "web", target: coffeeStatsPage }, { label: "查询行业数据库", type: "api" }] },
         { ...completed("c1-market-2", "读取并核对核心报告", "对不同来源的统计口径进行统一"), actions: [{ label: "已读取 2025 咖啡行业报告", type: "file", target: coffeeReportFile }, { label: "已读取 现制饮品消费趋势白皮书", type: "file", target: freshDrinkWhitepaperFile }, { label: "执行脚本 数据口径校准", type: "script" }] },
@@ -121,7 +132,15 @@ export const conversationScenes: Record<string, ConversationScene> = {
         { ...completed("c1-opportunity-1", "归纳消费趋势与高潜需求"), actions: [{ label: "检索 咖啡消费关键词", type: "knowledge", target: coffeeKeywordSearch }, { label: "调用接口 社媒趋势数据", type: "api" }, { label: "执行脚本 趋势聚类分析", type: "script" }] },
         { ...completed("c1-opportunity-2", "将趋势映射为新品方向", "结合目标人群、饮用时段和渠道约束生成建议"), actions: [{ label: "调用技能 新品机会分析", type: "skill" }, { label: "执行脚本 机会点评分", type: "script" }] },
       ] },
-    ] }, assistant: { content: "调研显示，中国现制咖啡市场仍处于高频扩张与结构分化阶段。头部品牌通过门店密度和价格带争夺大众市场，精品与茶咖融合则形成差异化增量。新品规划建议优先关注低糖乳咖、地域风味、功能性成分和下午时段场景，并通过小范围区域测试验证复购。", timestamp: "08月30日 15:26" } },
+      { id: "c1-task-delivery", title: "整合发现并交付新品规划调研报告", summary: "已完成执行摘要、竞争格局、消费趋势和新品建议的 HTML 报告输出", status: "completed", steps: [
+        { ...completed("c1-delivery-1", "汇总研究结论并校验叙事一致性", "统一市场、竞争和消费趋势的时间范围与证据口径"), actions: [{ label: "调用技能 研究报告整合", type: "skill" }, { label: "执行脚本 结论一致性校验", type: "script" }] },
+        { ...completed("c1-delivery-2", "生成并校验 HTML 行业调研报告", "报告包含执行摘要、竞争格局、消费趋势与新品规划建议"), actions: [{ label: "已生成 2024—2026 中国现制咖啡行业调研报告", type: "file", target: coffeeIndustryResearchReport }] },
+      ] },
+    ] }, assistant: {
+      content: "调研显示，中国现制咖啡市场仍处于高频扩张与结构分化阶段。头部品牌通过门店密度和价格带争夺大众市场，精品与茶咖融合则形成差异化增量。新品规划建议优先关注低糖乳咖、地域风味、功能性成分和下午时段场景，并通过小范围区域测试验证复购。完整分析已整理为下方 HTML 报告。",
+      attachments: [{ id: "c1-coffee-industry-report", name: "2024—2026中国现制咖啡行业调研报告.html", size: 28672, target: coffeeIndustryResearchReport }],
+      timestamp: "08月30日 15:26",
+    } },
   ] },
   "chat-2": { turns: [
     { id: "c2-1", user: { content: "你能读取飞书文档吗？", timestamp: "08月31日 09:29" }, execution: { status: "completed", summary: "已确认飞书云文档连接器可用", duration: "12秒", flat: true, steps: [{ ...completed("c2-s1", "检查当前可用连接器", "检查当前可用连接器"), actions: [{ label: "查询连接器列表", type: "api" }, { label: "调用连接器 飞书", type: "connector" }] }, { ...completed("c2-s2", "确认文档读取权限范围", "确认文档读取权限范围"), actions: [{ label: "查询授权状态", type: "api" }] }] }, assistant: { content: "可以。连接飞书云文档后，我可以读取你有权限访问的文档并进行总结、问答或信息提取。把文档链接发给我即可。", timestamp: "08月31日 09:30" } },
@@ -134,7 +153,7 @@ export const conversationScenes: Record<string, ConversationScene> = {
     ] }, assistant: { content: "整体视觉完成度不错，但核心任务链路仍有三个明显问题：设备状态与控制入口层级混杂；异常状态缺少可执行建议；自动化创建流程过早暴露技术概念。建议先重构首页为“空间—状态—快捷操作”三级结构，再统一离线、故障和执行中的反馈模式。", timestamp: "08月31日 11:08" } },
   ] },
   "chat-4": { turns: [
-    { id: "c4-1", user: { content: "参考 [[最近的对话:整理本周项目进展]] 和附件里的任务清单，用 [[技能:文档总结]] 整理本周项目进展并生成周报", attachments: [{ name: "本周任务清单.xlsx", size: 18432 }, { name: "项目周会纪要.docx", size: 42137 }], timestamp: "08月30日 18:04" }, execution: { status: "completed", summary: "已汇总项目资料，但仍缺少周报组织方式", duration: "1分25秒", steps: [{ ...completed("c4-s1", "汇总本周任务、会议和项目资料"), actions: [{ label: "查询最近的对话", type: "query" }, { label: "已读取 项目周会纪要", type: "file", target: meetingNotesFile }, { label: "已读取 本周任务清单", type: "file", target: taskListFile }] }, { ...completed("c4-s2", "识别已完成事项、风险和下周计划"), actions: [{ label: "执行脚本 项目状态归并", type: "script" }, { label: "调用技能 周报整理", type: "skill" }] }, completed("c4-s3", "检查生成周报所需信息", "缺少重点项目和下周计划的组织维度") ] }, assistant: { content: "我已经汇总了现有项目资料。当前还缺少两个关键信息：本周需要重点向管理层同步哪个项目？另外，下周计划是按负责人组织，还是按项目优先级组织？", timestamp: "08月30日 18:06", kind: "question" } },
+    { id: "c4-1", user: { content: "参考 [[最近的对话:整理本周项目进展]] 和附件里的任务清单，用 [[技能:文档总结]] 整理本周项目进展并生成周报", attachments: [{ id: "c4-upload-tasks", name: "本周任务清单.xlsx", size: 18432, target: taskListFile }, { id: "c4-upload-meeting", name: "项目周会纪要.docx", size: 42137, target: meetingNotesFile }], timestamp: "08月30日 18:04" }, execution: { status: "completed", summary: "已汇总项目资料，但仍缺少周报组织方式", duration: "1分25秒", steps: [{ ...completed("c4-s1", "汇总本周任务、会议和项目资料"), actions: [{ label: "查询最近的对话", type: "query" }, { label: "已读取 项目周会纪要", type: "file", target: meetingNotesFile }, { label: "已读取 本周任务清单", type: "file", target: taskListFile }] }, { ...completed("c4-s2", "识别已完成事项、风险和下周计划"), actions: [{ label: "执行脚本 项目状态归并", type: "script" }, { label: "调用技能 周报整理", type: "skill" }] }, completed("c4-s3", "检查生成周报所需信息", "缺少重点项目和下周计划的组织维度") ] }, assistant: { content: "我已经汇总了现有项目资料。当前还缺少两个关键信息：本周需要重点向管理层同步哪个项目？另外，下周计划是按负责人组织，还是按项目优先级组织？", timestamp: "08月30日 18:06", kind: "question" } },
   ] },
   "chat-5": { turns: [
     {

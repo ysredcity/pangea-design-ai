@@ -16,13 +16,14 @@ import { Attachment, AttachmentAction, AttachmentActions, AttachmentContent, Att
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
-import { fileTypeLabel, formatFileSize } from "./file-meta"
+import { createLocalFilePreview, fileTypeLabel, formatFileSize } from "./file-meta"
 import { contextIcons, type ContextType } from "./icon-registry"
 import { formatInlineTag, INLINE_TAG_CLASS } from "./inline-tag"
 import { IconButton } from "./icon-button"
 import { ExpertAvatar, LibraryFileIcon } from "./resource-visuals"
+import type { ArtifactTarget } from "./panel-types"
 
-export type ContextItem = { id: string; label: string; type: ContextType; size?: number }
+export type ContextItem = { id: string; label: string; type: ContextType; size?: number; target?: ArtifactTarget }
 
 type UploadItem = { id: string; name: string; size: number }
 
@@ -245,7 +246,7 @@ export function Composer({ onSend, draft, onDraftChange, selectedExpert, onSelec
   const send = () => {
     if (!canSend) return
     const { markup, tags } = readEditor()
-    const uploadContext: ContextItem[] = uploads.map((file) => ({ id: file.id, label: file.name, type: "upload", size: file.size }))
+    const uploadContext: ContextItem[] = uploads.map((file) => ({ id: file.id, label: file.name, type: "upload", size: file.size, target: createLocalFilePreview(file.name, file.size) }))
     const connectorContext: ContextItem[] = Array.from(enabledConnectors).map((label) => ({ id: `连接器-${label}`, label, type: "连接器" }))
     onSend?.(markup.trim(), [...uploadContext, ...tags, ...experts, ...connectorContext])
     if (editorRef.current) editorRef.current.textContent = ""
