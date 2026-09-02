@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0",
+  "scenarios": [
+    {
+      "id": "amend-penalty-clause",
+      "title": "调整违约金条款",
+      "trigger": { "type": "keyword", "patterns": ["修改", "替换"] },
+      "entryNodeId": "confirmAmend",
+      "nodes": [
+        {
+          "id": "confirmAmend",
+          "blocks": [
+            { "type": "markdown", "content": "好的，我准备把第 3 条违约金比例从 30% 调整为 10%，这会修改正式合同文本。" },
+            {
+              "type": "confirmCard",
+              "riskLevel": "medium",
+              "question": "是否按建议修改第 3 条违约金比例？",
+              "fields": [
+                { "label": "对象", "value": "第 3 条·违约金条款" },
+                { "label": "动作", "value": "30% → 10%" }
+              ],
+              "branches": [
+                { "on": "onConfirm", "goto": "amended" },
+                { "on": "onSkip", "goto": "notAmended" }
+              ]
+            }
+          ]
+        },
+        { "id": "amended", "blocks": [{ "type": "markdown", "content": "已修改，正文已同步更新（见左侧文档）。" }] },
+        { "id": "notAmended", "blocks": [{ "type": "markdown", "content": "好的，未修改，保留原条款。" }] }
+      ]
+    }
+  ],
+  "fallback": {
+    "type": "markdown",
+    "pool": ["这个我需要再确认一下条款细节。", "好的，我记下了，还有其他要补充的吗？"]
+  }
+}

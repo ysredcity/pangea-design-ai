@@ -1,0 +1,119 @@
+{
+  "schemaVersion": "1.0",
+  "scenarios": [
+    {
+      "id": "contract-review",
+      "title": "合作协议审核",
+      "trigger": { "type": "keyword", "patterns": ["合同", "合作协议"] },
+      "entryNodeId": "confirmSubmit",
+      "nodes": [
+        {
+          "id": "confirmSubmit",
+          "blocks": [
+            { "type": "markdown", "content": "我已根据模板生成了协议草稿，是否提交给对方签署？" },
+            {
+              "type": "confirmCard",
+              "riskLevel": "high",
+              "question": "是否提交合作协议供对方签署？",
+              "fields": [
+                { "label": "对象", "value": "供应商合作协议.docx" },
+                { "label": "动作", "value": "提交外部签署" },
+                { "label": "影响范围", "value": "对外发出，不可撤销" },
+                { "label": "操作人", "value": "当前用户" }
+              ],
+              "branches": [
+                { "on": "onConfirm", "goto": "afterSubmit" },
+                { "on": "onSkip", "goto": "afterSkip" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "afterSubmit",
+          "blocks": [
+            { "type": "markdown", "content": "已提交签署，对方将收到通知邮件。" },
+            { "type": "followUp", "suggestions": ["帮我起草一份跟进邮件", "总结一下这份协议的核心条款"], "delayMs": 400 }
+          ]
+        },
+        { "id": "afterSkip", "blocks": [{ "type": "markdown", "content": "好的，已保留草稿，未提交。" }] }
+      ]
+    },
+    {
+      "id": "expense-filter",
+      "title": "Q2 报销记录筛选",
+      "trigger": { "type": "keyword", "patterns": ["报销"] },
+      "entryNodeId": "clarify",
+      "nodes": [
+        {
+          "id": "clarify",
+          "blocks": [
+            { "type": "markdown", "content": "筛选 Q2 报销记录前，我需要确认几个条件：" },
+            {
+              "type": "clarifyCard",
+              "title": "筛选 Q2 报销记录",
+              "fields": [
+                {
+                  "key": "range",
+                  "label": "日期范围",
+                  "required": true,
+                  "options": [
+                    { "value": "q2", "label": "4-6 月" },
+                    { "value": "all", "label": "全部" }
+                  ]
+                },
+                {
+                  "key": "category",
+                  "label": "报销类别",
+                  "allowOther": true,
+                  "options": [
+                    { "value": "travel", "label": "出差" },
+                    { "value": "meal", "label": "餐饮" }
+                  ]
+                }
+              ],
+              "branches": [
+                { "on": "onSubmit", "goto": "result" },
+                { "on": "onSkip", "goto": "skipped" }
+              ]
+            }
+          ]
+        },
+        { "id": "result", "blocks": [{ "type": "markdown", "content": "已按条件筛选：{{range}} / {{category}}" }] },
+        { "id": "skipped", "blocks": [{ "type": "markdown", "content": "好的，已跳过澄清，你可以随时重新提问。" }] }
+      ]
+    },
+    {
+      "id": "contract-risk-scan",
+      "title": "合同风险扫描",
+      "trigger": { "type": "keyword", "patterns": ["扫描风险", "审查一下这份合同"] },
+      "entryNodeId": "scanning",
+      "nodes": [
+        {
+          "id": "scanning",
+          "blocks": [
+            {
+              "type": "taskProgress",
+              "status": "done",
+              "elapsedMs": 2400,
+              "tasks": [
+                { "name": "解析合同结构", "status": "done" },
+                { "name": "逐条比对风险条款库", "status": "done" },
+                { "name": "生成风险摘要", "status": "done" }
+              ],
+              "steps": [
+                { "label": "正在读取文档", "detail": "供应商合作协议.docx" },
+                { "label": "正在比对第 3 条·违约金条款", "detail": "命中风险规则：比例超过 20%", "delayMs": 900 },
+                { "label": "正在比对第 7 条·保密期限", "detail": "未命中风险规则", "delayMs": 1600 }
+              ]
+            },
+            { "type": "markdown", "content": "扫描完成，发现 1 处高风险条款（第 3 条违约金比例）。", "delayMs": 2400 }
+          ]
+        }
+      ]
+    }
+  ],
+  "fallback": {
+    "type": "markdown",
+    "pool": ["已收到，这个我需要再确认一下。", "好的，我记下了，还有其他要补充的吗？"]
+  }
+}

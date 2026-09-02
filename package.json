@@ -1,0 +1,16 @@
+{
+  "name": "agent-ux-guide",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "skills/agent-ux-react/templates/*"
+  ],
+  "scripts": {
+    "sync:agent-ui": "node scripts/sync-agent-ui.mjs",
+    "check:agent-ui-drift": "node scripts/sync-agent-ui.mjs --check",
+    "check:agent-ui-types": "npm run check --workspace=@agent-ux/agent-ui",
+    "gate": "npm run check:agent-ui-drift && npm run check:agent-ui-types && npm run gate --workspace=immersive-starter && npm run gate --workspace=copilot-starter"
+  }
+}

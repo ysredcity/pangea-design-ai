@@ -1,0 +1,465 @@
+{
+  "generatedAt": "2026-08-27T04:41:52.704Z",
+  "layoutShells": [
+    {
+      "id": "copilot-shell",
+      "kind": "layout-shell",
+      "title": "助手式 Copilot 布局外壳",
+      "status": "stable",
+      "whenToUse": [
+        "IDE",
+        "设计工具",
+        "BI",
+        "合同审阅",
+        "低代码搭建",
+        "围绕画布代码表格设计稿持续操作且AI辅助不想离开主工作区"
+      ],
+      "whenNotToUse": [
+        "用自然语言表达目标等待结果→沉浸式 Agent",
+        "轻量即时局部增强→嵌入式"
+      ],
+      "keyStructure": [
+        "左侧资源/项目区",
+        "中间主工作区",
+        "右侧对话辅助区"
+      ],
+      "variants": [
+        "三栏并列",
+        "浮窗",
+        "浮层抽屉",
+        "侧边抽屉"
+      ],
+      "composeWith": [
+        "agent-ui/message-bubble",
+        "agent-ui/composer",
+        "agent-ui/confirm-card",
+        "agent-ui/task-progress"
+      ],
+      "composeBoundary": [
+        "AI是配角不能压缩主工作区的可用宽度",
+        "浮窗类不适合需要与主页面对照操作的场景"
+      ],
+      "pitfalls": [
+        "不要为塞AI侧栏把主要业务对象压缩到不可用宽度",
+        "侧边抽屉不适用主页面信息密度大横向空间紧张的场景"
+      ],
+      "previewRoute": "/",
+      "source": "templates/copilot-starter/src/components/layout/CopilotShell.tsx",
+      "tags": [
+        "布局",
+        "助手式",
+        "三栏",
+        "浮层"
+      ],
+      "doc": "references/patterns/copilot-shell.md"
+    },
+    {
+      "id": "immersive-shell",
+      "kind": "layout-shell",
+      "title": "沉浸式 Agent 布局外壳",
+      "status": "stable",
+      "whenToUse": [
+        "通用助手",
+        "客服",
+        "知识问答",
+        "用自然语言表达目标等待结果的场景"
+      ],
+      "whenNotToUse": [
+        "需围绕画布/代码/表格持续操作→助手式 Copilot",
+        "轻量即时局部增强→嵌入式"
+      ],
+      "keyStructure": [
+        "左侧对话管理菜单栏(可选)",
+        "中间对话流",
+        "右侧独立面板"
+      ],
+      "variants": [
+        "无右侧面板(纯对话)",
+        "有右侧面板",
+        "单模块(隐藏左侧菜单栏)"
+      ],
+      "composeWith": [
+        "agent-ui/message-bubble",
+        "agent-ui/composer",
+        "agent-ui/artifact-card",
+        "agent-ui/task-progress"
+      ],
+      "composeBoundary": [
+        "中间对话流是主区域不可被压缩至不可读",
+        "右侧面板由制品卡片点击驱动而非常驻"
+      ],
+      "pitfalls": [
+        "左侧菜单栏为非必需区块不要为了三栏视觉硬加",
+        "右侧面板打开时对话流不能被完全遮挡除非移动端"
+      ],
+      "previewRoute": "/",
+      "source": "templates/immersive-starter/src/components/layout/ImmersiveShell.tsx",
+      "tags": [
+        "布局",
+        "沉浸式",
+        "三栏"
+      ],
+      "doc": "references/patterns/immersive-shell.md"
+    }
+  ],
+  "components": [
+    {
+      "id": "artifact-card",
+      "kind": "component",
+      "title": "制品卡片 ArtifactCard",
+      "whenToUse": [
+        "AI生成了文档/表格/图片/视频/代码等可独立处理的产物"
+      ],
+      "whenNotToUse": [
+        "简短文本结果直接用Markdown展示即可",
+        "不需要面板承载的轻量信息"
+      ],
+      "variants": [
+        "文档",
+        "表格",
+        "图片",
+        "视频",
+        "代码",
+        "报表/图表"
+      ],
+      "composeWith": [
+        "layout/side-panel(沉浸式右侧面板或助手式对话辅助区旁的展示区)"
+      ],
+      "composeBoundary": [
+        "对话流内只展示摘要不展示完整产物内容",
+        "面板操作结果要同步回对话流"
+      ],
+      "pitfalls": [
+        "不要在对话流里直接渲染完整文档内容",
+        "面板不承载全局导航和系统设置"
+      ],
+      "previewRoute": "/",
+      "source": "src/components/agent-ui/artifact-card.tsx",
+      "tags": [
+        "对话流",
+        "卡片",
+        "制品",
+        "面板"
+      ],
+      "doc": "references/component-selection/artifact-card.md"
+    },
+    {
+      "id": "clarify-card",
+      "kind": "component",
+      "title": "澄清卡片 ClarifyCard",
+      "whenToUse": [
+        "待澄清事项超过2个",
+        "事项需要枚举",
+        "关键参数缺失导致任务无法执行"
+      ],
+      "whenNotToUse": [
+        "待澄清事项<=2个→用自然语言追问",
+        "需要用户对已生成结果做决策→confirm-card"
+      ],
+      "variants": [
+        "单字段",
+        "多字段(<=10)",
+        "含\"其他\"输入项"
+      ],
+      "composeWith": [
+        "ui/radio-group",
+        "ui/select",
+        "ui/button"
+      ],
+      "composeBoundary": [
+        "无Tabs/Menu等深层导航",
+        "无内部滚动",
+        "字段数<=10",
+        "按钮数<=3且主按钮<=1"
+      ],
+      "pitfalls": [
+        "选择优于输入不要默认给文本框",
+        "必须提供跳过/忽略入口",
+        "追问期间对话入口要有等待态"
+      ],
+      "previewRoute": "/",
+      "source": "src/components/agent-ui/clarify-card.tsx",
+      "tags": [
+        "对话流",
+        "卡片",
+        "澄清"
+      ],
+      "doc": "references/component-selection/clarify-card.md"
+    },
+    {
+      "id": "composer",
+      "kind": "component",
+      "title": "意图输入区 Composer",
+      "whenToUse": [
+        "对话流底部的统一输入入口",
+        "需要混合编辑提示词/上下文/能力"
+      ],
+      "whenNotToUse": [
+        "澄清卡片的表单录入→用 clarify-card",
+        "纯展示无需输入→不适用"
+      ],
+      "variants": [
+        "基础输入(仅提示词)",
+        "含上下文标签",
+        "含能力标签",
+        "语音输入态"
+      ],
+      "composeWith": [
+        "agent-ui/mention-popover(@选择器)",
+        "agent-ui/slash-popover(/选择器)",
+        "ui/textarea"
+      ],
+      "composeBoundary": [
+        "已选上下文/能力必须在输入区内显式呈现为标签",
+        "不与澄清卡片的表单字段混用"
+      ],
+      "pitfalls": [
+        "占位提示要随场景动态变化不能写死",
+        "异步操作(语音转写/文件上传/上下文解析)必须展示处理中态"
+      ],
+      "previewRoute": "/",
+      "source": "src/components/agent-ui/composer.tsx",
+      "tags": [
+        "输入",
+        "对话流"
+      ],
+      "doc": "references/component-selection/composer.md"
+    },
+    {
+      "id": "confirm-card",
+      "kind": "component",
+      "title": "确认卡片 ConfirmCard",
+      "whenToUse": [
+        "中风险操作的轻量确认",
+        "高风险操作的强确认",
+        "用户对已有数据或待执行操作做选择"
+      ],
+      "whenNotToUse": [
+        "待澄清信息缺失(还没到执行阶段)→clarify-card",
+        "低风险只读操作无需确认"
+      ],
+      "variants": [
+        "轻量确认(中风险)",
+        "强确认(高风险",
+        "字段含对象/动作/影响范围/后果/操作人)"
+      ],
+      "composeWith": [
+        "agent-ui/message-bubble"
+      ],
+      "composeBoundary": [
+        "无Tabs/Menu等深层导航",
+        "无内部滚动",
+        "字段<=10且直接可见不靠悬停点击触发",
+        "按钮<=3且主按钮<=1"
+      ],
+      "pitfalls": [
+        "不重复AI已用文字表达的信息",
+        "高风险操作不得用自然语言确认必须走确认卡片",
+        "执行结果必须回写对话流"
+      ],
+      "previewRoute": "/",
+      "source": "src/components/agent-ui/confirm-card.tsx",
+      "tags": [
+        "对话流",
+        "卡片",
+        "确认",
+        "风险"
+      ],
+      "doc": "references/component-selection/confirm-card.md"
+    },
+    {
+      "id": "error-state",
+      "kind": "component",
+      "title": "异常状态 ErrorState",
+      "whenToUse": [
+        "服务不可用",
+        "响应超时",
+        "执行失败",
+        "部分完成",
+        "权限不足",
+        "能力不支持",
+        "结果未知"
+      ],
+      "whenNotToUse": [
+        "任务正常完成→不适用"
+      ],
+      "variants": [
+        "服务不可用",
+        "响应超时",
+        "执行失败",
+        "部分完成",
+        "权限不足",
+        "能力不支持",
+        "结果未知"
+      ],
+      "composeWith": [
+        "agent-ui/message-bubble",
+        "agent-ui/confirm-card"
+      ],
+      "composeBoundary": [
+        "必须说明发生了什么/影响了什么/下一步怎么做",
+        "不得在未完成时暗示已成功"
+      ],
+      "pitfalls": [
+        "不要只提示失败或错误码",
+        "重试前必须确认上次执行结果避免重复执行发送/发布/支付/删除等操作"
+      ],
+      "previewRoute": "/",
+      "source": "src/components/agent-ui/error-state.tsx",
+      "tags": [
+        "对话流",
+        "异常",
+        "可信"
+      ],
+      "doc": "references/component-selection/error-state.md"
+    },
+    {
+      "id": "follow-up-suggestions",
+      "kind": "component",
+      "title": "后续引导 FollowUpSuggestions",
+      "whenToUse": [
+        "交互正常结束且非高风险操作刚完成",
+        "有明确基于上下文的追问价值"
+      ],
+      "whenNotToUse": [
+        "用户已明确结束对话",
+        "用户表达不满或负面情绪",
+        "任务失败且无恢复路径",
+        "高风险操作刚完成需先确认结果"
+      ],
+      "variants": [
+        "2个推荐",
+        "3-4个推荐"
+      ],
+      "composeWith": [
+        "agent-ui/message-bubble"
+      ],
+      "composeBoundary": [
+        "数量2-4个",
+        "内容必须基于当前上下文生成而非固定话术"
+      ],
+      "pitfalls": [
+        "不要在天气/总结/参数查询等简单问答后过度延伸推荐无关内容",
+        "高风险操作后不展示推荐追问"
+      ],
+      "previewRoute": "/",
+      "source": "src/components/agent-ui/follow-up-suggestions.tsx",
+      "tags": [
+        "对话流",
+        "引导",
+        "推荐"
+      ],
+      "doc": "references/component-selection/follow-up-suggestions.md"
+    },
+    {
+      "id": "message-actions",
+      "kind": "component",
+      "title": "消息操作栏 MessageActions",
+      "whenToUse": [
+        "每条智能体或用户消息末尾"
+      ],
+      "whenNotToUse": [
+        "消息仍在流式生成中→生成完成后才展示完整操作栏"
+      ],
+      "variants": [
+        "智能体消息操作",
+        "用户消息操作"
+      ],
+      "composeWith": [
+        "agent-ui/message-bubble"
+      ],
+      "composeBoundary": [
+        "高频操作直接展示低频收纳进更多菜单",
+        "操作要按消息状态动态显示可用项"
+      ],
+      "pitfalls": [
+        "避免提供无意义或容易误触的操作",
+        "重新生成/分享等影响后续流程的操作要明确反馈执行结果"
+      ],
+      "previewRoute": "/",
+      "source": "src/components/agent-ui/message-actions.tsx",
+      "tags": [
+        "对话流",
+        "操作"
+      ],
+      "doc": "references/component-selection/message-actions.md"
+    },
+    {
+      "id": "message-bubble",
+      "kind": "component",
+      "title": "消息气泡 MessageBubble",
+      "whenToUse": [
+        "对话流中展示单条用户或智能体消息"
+      ],
+      "whenNotToUse": [
+        "制品摘要→用 artifact-card",
+        "需要用户决策→用 clarify-card/confirm-card"
+      ],
+      "variants": [
+        "用户消息",
+        "智能体消息(默认)",
+        "智能体消息-流式中",
+        "智能体消息-出错"
+      ],
+      "composeWith": [
+        "agent-ui/message-actions",
+        "agent-ui/task-progress",
+        "agent-ui/artifact-card",
+        "react-markdown"
+      ],
+      "composeBoundary": [
+        "不展示模型原始思维链或系统提示词",
+        "长内容应拆分或改用制品卡片而非塞进单条气泡"
+      ],
+      "pitfalls": [
+        "流式输出用aria-live=polite的role=log容器避免屏幕阅读器重复朗读",
+        "不要在气泡内重复用户已知信息"
+      ],
+      "previewRoute": "/",
+      "source": "src/components/agent-ui/message-bubble.tsx",
+      "tags": [
+        "对话流",
+        "消息"
+      ],
+      "doc": "references/component-selection/message-bubble.md"
+    },
+    {
+      "id": "task-progress",
+      "kind": "component",
+      "title": "任务过程 TaskProgress",
+      "whenToUse": [
+        "多步骤任务",
+        "涉及工具调用",
+        "需要向用户解释正在发生什么"
+      ],
+      "whenNotToUse": [
+        "单轮简单问答无需展示过程",
+        "结果本身就是全部信息量"
+      ],
+      "variants": [
+        "仅状态层",
+        "状态层+执行层",
+        "状态层+任务层+执行层(长链路)"
+      ],
+      "composeWith": [
+        "agent-ui/message-bubble"
+      ],
+      "composeBoundary": [
+        "不展示模型内部原始思维链或系统提示词",
+        "工具调用要转成用户可理解的描述而非接口名"
+      ],
+      "pitfalls": [
+        "任务层非必须不要为短任务强行加",
+        "执行层要渐进式展示不能一次性甩出全部步骤"
+      ],
+      "previewRoute": "/",
+      "source": "src/components/agent-ui/task-progress.tsx",
+      "tags": [
+        "对话流",
+        "过程展示",
+        "可信"
+      ],
+      "doc": "references/component-selection/task-progress.md"
+    }
+  ]
+}
