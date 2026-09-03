@@ -99,6 +99,13 @@ export function AgentShell({ config }: { config: AppConfig }) {
 
   const activeConversationPinned = Boolean(activeConversation && pinnedConversations.some((item) => item.id === activeConversation.id))
 
+  const updateApprovalStatus = (conversation: Conversation, approvalStatus: "approved" | "rejected") => {
+    const update = (items: Conversation[]) => items.map((item) => item.id === conversation.id ? { ...item, approvalStatus } : item)
+    setPinnedConversations(update)
+    setConversations(update)
+    setActiveConversation((current) => current?.id === conversation.id ? { ...current, approvalStatus } : current)
+  }
+
   /** 执行 Badge 的统一入口：图片走蒙层查看器，其余产物进独立面板容器 */
   const openArtifact = (target: ArtifactTarget) => {
     if (target.type === "image") setImageView(target)
@@ -260,6 +267,7 @@ export function AgentShell({ config }: { config: AppConfig }) {
             onRename={startRenaming}
             activeConversationPinned={activeConversationPinned}
             onOpenArtifact={openArtifact}
+            onApprovalStatusChange={updateApprovalStatus}
             onOpenSidebar={() => {
               if (panelOpen ? below980 : below660) setSidebarDrawerOpen(true)
               else setSidebarOpen(true)

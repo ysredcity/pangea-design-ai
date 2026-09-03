@@ -1,4 +1,5 @@
 import type { ProductBlockRenderer } from "./conversation-flow"
+import { renderProductBlock } from "./product-block-renderer"
 import type { ExpertVisualKey, ProductAvatarKey } from "./resource-visuals"
 
 export type ProductIdentity = {
@@ -54,6 +55,7 @@ export const appConfig = {
     { id: "ux", label: "用户体验专家", visualKey: "ux" },
     { id: "industry", label: "行业研究专家", visualKey: "industry" },
   ],
+  renderProductBlock,
   welcome: {
     greeting: "👋 Hey！有什么需要我搞定的？",
     expertIds: ["office", "document", "data", "research", "campus"],

@@ -67,6 +67,7 @@ const connectorOptions = [
 ]
 
 type ComposerProps = {
+  disabled?: boolean
   onSend?: (message: string, context: ContextItem[]) => void
   draft?: string
   onDraftChange?: (value: string) => void
@@ -76,7 +77,7 @@ type ComposerProps = {
   menuSide?: MenuSide
 }
 
-export function Composer({ onSend, draft, onDraftChange, selectedExpert, onSelectedExpertChange, menuSide = "above" }: ComposerProps) {
+export function Composer({ disabled = false, onSend, draft, onDraftChange, selectedExpert, onSelectedExpertChange, menuSide = "above" }: ComposerProps) {
   const [uploads, setUploads] = useState<UploadItem[]>([])
   const [experts, setExperts] = useState<ContextItem[]>([])
   const [recording, setRecording] = useState(false)
@@ -91,7 +92,8 @@ export function Composer({ onSend, draft, onDraftChange, selectedExpert, onSelec
 
   // 受控草稿（新对话页的推荐指令）直接参与判断，这样外部写入草稿时不必在 effect 里再 setState
   const hasText = hasContent || Boolean(draft?.trim())
-  const canSend = hasText || uploads.length > 0 || experts.length > 0 || enabledConnectors.size > 0
+  const interactionsDisabled = disabled || recording
+  const canSend = !disabled && (hasText || uploads.length > 0 || experts.length > 0 || enabledConnectors.size > 0)
 
   /**
    * 读取可编辑区，同时产出两种文本：
@@ -244,7 +246,7 @@ export function Composer({ onSend, draft, onDraftChange, selectedExpert, onSelec
   }
 
   const send = () => {
-    if (!canSend) return
+    if (disabled || !canSend) return
     const { markup, tags } = readEditor()
     const uploadContext: ContextItem[] = uploads.map((file) => ({ id: file.id, label: file.name, type: "upload", size: file.size, target: createLocalFilePreview(file.name, file.size) }))
     const connectorContext: ContextItem[] = Array.from(enabledConnectors).map((label) => ({ id: `连接器-${label}`, label, type: "连接器" }))
@@ -279,9 +281,11 @@ export function Composer({ onSend, draft, onDraftChange, selectedExpert, onSelec
             role="textbox"
             aria-multiline="true"
             aria-label="消息内容"
-            contentEditable={!recording}
+            contentEditable={!interactionsDisabled}
+            aria-disabled={disabled || undefined
+            }
             suppressContentEditableWarning
-            className={cn("min-h-12 w-full whitespace-pre-wrap break-words text-base leading-6 outline-none", recording && "invisible")}
+            className={cn("min-h-12 w-full whitespace-pre-wrap break-words text-base leading-6 outline-none", recording && "invisible", disabled && "cursor-not-allowed opacity-50")}
             onInput={() => { syncEditorState(); detectTrigger() }}
             onKeyUp={() => { saveSelection(); detectTrigger() }}
             onMouseUp={() => { saveSelection(); setTrigger(null) }}
@@ -306,26 +310,26 @@ export function Composer({ onSend, draft, onDraftChange, selectedExpert, onSelec
         </div>
       </div>
       <div className="flex min-h-14 items-center justify-between gap-2 p-2.5">
-        <input ref={fileInputRef} type="file" multiple className="hidden" onChange={(event) => {
+        <input ref={fileInputRef} type="file" multiple disabled={disabled} className="hidden" onChange={(event) => {
           const files = Array.from(event.target.files ?? []).map((file) => ({ id: `upload-${file.name}-${file.lastModified}`, name: file.name, size: file.size }))
           setUploads((items) => [...items, ...files.filter((file) => !items.some((item) => item.id === file.id))])
           event.currentTarget.value = ""
         }} />
         <div className="flex min-w-0 flex-1 items-center gap-2">
-          <AddContextMenu disabled={recording} onLocalUpload={() => fileInputRef.current?.click()} onSelect={addContext} />
+          <AddContextMenu disabled={interactionsDisabled} onLocalUpload={() => fileInputRef.current?.click()} onSelect={addContext} />
           <div className="flex min-w-0 items-center gap-2 overflow-x-auto px-1">
-            <ConnectorMenu enabled={enabledConnectors} onEnabledChange={setEnabledConnectors} />
+            <ConnectorMenu disabled={interactionsDisabled} enabled={enabledConnectors} onEnabledChange={setEnabledConnectors} />
             {experts.map((expert) => (
               <span key={expert.id} className="flex h-9 shrink-0 items-center gap-1 rounded-full bg-primary-bg px-2 text-sm font-medium text-primary">
                 <ExpertAvatar expert={expert.label} className="size-5 [&_svg]:size-3" /><span className="px-0.5">{expert.label}</span>
-                <button type="button" aria-label={`移除${expert.label}`} className="rounded-full hover:bg-primary/10" onClick={() => { setExperts([]); onSelectedExpertChange?.(null) }}><X className="size-4" /></button>
+                <button type="button" disabled={interactionsDisabled} aria-label={`移除${expert.label}`} className="rounded-full hover:bg-primary/10" onClick={() => { setExperts([]); onSelectedExpertChange?.(null) }}><X className="size-4" /></button>
               </span>
             ))}
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Tooltip>
-            <TooltipTrigger render={<IconButton aria-label={recording ? "结束录音" : "语音输入"} className={cn("group/recording size-9", recording && "bg-destructive/10 text-destructive hover:bg-destructive/10 hover:text-destructive")} onClick={toggleRecording}>{recording ? <><VoiceWave /><X className="hidden size-5 group-hover/recording:block" /></> : <Mic className="size-5" />}</IconButton>} />
+            <TooltipTrigger render={<IconButton aria-label={recording ? "结束录音" : "语音输入"} disabled={interactionsDisabled} className={cn("group/recording size-9", recording && "bg-destructive/10 text-destructive hover:bg-destructive/10 hover:text-destructive")} onClick={toggleRecording}>{recording ? <><VoiceWave /><X className="hidden size-5 group-hover/recording:block" /></> : <Mic className="size-5" />}</IconButton>} />
             <TooltipContent>{recording ? "结束录音" : "语音输入"}</TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -453,7 +457,7 @@ function ScrollButton({ children, label, onClick, side }: { children: React.Reac
   >{children}</button>
 }
 
-function ConnectorMenu({ enabled, onEnabledChange }: { enabled: Set<string>; onEnabledChange: (value: Set<string>) => void }) {
+function ConnectorMenu({ disabled = false, enabled, onEnabledChange }: { disabled?: boolean; enabled: Set<string>; onEnabledChange: (value: Set<string>) => void }) {
   const ConnectorIcon = contextIcons.连接器
   const enabledOptions = connectorOptions.filter(({ label }) => enabled.has(label))
   const visibleOptions = enabledOptions.slice(0, 3)
@@ -468,7 +472,7 @@ function ConnectorMenu({ enabled, onEnabledChange }: { enabled: Set<string>; onE
   return (
     <DropdownMenu>
       <Tooltip>
-        <TooltipTrigger render={<DropdownMenuTrigger render={<button type="button" className="flex h-9 shrink-0 items-center gap-1 rounded-full bg-transparent px-2 text-sm font-medium text-foreground transition-colors hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50">
+        <TooltipTrigger render={<DropdownMenuTrigger disabled={disabled} render={<button type="button" disabled={disabled} className="flex h-9 shrink-0 items-center gap-1 rounded-full bg-transparent px-2 text-sm font-medium text-foreground transition-colors hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground disabled:pointer-events-none disabled:opacity-50 dark:hover:bg-muted/50">
           {enabledOptions.length > 0 ? (
             <span className="flex items-center pl-0.5" aria-label={`已开启 ${enabledOptions.map(({ label }) => label).join("、")}`}>
               {visibleOptions.map((connector, index) => <ConnectorAvatar key={connector.label} connector={connector} className={cn(index > 0 && "-ml-1.5")} />)}

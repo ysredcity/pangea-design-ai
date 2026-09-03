@@ -21,7 +21,13 @@ function files(dir, pattern) {
 }
 
 function materialize(template, sourceFile, destination) {
-  const content = readFileSync(sourceFile, 'utf8')
+  let content = readFileSync(sourceFile, 'utf8')
+  if (relative(source, sourceFile) === 'conversation/confirm-card.tsx') {
+    content = content.replace(
+      "import { Button } from '../ui/button'",
+      "import { Button } from '@/components/ui/button'",
+    )
+  }
   let existing = ''
   try { existing = readFileSync(destination, 'utf8') } catch { /* missing generated source */ }
   if (existing === content) return 0

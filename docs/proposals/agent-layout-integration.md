@@ -1,6 +1,6 @@
 # 方案：整合 agent-layout 作为沉浸式事实源
 
-> 状态：**方案已确认，待实现**（2026-08-27 讨论确认）。本文档定方向、组件文档体系与改造顺序，代码尚未开始。
+> 状态：**方案已确认；Phase 0–4 与 Copilot Base UI 迁移已实施**（2026-09-03）。本文档保留方向、组件文档体系与已验证边界；Phase 5 及以后尚未完成。
 > 关联：[mock-script-engine.md](./mock-script-engine.md) · [website-showcase.md](./website-showcase.md) · [agent-layout/DESIGN.md](/Users/yangshuo/Code/agent-layout/DESIGN.md) · [agent-layout/HANDOFF.md](/Users/yangshuo/Code/agent-layout/HANDOFF.md)
 
 ## 1. 背景与结论
@@ -282,15 +282,15 @@ JSON 路径（website 编辑器产出 / 消费）
 
 **超出范围、需单独决定**：`chat-5` 澄清表单提交后的续流程时序（1.1 秒 → 插入步骤 → 1.4 秒 → 最终确认）写在 `conversation-flow.tsx` 里，是**代码不是数据**。若希望 PM 在编辑器里编排分阶段推进，需把时序也提成数据（对应剧本引擎的 `steps[].delayMs`）。
 
-## 实施状态（2026-09-03）\n\nPhase 0（设计规则/门禁/组件文档骨架）、Phase 1（subtree 整合）和 Phase 2（`AppConfig`、产品块插槽、共享 Base UI 对话域）已完成。Copilot 亦已在同一轮迁移为 Base UI，并通过中立 `ArtifactRouter` 将交付物路由至左侧画布；不再等待原路线图的独立 Phase 6。\n\n## 9. 改造顺序
+## 实施状态（2026-09-03）\n\nPhase 0（设计规则/门禁/组件文档骨架）、Phase 1（subtree 整合）、Phase 2（`AppConfig`、产品块插槽、共享 Base UI 对话域）和 Phase 3（组件正文与扩展地图）已完成。**Phase 4 的 ConfirmCard、ErrorState、FollowUpSuggestions、其 `ProductBlockAction` 回写与直接涉及的键盘/live-region/44px 约束也已实施。** Copilot 已在同一条 Base UI 链路上复用 shared card：`routeArtifact` 只更新左侧画布，不进入沉浸式 panel/Tab。Phase 5 的双数据源剧本适配、完整 immersive `AgentApp` 壳层抽取与 Phase 7 website 尚未完成；不能误写为 Phase 5 已完成。\n\n## 9. 改造顺序
 
 | Phase | 内容 | 产出 |
 |---|---|---|
 | **0** | 合并 `design.md`（V1.4 骨架 + DESIGN.md 细则）；评审清单/反面清单升级进 `quality-gates.md`；建组件文档体系骨架 | 纯文档，风险最低，先做以校准后续所有实现 |
 | **1** | `git subtree add` 搬入 agent-layout → `templates/immersive-starter/`；接进 workspaces；根 `npm run gate` 跑通 | 仓库整合完成 |
 | **2** ✅ | `packages/agent-ui` 分层导出（共享 conversation / immersive / copilot）；`AppConfig` 配置化改造；补"对话流自定义块"扩展点 | 共享对话域与双 Base UI 壳层入口成立；完整沉浸式 `AgentApp` 壳层抽取后续补齐 |
-| **3** | 写组件文档（按 5.2 的目录，逐个核对源码而非照抄 HANDOFF）+ `extension-map.md` | **skill 生成质量的决定性一步**，优先于 website |
-| **4** | 补三个 V1.4 缺口组件（`confirm-card` / `error-state` / `follow-up-suggestions`）+ 无障碍层 | V1.4 覆盖完整 |
+| **3** ✅ | 写组件文档（按 5.2 的目录，逐个核对源码而非照抄 HANDOFF）+ `extension-map.md` | 组件 API、形态边界与精确扩展路径已完成 |
+| **4** ✅ | 补三个 V1.4 缺口组件（`confirm-card` / `error-state` / `follow-up-suggestions`）+ 无障碍层 | 三张 shared Base UI 卡、`onAction` 回写、键盘/44px/live-region 边界已实施；实际业务结果仍由消费者拥有 |
 | **5** | 剧本引擎适配双数据源（`resolveTargets` + `check-scripts.mjs` 适配新数据模型） | 编辑器数据链路就绪 |
 | ~~**6**~~ ✅ | `copilot-starter` 迁移到 Base UI，复用共享对话域 | 已随 Phase 2 一并完成；Copilot 产物仅进入左侧画布 |
 | **7** | `website/`（文档站 + 组件画廊 + 播放器 + 在线编辑器） | 最后做 |

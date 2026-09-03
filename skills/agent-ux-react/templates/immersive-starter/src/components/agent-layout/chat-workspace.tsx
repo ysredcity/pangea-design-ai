@@ -15,6 +15,7 @@ type ChatWorkspaceProps = {
   onPinnedChange: (conversation: Conversation, pinned: boolean) => void
   onRename: (conversation: Conversation) => void
   onOpenArtifact: (target: ArtifactTarget) => void
+  onApprovalStatusChange: (conversation: Conversation, status: "approved" | "rejected") => void
   onOpenSidebar: () => void
   onStartConversation: (message: string, context: ContextItem[]) => void
   panelOpen: boolean
@@ -30,6 +31,7 @@ export function ChatWorkspace({
   onPinnedChange,
   onRename,
   onOpenArtifact,
+  onApprovalStatusChange,
   onOpenSidebar,
   onStartConversation,
   panelAtDefaultSplit,
@@ -51,6 +53,7 @@ export function ChatWorkspace({
           onNewChat={onNewChat}
           onOpenSidebar={onOpenSidebar}
           onOpenArtifact={onOpenArtifact}
+          onApprovalStatusChange={onApprovalStatusChange}
           onPinnedChange={onPinnedChange}
           onRename={onRename}
         />

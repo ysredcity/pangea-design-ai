@@ -47,13 +47,14 @@ export type Conversation = {
   loading?: boolean
   unread?: boolean
   waitingForReply?: boolean
+  approvalStatus?: "pending" | "approved" | "rejected"
   initialMessage?: string
   expert?: string
   scene?: ConversationScene
 }
 
 export const initialPinnedConversations: Conversation[] = [
-  { id: "pinned-1", title: "如果用一个符号元素形容报表，应该用什么最形象" },
+  { id: "pinned-1", title: "如果用一个符号元素形容报表，应该用什么最形象", approvalStatus: "pending" },
 ]
 
 export const initialConversations: Conversation[] = [
@@ -357,9 +358,9 @@ function ConversationMenuItem({
               isActive={active}
               className={cn(
                 "h-8 rounded-[10px] px-2 pr-7 text-sm font-normal text-foreground hover:text-foreground data-active:bg-sidebar-accent data-active:font-normal data-active:text-foreground",
-                conversation.waitingForReply && "pr-[76px]",
+                (conversation.waitingForReply || conversation.approvalStatus === "pending") && "pr-[76px]",
                 drawer && "h-10 px-1 pr-9 text-base",
-                drawer && conversation.waitingForReply && "pr-[88px]",
+                drawer && (conversation.waitingForReply || conversation.approvalStatus === "pending") && "pr-[88px]",
               )}
               onFocus={checkTitleTruncation}
               onPointerEnter={checkTitleTruncation}
@@ -386,7 +387,17 @@ function ConversationMenuItem({
           <span className="size-2 rounded-full bg-success" />
         </SidebarMenuBadge>
       )}
-      {conversation.waitingForReply && (
+      {conversation.approvalStatus === "pending" && (
+        <SidebarMenuBadge
+          className={cn(
+            "right-2 top-1.5 h-5 rounded-md bg-destructive-bg px-1.5 text-xs font-normal text-destructive-foreground! transition-opacity group-hover/menu-item:opacity-0",
+            drawer && "top-2.5 px-2 text-sm",
+          )}
+        >
+          等待批准
+        </SidebarMenuBadge>
+      )}
+      {conversation.waitingForReply && conversation.approvalStatus !== "pending" && (
         <SidebarMenuBadge
           className={cn(
             "right-2 top-1.5 h-5 rounded-md bg-warning/10 px-1.5 text-xs font-normal text-warning-foreground! transition-opacity group-hover/menu-item:opacity-0",

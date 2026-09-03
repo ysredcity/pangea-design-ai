@@ -11,13 +11,16 @@ import { CopyAction, FeedbackActions } from "./message-actions"
 import { MarkdownContent } from "./markdown-content"
 import { AgentAvatar, LibraryFileIcon } from "./resource-visuals"
 import { ClarificationFormCard } from "./clarification-form-card"
+import type { ProductBlockAction } from "@/agent-ui/conversation"
 import { type AssistantAttachment, type ClarificationFollowUpData, type ClarificationFormData, type ConversationScene, type ConversationTurnData, type ExecutionActionData, type ExecutionData, type ExecutionStepData, type ExecutionTaskData, type ProductConversationBlock, type ReasoningData } from "./conversation-data"
 import type { ProductIdentity, WelcomeExpert } from "./app-config"
 import type { ArtifactTarget } from "./panel-types"
 
 export type ArtifactRouter = (target: ArtifactTarget) => void
-export type ProductBlockRenderer = (block: ProductConversationBlock, context: { onOpenArtifact: ArtifactRouter }) => ReactNode
+export type ProductBlockActionHandler = (action: ProductBlockAction) => void
+export type ProductBlockRenderer = (block: ProductConversationBlock, context: { isLatestTurn: boolean; onOpenArtifact: ArtifactRouter; onProductBlockAction: ProductBlockActionHandler }) => ReactNode
 type OpenArtifact = ArtifactRouter
+type ProductActionResult = { actionId: string; message: string }
 
 type DisclosureContentProps = {
   children: ReactNode
@@ -89,9 +92,10 @@ function getStreamingExecution(followUp: ClarificationFollowUpData, phase: Follo
   }
 }
 
-export function ConversationFlow({ scene, identity, experts, onOpenArtifact, renderProductBlock }: { scene: ConversationScene; identity: ProductIdentity; experts: readonly WelcomeExpert[]; onOpenArtifact: ArtifactRouter; renderProductBlock?: ProductBlockRenderer }) {
+export function ConversationFlow({ approvalStatus, scene, identity, experts, onOpenArtifact, onProductBlockAction, renderProductBlock }: { approvalStatus?: "pending" | "approved" | "rejected"; scene: ConversationScene; identity: ProductIdentity; experts: readonly WelcomeExpert[]; onOpenArtifact: ArtifactRouter; onProductBlockAction?: ProductBlockActionHandler; renderProductBlock?: ProductBlockRenderer }) {
   const [submittedClarificationIds, setSubmittedClarificationIds] = useState<Set<string>>(() => new Set())
   const [followUpPhases, setFollowUpPhases] = useState<Record<string, FollowUpPhase>>({})
+  const [productActionResults, setProductActionResults] = useState<Record<string, ProductActionResult>>({})
   const prefersReducedMotion = useReducedMotion()
 
   useEffect(() => {
@@ -113,14 +117,37 @@ export function ConversationFlow({ scene, identity, experts, onOpenArtifact, ren
     setFollowUpPhases((phases) => phases[formId] ? phases : { ...phases, [formId]: "validating" })
   }
 
+  const handleProductBlockAction = (action: ProductBlockAction) => {
+    if (action.type === "confirm-decision") {
+      onProductBlockAction?.(action)
+      return
+    }
+    if (action.type === "follow-up-select") {
+      setProductActionResults((results) => {
+        const next = { ...results }
+        delete next[action.blockId]
+        return next
+      })
+      onProductBlockAction?.(action)
+      return
+    }
+
+    const message = `已记录“${action.recovery}”恢复选择；本地演示不会执行真实恢复操作。`
+    setProductActionResults((results) => ({ ...results, [action.blockId]: { actionId: action.actionId, message } }))
+    onProductBlockAction?.(action)
+  }
+
   return <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-10 py-3">{scene.turns.map((turn, index) => {
     const clarificationId = turn.assistant?.clarification?.id
     return <ConversationTurn
       key={turn.id}
       turn={turn}
+      approvalStatus={approvalStatus}
       identity={identity}
       experts={experts}
       renderProductBlock={renderProductBlock}
+      productActionResult={turn.productBlock ? productActionResults[turn.productBlock.id] : undefined}
+      onProductBlockAction={handleProductBlockAction}
       current={index === scene.turns.length - 1}
       onOpenArtifact={onOpenArtifact}
       onClarificationSubmit={submitClarification}
@@ -130,15 +157,22 @@ export function ConversationFlow({ scene, identity, experts, onOpenArtifact, ren
   })}</div>
 }
 
-function ConversationTurn({ clarificationSubmitted, current, experts, followUpPhase, identity, onClarificationSubmit, onOpenArtifact, renderProductBlock, turn }: { clarificationSubmitted: boolean; current: boolean; experts: readonly WelcomeExpert[]; followUpPhase?: FollowUpPhase; identity: ProductIdentity; onClarificationSubmit: (formId: string) => void; onOpenArtifact: ArtifactRouter; renderProductBlock?: ProductBlockRenderer; turn: ConversationTurnData }) {
+function ConversationTurn({ approvalStatus, clarificationSubmitted, current, experts, followUpPhase, identity, onClarificationSubmit, onOpenArtifact, onProductBlockAction, productActionResult, renderProductBlock, turn }: { approvalStatus?: "pending" | "approved" | "rejected"; clarificationSubmitted: boolean; current: boolean; experts: readonly WelcomeExpert[]; followUpPhase?: FollowUpPhase; identity: ProductIdentity; onClarificationSubmit: (formId: string) => void; onOpenArtifact: ArtifactRouter; onProductBlockAction: ProductBlockActionHandler; productActionResult?: ProductActionResult; renderProductBlock?: ProductBlockRenderer; turn: ConversationTurnData }) {
   const continuation = clarificationSubmitted ? turn.assistant?.clarification?.followUp : undefined
+  const approvalPending = Boolean(current && turn.awaitingApproval && approvalStatus === "pending")
+  const approvalOutcome = current && turn.productBlock && turn.approvalOutcomes && approvalStatus && approvalStatus !== "pending"
+    ? turn.approvalOutcomes[approvalStatus]
+    : undefined
   return <section className="space-y-5">
     <UserMessage message={turn.user} onOpenArtifact={onOpenArtifact} />
     <AgentResponseBlock
       identity={identity}
       experts={experts}
-      productBlock={turn.productBlock}
+      productBlock={approvalPending || !turn.awaitingApproval ? turn.productBlock : undefined}
       renderProductBlock={renderProductBlock}
+      productActionResult={productActionResult}
+      needsApproval={approvalPending}
+      onProductBlockAction={onProductBlockAction}
       expert={turn.expert}
       execution={turn.execution}
       current={current}
@@ -148,6 +182,7 @@ function ConversationTurn({ clarificationSubmitted, current, experts, followUpPh
       onClarificationSubmit={onClarificationSubmit}
       needsReply={current && turn.assistant?.kind === "question" && !continuation}
     />
+    {approvalOutcome && <ApprovalContinuation current={current} execution={approvalOutcome.execution} assistant={approvalOutcome.assistant} identity={identity} experts={experts} expert={turn.expert} onOpenArtifact={onOpenArtifact} />}
     {continuation && <AssistantContinuation identity={identity} experts={experts} expert={turn.expert} followUp={continuation} phase={followUpPhase ?? "ready"} current={current} onOpenArtifact={onOpenArtifact} />}
   </section>
 }
@@ -168,6 +203,21 @@ function AssistantContinuation({ current, expert, followUp, identity, experts, o
   </div>
 }
 
+function ApprovalContinuation({ assistant, current, execution, expert, experts, identity, onOpenArtifact }: { assistant: ConversationTurnData["assistant"]; current: boolean; execution: ExecutionData; expert?: string; experts: readonly WelcomeExpert[]; identity: ProductIdentity; onOpenArtifact: ArtifactRouter }) {
+  if (!assistant) return null
+  return <div className="animate-in fade-in-0 duration-200 motion-reduce:animate-none">
+    <AgentResponseBlock
+      identity={identity}
+      experts={experts}
+      expert={expert}
+      execution={execution}
+      current={current}
+      onOpenArtifact={onOpenArtifact}
+      assistant={assistant}
+    />
+  </div>
+}
+
 function AgentResponseBlock({
   assistant,
   clarificationSubmitted = false,
@@ -176,9 +226,12 @@ function AgentResponseBlock({
   experts,
   expert,
   identity,
+  needsApproval = false,
   needsReply = false,
   onClarificationSubmit,
   onOpenArtifact,
+  onProductBlockAction,
+  productActionResult,
   productBlock,
   renderProductBlock,
 }: {
@@ -189,9 +242,12 @@ function AgentResponseBlock({
   experts: readonly WelcomeExpert[]
   expert?: string
   identity: ProductIdentity
+  needsApproval?: boolean
   needsReply?: boolean
   onClarificationSubmit?: (formId: string) => void
   onOpenArtifact: ArtifactRouter
+  onProductBlockAction?: ProductBlockActionHandler
+  productActionResult?: ProductActionResult
   productBlock?: ProductConversationBlock
   renderProductBlock?: ProductBlockRenderer
 }) {
@@ -200,9 +256,14 @@ function AgentResponseBlock({
       <AgentIdentity identity={identity} experts={experts} expert={expert} />
       <ExecutionProcess execution={execution} current={current} onOpenArtifact={onOpenArtifact} />
     </div>
-    {assistant && <AssistantMessage {...assistant} clarificationSubmitted={clarificationSubmitted} onClarificationSubmit={onClarificationSubmit} onOpenArtifact={onOpenArtifact} needsReply={needsReply} />}
-    {productBlock && renderProductBlock?.(productBlock, { onOpenArtifact })}
+    {assistant && <AssistantMessage {...assistant} clarificationSubmitted={clarificationSubmitted} onClarificationSubmit={onClarificationSubmit} onOpenArtifact={onOpenArtifact} needsApproval={needsApproval} needsReply={needsReply} />}
+    {productBlock && renderProductBlock?.(productBlock, { isLatestTurn: current, onOpenArtifact, onProductBlockAction: onProductBlockAction ?? (() => undefined) })}
+    {productActionResult && productBlock?.type !== "follow-up-suggestions" && <ProductBlockActionFeedback result={productActionResult} />}
   </div>
+}
+
+function ProductBlockActionFeedback({ result }: { result: ProductActionResult }) {
+  return <div role="log" aria-live="polite" aria-relevant="additions" className="rounded-lg border border-border bg-muted px-3 py-2 text-sm text-muted-foreground">{result.message}</div>
 }
 
 export function AgentIdentity({ identity, experts, expert }: { identity: ProductIdentity; experts: readonly WelcomeExpert[]; expert?: string }) {
@@ -383,9 +444,9 @@ function TaskExecutionStep({ step, onOpenArtifact }: { step: ExecutionStepData; 
   </div>
 }
 
-export function AssistantMessage({ attachments, clarification, clarificationSubmitted = false, content, needsReply = false, onClarificationSubmit, onOpenArtifact, timestamp }: { attachments?: AssistantAttachment[]; clarification?: ClarificationFormData; clarificationSubmitted?: boolean; content: string; timestamp: string; kind?: "answer" | "question"; needsReply?: boolean; onClarificationSubmit?: (formId: string) => void; onOpenArtifact?: OpenArtifact }) {
+export function AssistantMessage({ attachments, clarification, clarificationSubmitted = false, content, needsApproval = false, needsReply = false, onClarificationSubmit, onOpenArtifact, timestamp }: { attachments?: AssistantAttachment[]; clarification?: ClarificationFormData; clarificationSubmitted?: boolean; content: string; timestamp: string; kind?: "answer" | "question"; needsApproval?: boolean; needsReply?: boolean; onClarificationSubmit?: (formId: string) => void; onOpenArtifact?: OpenArtifact }) {
   return <div className="space-y-3">
-    {needsReply && <div className="flex items-center gap-2 text-sm font-medium text-primary"><ListTodo className="size-4" />需要你的回复</div>}
+    {(needsApproval || needsReply) && <div className={cn("flex items-center gap-2 text-sm font-medium", needsApproval ? "text-destructive-foreground" : "text-primary")}><ListTodo className="size-4" />{needsApproval ? "需要你的批准" : "需要你的回复"}</div>}
     <MarkdownContent>{content}</MarkdownContent>
     <MessageAttachmentList attachments={attachments} onOpenArtifact={onOpenArtifact} align="start" />
     {clarification && <ClarificationFormCard form={clarification} submitted={clarificationSubmitted} onSubmit={onClarificationSubmit} />}

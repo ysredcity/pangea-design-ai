@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from "react"
-import { ArrowUpLeft, ChevronLeft, ChevronRight, IndentIncrease } from "lucide-react"
+import { ChevronLeft, ChevronRight, IndentIncrease } from "lucide-react"
 
+import { RecommendationList } from "@/agent-ui/conversation"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import type { AppConfig, WelcomeExpert } from "./app-config"
 import { Composer, type ContextItem } from "./composer"
@@ -113,7 +114,10 @@ function Suggestion({ item, onClick }: { item: SuggestionItem; onClick: () => vo
 }
 
 function ExpertSuggestionList({ suggestions, onSelect }: { suggestions: SuggestionItem[]; onSelect: (item: SuggestionItem) => void }) {
-  return <div className="mt-10 overflow-hidden rounded-[10px]">{suggestions.map((item) => <button key={item.prompt} type="button" onClick={() => onSelect(item)} className="group flex w-full items-center gap-2 rounded-[10px] px-3 py-2 text-left text-sm leading-5 transition-colors hover:bg-accent"><span className="min-w-0 flex-1 truncate">{item.prompt}</span><ArrowUpLeft aria-hidden="true" className="size-4 shrink-0 text-muted-foreground opacity-80 transition-transform group-hover:-translate-x-0.5" /></button>)}</div>
+  return <RecommendationList className="mt-10" items={suggestions.map((item) => ({ id: item.prompt, content: item.prompt }))} arrowDirection="up-left" onSelect={(suggestion) => {
+    const item = suggestions.find((candidate) => candidate.prompt === suggestion.id)
+    if (item) onSelect(item)
+  }} />
 }
 
 function genericExpertSuggestions(expert: WelcomeExpert): string[] {

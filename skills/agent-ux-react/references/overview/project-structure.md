@@ -12,10 +12,10 @@ user-invocable: false
 
 | 层 | 事实源 | 责任 |
 |---|---|---|
-| 共享对话域 | `packages/agent-ui/src/conversation/` | 消息、执行过程、Composer、交付物入口与中立 `ArtifactRouter` |
-| 沉浸式适配 | `packages/agent-ui/src/immersive/` + 模板的 `agent-layout/` | 侧栏、对话区、右侧 Tab/图片查看器；将中立产物映射为面板 |
-| Copilot 适配 | `packages/agent-ui/src/copilot/` | 资源区、工作画布与辅助对话区；将中立产物映射到画布 |
-| 产品装配 | 两套模板的 `src/App.tsx`、mock 与产品扩展 | 场景、产品配置、画布/面板数据与专属块；不把业务能力吞入 `AppConfig` |
+| 共享对话域 | `packages/agent-ui/src/conversation/` | 消息、执行过程、Composer、三张交互卡、交付物入口与中立 `ArtifactRouter` / `ProductBlockAction` |
+| 沉浸式适配 | `packages/agent-ui/src/immersive/` + `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/` | 侧栏、对话区、右侧 Tab/图片查看器；本地 panel adapter 进入 `AgentShell` |
+| Copilot 适配 | `packages/agent-ui/src/copilot/copilot-app.tsx` | 资源区、工作画布与辅助对话区；通过 `routeArtifact: ArtifactRouter` 把中立产物交给产品页 |
+| 产品装配 | immersive 的 `agent-layout/{app-config,conversation-data,panel-data}.ts`；Copilot 的 `templates/copilot-starter/src/pages/ContractReview.tsx` | 场景、产品配置、面板数据或左画布 state 与专属块；不把业务能力吞入 `AppConfig` |
 
 `@agent-ux/agent-ui` 只公开 `.`（共享对话）、`/conversation`、`/immersive`、`/copilot`。共享域绝不 import `PanelView`、`ArtifactPanel` 或 Copilot canvas。`AgentResponseBlock`、`ConversationTurn`、`AssistantContinuation` 仍是实现内部边界。
 
@@ -36,6 +36,6 @@ npm run gate
 ## 产品扩展
 
 - 沉浸式场景改 `conversation-data.ts`，面板内容改 `panel-data.ts`；同产物重复打开只切换 Tab，切换会话立即清面板。
-- Copilot 页面提供 `workspace` 与 `routeArtifact(target)`；交付物仍可从消息点击，但**只能更新左侧工作区，不出现右侧产物面板**。
+- Copilot 页面提供 `workspace` 与 `routeArtifact(target)`；交付物仍可从消息点击，产品块 action 也由 `onProductBlockAction` 转为 artifact，**都只能更新左侧工作区，不出现右侧产物面板**。
 - `AppConfig` 只承载身份、导航与欢迎页专家/推荐；场景、主题、面板容器与产品块继续以 TypeScript 扩展。
-- 产品块的固定插槽在 assistant 正文/附件之后、续流程之前；未知类型由产品 renderer 记录开发期警告并安全跳过。
+- 产品块的固定插槽在 assistant 正文/附件之后、续流程之前；renderer 接收 `ProductBlockContext.onAction`，未知类型由产品 renderer 记录开发期警告并安全跳过。沉浸式 local renderer 消费本地 `data`/rich context，Copilot/shared renderer 消费 `payload`/shared context；同名 renderer API 不可互换。

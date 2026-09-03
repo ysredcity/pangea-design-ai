@@ -1,23 +1,27 @@
 ---
 name: agent-ux-base-inventory
-description: "底层基础件清单（shadcn v4 / Base UI）。列出项目可用的 21 个基础组件、按需添加方式，以及 Base UI 特有的本项目约定与已踩过的坑。不镜像官方 API——组件源码在项目内，读源码比读二手文档更准。"
+description: "沉浸式模板底层基础件清单（shadcn v4 / Base UI）。列出可用的 21 个基础组件、按需添加方式，以及 Base UI 特有的本项目约定与已踩过的坑。不镜像官方 API——组件源码在项目内，读源码比读二手文档更准。"
 user-invocable: false
 ---
 
-# 底层基础件清单（shadcn v4 / Base UI）
+# 沉浸式模板底层基础件清单（shadcn v4 / Base UI）
+
+## 适用范围
+
+本清单**只描述** `skills/agent-ux-react/templates/immersive-starter/src/components/ui/` 中沉浸式模板使用的 21 个 Base UI 基础件。它不是 `@agent-ux/agent-ui` 的 root public API，也不表示每个基础件可从包根入口导入。共享对话 API 的事实源是 `packages/agent-ui/src/conversation/`；Copilot 的基础件和装配边界应读取其自身模板或 `/copilot` 子路径。
 
 ## 为什么这里不是 API 镜像
 
 pangea-design-skill 为 arco 做了 60+ 份组件 API 零漂移镜像，因为 arco 是 npm 包、API 在源码里不可见，镜像有价值。
 
-本项目不同：**shadcn 是"拷贝源码"模式**，21 个基础组件的源码就在工程的 `src/components/ui/` 里。**agent 读源码比读二手文档更准**，二手文档还会随 shadcn 升级漂移。
+本项目不同：**shadcn 是“拷贝源码”模式**，基础件源码就在沉浸式模板的 `src/components/ui/`。**agent 读源码比读二手文档更准**，二手文档还会随 shadcn 升级漂移。
 
-所以本文件只做两件事：**说明有哪些可用**、**记录本项目特有的约定与坑**。需要完整 API 时读源码或查 [Base UI 官方文档](https://base-ui.com/)。
+所以本文件只做两件事：**说明有哪些可用**、**记录本项目特有的约定与坑**。需要完整 API 时读实际源码或查 [Base UI 官方文档](https://base-ui.com/)。
 
 ## 技术栈
 
 - **shadcn v4**，底层为 **Base UI**（`@base-ui/react`），不是 Radix。
-- 样式经 `@import "shadcn/tailwind.css"` 引入，主题变量在工程的 `src/index.css`。
+- 样式经 `@import "shadcn/tailwind.css"` 引入，主题变量在模板的 `src/index.css`。
 - 图标统一 **Lucide React**。
 - 字体 **Geist Variable**。
 - Toast 用 **Sonner**。
@@ -58,7 +62,7 @@ pangea-design-skill 为 arco 做了 60+ 份组件 API 零漂移镜像，因为 a
 npx shadcn@latest add <component>
 ```
 
-新装的组件若**不是**对话域组件的依赖，直接留在 `src/components/ui/` 即可，不需要进 `packages/agent-ui`。
+新增组件若不是共享 conversation 域的依赖，直接留在 immersive 模板的 `src/components/ui/`，不需要进 `packages/agent-ui`。是否应成为共享能力，先按 [extension-map](../overview/extension-map.md) 判断其是否为跨形态的中立需求。
 
 > 实测坑：`npx shadcn@latest add` 在非 TTY 环境会静默挂起（卡在包安装的交互确认上）。解决办法是先 `npm install -D shadcn@latest` 装进项目本地依赖，再用 `npx shadcn add <components> --yes`（不带 `@latest`）调用本地版本。另外 CLI 会按 `components.json` 的 `@` alias **字面量**创建目录（生成 `@/components/ui/...`），需要手动 `mv` 到 `src/components/ui/` 并删掉 `@/` 目录。
 
@@ -68,7 +72,7 @@ npx shadcn@latest add <component>
 
 Base UI 的 `DropdownMenu` 带有通用的 `focus:**:text-accent-foreground`，**会递归覆盖菜单项内所有后代元素的颜色**。
 
-- **后果**：专家头像（圆形彩色标识）在菜单项悬停/聚焦时整体变色，违反 [design.md 6.4](../design.md#64-图标) 的"专家头像在任何位置颜色稳定"。
+- **后果**：专家头像（圆形彩色标识）在菜单项悬停/聚焦时整体变色，违反 [design.md 6.4](../design.md#64-图标) 的“专家头像在任何位置颜色稳定”。
 - **解决**：专家图标**不依赖 `color` / `currentColor`**，采用显式 SVG `stroke`（固定白色描边）。
 - **不受此约束的**：文件类型图标本来就应该跟随文字色变化（它是普通菜单图标），所以不需要规避。
 
@@ -86,7 +90,7 @@ Base UI 的 `DropdownMenu` 带有通用的 `focus:**:text-accent-foreground`，*
 
 ### 扫光动画只用官方 utility
 
-运行中 L1 标题的扫光效果**必须**用 shadcn 官方 `shimmer` utility（组合 `shimmer-color-foreground shimmer-duration-1200 shimmer-spread-8`），**不要重新实现另一套关键帧**。官方 utility 内建遵循 `prefers-reduced-motion`。这条对应 [design.md 4.3](../design.md#43-动效原则) 的"同一种效果全局只有一个实现"。
+运行中 L1 标题的扫光效果**必须**用 shadcn 官方 `shimmer` utility（组合 `shimmer-color-foreground shimmer-duration-1200 shimmer-spread-8`），**不要重新实现另一套关键帧**。官方 utility 内建遵循 `prefers-reduced-motion`。这条对应 [design.md 4.3](../design.md#43-动效原则) 的“同一种效果全局只有一个实现”。
 
 ### 注册表与容器实现要分文件
 

@@ -1,5 +1,6 @@
 export type ExecutionStatus = "completed" | "running" | "waiting"
-import { agentGuidelineFile, automationScreenshotImage, brandFinancialSearch, coffeeIndustryResearchReport, coffeeKeywordSearch, coffeeMarketSearch, coffeeReportFile, coffeeStatsPage, deviceScreenshotImage, freshDrinkWhitepaperFile, googleHomeSearch, homeScreenshotImage, lucideIconSearch, luckinFinancialFile, meetingNotesFile, mijiaErrorSearch, reportIconSearch, taskListFile, wcagFeedbackSearch } from "./panel-data"
+import type { ConfirmBlockPayload, FollowUpSuggestionsPayload } from "@/agent-ui/conversation"
+import { agentGuidelineFile, automationScreenshotImage, brandFinancialSearch, coffeeIndustryResearchReport, coffeeKeywordSearch, coffeeMarketSearch, coffeeReportFile, coffeeStatsPage, deviceScreenshotImage, freshDrinkWhitepaperFile, googleHomeSearch, homeScreenshotImage, luckinFinancialFile, meetingNotesFile, mijiaErrorSearch, reportIconSearch, taskListFile, wcagFeedbackSearch } from "./panel-data"
 import type { ArtifactTarget } from "./panel-types"
 
 export type ExecutionActionData = {
@@ -92,8 +93,19 @@ export type AssistantMessageData = {
 /** 未指定专家时，智能体侧显示的产品身份 */
 export const DEFAULT_AGENT_NAME = "智能助手"
 
+export type ApprovalOutcomeData = {
+  execution: ExecutionData
+  assistant: AssistantMessageData
+}
+
 export type ConversationTurnData = {
   id: string
+  /** 确认待决时，rich Flow 以会话状态驱动审批提示、卡片和 Composer 禁用。 */
+  awaitingApproval?: boolean
+  approvalOutcomes?: {
+    approved: ApprovalOutcomeData
+    rejected: ApprovalOutcomeData
+  }
   /**
    * 这一轮由哪个专家执行。等于指定了子智能体，因此显示在智能体消息开头，
    * 而不是用户消息上；缺省时显示产品身份 `DEFAULT_AGENT_NAME`。
@@ -120,10 +132,99 @@ export type ConversationScene = { turns: ConversationTurnData[] }
 
 const completed = (id: string, title: string, detail?: string): ExecutionStepData => ({ id, title, detail, status: "completed" })
 
+const reportSymbolConfirmation = {
+  id: "report-symbol-confirmation",
+  type: "confirm-card",
+  data: {
+    riskLevel: "high",
+    question: "允许编辑《2026年经营分析月报.xlsx》，将其调整为仪表盘表达吗？",
+    description: "写入后会更新报表标题、指标区和图表语义，原始数据与计算逻辑不会改变。",
+    fields: [
+      { key: "object", label: "操作对象", value: "2026年经营分析月报.xlsx" },
+      { key: "action", label: "执行动作", value: "写入仪表盘标题、指标区与图表表达" },
+      { key: "impact-scope", label: "影响范围", value: "经营分析月报的展示层与图表配置" },
+      { key: "consequence", label: "操作后果", value: "现有报表视觉表达会被修改，可通过版本记录回退" },
+      { key: "operator", label: "操作人", value: "智能助手（代表当前用户执行）" },
+    ],
+    actions: [
+      { id: "reject-report-write", label: "拒绝", decision: "cancel", tone: "secondary" },
+      { id: "approve-report-write", label: "允许", decision: "confirm", tone: "primary" },
+    ],
+  } satisfies ConfirmBlockPayload,
+} satisfies ProductConversationBlock
+
+const coffeeReportFollowUps = {
+  id: "coffee-report-follow-ups",
+  type: "follow-up-suggestions",
+  data: {
+    suggestions: [
+      { id: "compare-brands", label: "对比头部品牌策略", content: "请基于这份报告对比瑞幸、星巴克与库迪的新品策略。" },
+      { id: "test-plan", label: "生成区域测试方案", content: "请把报告中的机会点整理成新品区域测试方案。" },
+      { id: "executive-summary", label: "提炼管理层摘要", content: "请将这份行业调研报告整理成面向管理层的三页摘要。" },
+    ],
+  } satisfies FollowUpSuggestionsPayload,
+} satisfies ProductConversationBlock
+
 export const conversationScenes: Record<string, ConversationScene> = {
   "pinned-1": { turns: [
-    { id: "p1-1", user: { content: "如果用一个符号元素形容报表，应该用什么最形象？", timestamp: "08月31日 10:11" }, execution: { status: "completed", summary: "已比较报表相关符号的语义和辨识度", duration: "18秒", showSummary: false, flat: true, steps: [{ ...completed("p1-s1", "检索常见的数据产品图形隐喻", "重点比较图表、表格、仪表盘和文档四类符号"), actions: [{ label: "检索 报表图标语义", type: "knowledge", target: reportIconSearch }, { label: "查询 Lucide 图标库", type: "api" }] }, { ...completed("p1-s2", "比较候选符号的小尺寸辨识度", "对候选图标进行 16px 小尺寸渲染和语义一致性检查"), actions: [{ label: "执行脚本 图标尺寸对比", type: "script" }, { label: "调用技能 图形语义分析", type: "skill" }] }] }, assistant: { content: "最形象的是「仪表盘」符号。它同时表达了数据汇总、指标监控和决策洞察，比单独的柱状图更能代表完整报表。如果强调数据分析，可选 BarChart3；强调经营驾驶舱，则更适合 Gauge。", timestamp: "08月31日 10:12" } },
-    { id: "p1-2", user: { content: "如果只能用一个 Lucide 图标呢？", timestamp: "08月31日 10:13" }, execution: { status: "completed", summary: "已筛选出最符合语义的 Lucide 图标", duration: "9秒", showSummary: false, flat: true, steps: [{ ...completed("p1-s3", "筛选 Lucide 中的报表相关图标", "从图表、趋势和仪表盘类别中筛选候选图标"), actions: [{ label: "查询 icons.json", type: "api" }, { label: "检索 chart dashboard report", type: "knowledge", target: lucideIconSearch }] }, { ...completed("p1-s4", "验证图标在 16px 下的清晰度", "完成候选图标的小尺寸渲染对比"), actions: [{ label: "执行脚本 render-icons", type: "script" }] }] }, assistant: { content: "推荐 `ChartNoAxesCombined`。它在小尺寸下仍容易识别，也同时包含趋势与数据的含义；如果你的报表更偏实时监控，可以改用 `Gauge`。", timestamp: "08月31日 10:14" } },
+    {
+      id: "p1-1",
+      user: { content: "如果用一个符号元素形容报表，应该用什么最形象？", timestamp: "08月31日 10:11" },
+      execution: {
+        status: "completed", summary: "已比较报表相关符号的语义和辨识度", duration: "18秒", showSummary: false, flat: true,
+        steps: [
+          { ...completed("p1-s1", "检索常见的数据产品图形隐喻", "重点比较图表、表格、仪表盘和文档四类符号"), actions: [{ label: "检索 报表图标语义", type: "knowledge", target: reportIconSearch }, { label: "查询 Lucide 图标库", type: "api" }] },
+          { ...completed("p1-s2", "比较候选符号的小尺寸辨识度", "对候选图标进行 16px 小尺寸渲染和语义一致性检查"), actions: [{ label: "执行脚本 图标尺寸对比", type: "script" }, { label: "调用技能 图形语义分析", type: "skill" }] },
+        ],
+      },
+      assistant: { content: "最形象的是「仪表盘」符号。它同时表达了数据汇总、指标监控和决策洞察，比单独的柱状图更能代表完整报表。如果强调数据分析，可选 BarChart3；强调经营驾驶舱，则更适合 Gauge。", timestamp: "08月31日 10:12" },
+    },
+    {
+      id: "p1-2",
+      user: { content: "那就用仪表盘吧，能帮我把报表也调整到位吗？", timestamp: "08月31日 10:13" },
+      execution: {
+        status: "completed", summary: "已确认仪表盘表达适用于当前报表", duration: "9秒", showSummary: false, flat: true,
+        steps: [
+          { ...completed("p1-s3", "检查报表的现有结构与可编辑范围", "已定位仪表盘标题、指标区和数据图表的关联位置"), actions: [{ label: "读取 经营分析月报", type: "file" }, { label: "调用技能 报表结构分析", type: "skill" }] },
+          { ...completed("p1-s4", "评估仪表盘表达的调整范围", "调整会统一标题、指标区与图表语义，不改变报表原始数据"), actions: [{ label: "执行脚本 报表样式影响分析", type: "script" }] },
+        ],
+      },
+      assistant: { content: "可以。我会将报表的标题、指标区和图表表达统一为“经营驾驶舱”的仪表盘语义，同时保留现有数据和计算逻辑。是否现在帮你完成这项调整？", timestamp: "08月31日 10:14", kind: "question" },
+    },
+    {
+      id: "p1-3",
+      awaitingApproval: true,
+      user: { content: "可以", timestamp: "08月31日 10:15" },
+      execution: {
+        status: "completed", summary: "已准备报表调整方案，写入前需要审批", duration: "22秒", showSummary: false, flat: true,
+        steps: [
+          { ...completed("p1-s5", "读取报表上下文与数据范围", "已核对现有指标、图表及其计算引用关系"), actions: [{ label: "读取 2026年经营分析月报.xlsx", type: "file" }, { label: "调用连接器 企业知识库", type: "connector" }] },
+          { ...completed("p1-s6", "调用报表规范与可视化能力生成调整方案", "已生成仪表盘标题、指标区和图表语义的变更草案"), actions: [{ label: "调用技能 数据可视化", type: "skill" }, { label: "执行脚本 报表样式预检查", type: "script" }] },
+          completed("p1-s7", "识别文件写入操作的影响范围", "此操作将编辑现有报表文件，需要你的明确批准后才能写入"),
+        ],
+      },
+      assistant: { content: "调整方案已经准备完成。下一步会编辑现有报表文件并写入仪表盘表达，这属于高风险写入操作；请核对下方信息后决定是否允许。", timestamp: "08月31日 10:16" },
+      productBlock: reportSymbolConfirmation,
+      approvalOutcomes: {
+        approved: {
+          execution: {
+            status: "completed", summary: "已获得批准并完成报表写入", duration: "16秒", showSummary: false, flat: true,
+            steps: [
+              { ...completed("p1-approved-s1", "写入仪表盘标题、指标区与图表表达", "已保留原始数据、计算逻辑和报表结构"), actions: [{ label: "执行脚本 应用报表样式变更", type: "script" }] },
+              completed("p1-approved-s2", "校验写入结果", "已完成公式引用、图表显示和文件完整性检查"),
+            ],
+          },
+          assistant: { content: "已获得你的批准，报表已调整为仪表盘表达。原始数据与计算逻辑保持不变，标题、指标区和图表语义已统一为经营驾驶舱视图。", timestamp: "08月31日 10:17" },
+        },
+        rejected: {
+          execution: {
+            status: "completed", summary: "已取消报表写入", duration: "刚刚", showSummary: false, flat: true,
+            steps: [completed("p1-rejected-s1", "保留现有报表文件", "未写入任何内容，原始报表保持不变")],
+          },
+          assistant: { content: "已取消写入，报表未作任何修改。你仍可继续讨论仪表盘表达方案，或在准备好后再次发起调整。", timestamp: "08月31日 10:17" },
+        },
+      },
+    },
   ] },
   "chat-1": { turns: [
     { id: "c1-1", user: { content: "帮我写个行业调研报告吧", timestamp: "08月30日 15:19" }, execution: { status: "completed", summary: "已识别需求中缺少的关键调研范围", duration: "18秒", flat: true, steps: [{ ...completed("c1-s1", "检查行业调研所需的输入信息", "检查行业调研所需的输入信息"), actions: [{ label: "调用技能 需求澄清", type: "skill" }] }, completed("c1-s2", "整理需要向用户确认的问题", "需要补充行业、市场范围、时间跨度和报告用途") ] }, assistant: { content: "没问题。为了让报告更有针对性，请告诉我行业、目标市场、时间范围，以及报告主要用于内部决策、融资还是市场进入。", timestamp: "08月30日 15:20", kind: "question" } },
@@ -148,7 +249,7 @@ export const conversationScenes: Record<string, ConversationScene> = {
       content: "调研显示，中国现制咖啡市场仍处于高频扩张与结构分化阶段。头部品牌通过门店密度和价格带争夺大众市场，精品与茶咖融合则形成差异化增量。新品规划建议优先关注低糖乳咖、地域风味、功能性成分和下午时段场景，并通过小范围区域测试验证复购。完整分析已整理为下方 HTML 报告。",
       attachments: [{ id: "c1-coffee-industry-report", name: "2024—2026中国现制咖啡行业调研报告.html", size: 28672, target: coffeeIndustryResearchReport }],
       timestamp: "08月30日 15:26",
-    } },
+    }, productBlock: coffeeReportFollowUps },
   ] },
   "chat-2": { turns: [
     { id: "c2-1", user: { content: "你能读取飞书文档吗？", timestamp: "08月31日 09:29" }, execution: { status: "completed", summary: "已确认飞书云文档连接器可用", duration: "12秒", flat: true, steps: [{ ...completed("c2-s1", "检查当前可用连接器", "检查当前可用连接器"), actions: [{ label: "查询连接器列表", type: "api" }, { label: "调用连接器 飞书", type: "connector" }] }, { ...completed("c2-s2", "确认文档读取权限范围", "确认文档读取权限范围"), actions: [{ label: "查询授权状态", type: "api" }] }] }, assistant: { content: "可以。连接飞书云文档后，我可以读取你有权限访问的文档并进行总结、问答或信息提取。把文档链接发给我即可。", timestamp: "08月31日 09:30" } },

@@ -1,3 +1,7 @@
 export * from './types'
 export * from './composer'
 export * from './conversation-flow'
+export * from './confirm-card'
+export * from './error-state'
+export * from './recommendation-list'
+export * from './follow-up-suggestions'
