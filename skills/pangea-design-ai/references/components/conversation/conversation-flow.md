@@ -8,7 +8,7 @@ meta:
   layer: conversation
   title: 对话流 ConversationFlow
   exported: true
-  source: packages/agent-ui/src/conversation/conversation-flow.tsx; skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
+  source: packages/agent-ui/src/conversation/conversation-flow.tsx; skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
   whenToUse: [需要共享轻量场景渲染时使用 shared Flow, 需要身份开场 L1/L2/L3 附件澄清和消息操作时使用 immersive Flow]
   whenNotToUse: [将共享场景直接替换沉浸式 rich scene, 直接 import 沉浸式私有回复结构]
   composeWith: [Conversation Contracts, Composer, product block renderer, message-actions]

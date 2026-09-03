@@ -8,7 +8,7 @@ meta:
   layer: process
   title: 思考面板 ReasoningPanel
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
   whenToUse: [复杂规划、协调执行或自纠错需要展示依据时]
   whenNotToUse: [每轮执行默认追加一层思考, 用作结论正文]
   composeWith: [ExecutionProcess, ExecutionStep, FlatExecutionFlow, TaskBlock, MarkdownContent]

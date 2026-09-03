@@ -10,11 +10,11 @@ meta:
   exported: true
   source: packages/agent-ui/src/conversation/confirm-card.tsx
   whenToUse: [需要用户对中风险或高风险动作作出明确 confirm/cancel/skip 决定]
-  whenNotToUse: [只展示信息或可直接执行的低风险操作, 用自然语言替代高风险五字段确认]
+  whenNotToUse: [只展示信息或可直接执行的低风险操作, 用自然语言替代高风险五字段确认, 挂在仅给建议或结论的回复上]
   composeWith: [共享 ConversationFlow, ProductBlockContext.onAction, 产品 renderer]
   composeBoundary: [卡片只派发中立 ProductBlockAction, rich flow 或产品页拥有结果状态与后续展示, 不包含 panel/canvas 或后端结果]
-  pitfalls: [高风险确认缺少五字段仍尝试确认, 超过字段/按钮限制, 将 action 派发误写成后端成功]
-  designRules: [design.md#34-操作确认, design.md#51-风险分级与人工接管, design.md#44-状态与反馈]
+  pitfalls: [高风险确认缺少五字段仍尝试确认, 超过字段/按钮限制, 将 action 派发误写成后端成功, 在建议轮弹确认卡, 待确认期间仍允许发送新指令]
+  designRules: [design.md#34-操作确认, design.md#341-确认卡应出现在即将执行的那一轮不在建议轮, design.md#342-待确认期间阻断新指令, design.md#51-风险分级与人工接管, design.md#41-五种状态语言]
 ---
 
 # 确认卡 ConfirmCard
@@ -22,6 +22,8 @@ meta:
 ## 选型
 
 在消息流内要求用户对中风险或高风险动作作出明确决定时使用。高风险动作不能以一句“确认吗？”替代；仅展示信息、低风险直接操作或尚未具备可解释动作时不用本卡。
+
+卡片属于**即将执行的那一轮**：只给建议或结论时不出卡；用户表达同意后，才在真正写入、修改、发送或删除前请求授权，并指明具体作用对象。待决期间的输入禁用、等待提示与会话标记按 [design.md#342](../../design.md#342-待确认期间阻断新指令) 由产品壳层实现，不进入本卡。
 
 ## 事实源与 API
 

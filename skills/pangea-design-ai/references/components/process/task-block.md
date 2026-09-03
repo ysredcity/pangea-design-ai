@@ -8,13 +8,13 @@ meta:
   layer: process
   title: 任务块 TaskBlock
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
   whenToUse: [规划、分头执行和汇总的长链路任务中承载 L2]
   whenNotToUse: [简单任务, 没有可查看 L3 的纯标题分组, L2 嵌套]
   composeWith: [ExecutionProcess, ExecutionActionBadge, ReasoningPanel]
   composeBoundary: [TaskExecutionStep 是宿主私有细节, 不可从外部 import]
   pitfalls: [用 L2 替代 L3, 完成任务默认展开]
-  designRules: [design.md#32-执行过程透明, design.md#41-四种状态语言]
+  designRules: [design.md#32-执行过程透明, design.md#41-五种状态语言]
 ---
 
 # 任务块 TaskBlock

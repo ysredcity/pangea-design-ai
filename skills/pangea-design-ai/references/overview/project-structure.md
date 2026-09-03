@@ -13,7 +13,7 @@ user-invocable: false
 | 层 | 事实源 | 责任 |
 |---|---|---|
 | 共享对话域 | `packages/agent-ui/src/conversation/` | 消息、执行过程、Composer、三张交互卡、交付物入口与中立 `ArtifactRouter` / `ProductBlockAction` |
-| 沉浸式适配 | `packages/agent-ui/src/immersive/` + `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/` | 侧栏、对话区、右侧 Tab/图片查看器；本地 panel adapter 进入 `AgentShell` |
+| 沉浸式适配 | `packages/agent-ui/src/immersive/` + `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/` | 侧栏、对话区、右侧 Tab/图片查看器；本地 panel adapter 进入 `AgentShell` |
 | Copilot 适配 | `packages/agent-ui/src/copilot/copilot-app.tsx` | 资源区、工作画布与辅助对话区；通过 `routeArtifact: ArtifactRouter` 把中立产物交给产品页 |
 | 产品装配 | immersive 的 `agent-layout/{app-config,conversation-data,panel-data}.ts`；Copilot 的 `templates/copilot-starter/src/pages/ContractReview.tsx` | 场景、产品配置、面板数据或左画布 state 与专属块；不把业务能力吞入 `AppConfig` |
 

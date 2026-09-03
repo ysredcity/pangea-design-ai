@@ -8,7 +8,7 @@ meta:
   layer: artifact
   title: 图片查看器 ImageViewer
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/image-viewer.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/image-viewer.tsx
   whenToUse: [专注查看单个 immersive ImageView 图片产物]
   whenNotToUse: [多文档并排查看, 将图片塞进右侧 PanelTab, 处理 shared ArtifactTarget]
   composeWith: [ImageView, AgentShell, IconButton]

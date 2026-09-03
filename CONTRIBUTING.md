@@ -1,6 +1,13 @@
 # 贡献指南（CONTRIBUTING）
 
-设计规则唯一事实源是 `skills/agent-ux-react/references/design.md`。本仓库所有 active 模板使用 **Base UI**；不要引入或恢复 Radix。
+设计规则唯一事实源是 `skills/pangea-design-ai/references/design.md`。本仓库所有 active 模板使用 **Base UI**；不要引入或恢复 Radix。
+
+## 版本管理
+
+- 当前稳定基线为 **v0.1.0**，仓库根、`@agent-ux/agent-ui`、两套 active 模板与 `website` 的 `package.json` 必须保持同一版本；更新根版本时同步更新 `package-lock.json`。
+- 采用 [Semantic Versioning](https://semver.org/lang/zh-CN/)：修复或文档勘误升 PATCH，向后兼容的新能力升 MINOR，破坏既有 skill 契约、模板扩展点或数据格式才升 MAJOR。
+- 每次发布在 `CHANGELOG.md` 从 `[Unreleased]` 移入带日期的版本段；同时更新 README、SKILL.md 与 PROJECT_CONTEXT 中影响使用者的版本状态。
+- `website/` 属于仓库内部 showcase，不随 skill 复制发布；其体验优化可以独立排期，不阻塞 skill 版本发布。
 
 ## 源码与同步
 

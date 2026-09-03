@@ -38,8 +38,8 @@ import { cn } from "@/lib/utils"
 import { navigationIcons } from "./icon-registry"
 import { IconButton } from "./icon-button"
 import { AgentAvatar } from "./resource-visuals"
-import type { ConversationScene } from "./conversation-data"
-import type { AppConfig } from "./app-config"
+import type { ConversationScene } from "@/agent-ui/immersive/contracts"
+import type { AppConfig } from "@/agent-ui/immersive/contracts"
 
 export type Conversation = {
   id: string
@@ -53,10 +53,14 @@ export type Conversation = {
   scene?: ConversationScene
 }
 
+// 保留示例数据的具名导出，避免改变模板使用者的深层导入 API。
+// oxlint-disable-next-line react/only-export-components
 export const initialPinnedConversations: Conversation[] = [
   { id: "pinned-1", title: "如果用一个符号元素形容报表，应该用什么最形象", approvalStatus: "pending" },
 ]
 
+// 保留示例数据的具名导出，避免改变模板使用者的深层导入 API。
+// oxlint-disable-next-line react/only-export-components
 export const initialConversations: Conversation[] = [
   { id: "chat-1", title: "帮我写个行业调研报告吧" },
   { id: "chat-2", title: "你能读取飞书文档吗？", loading: true },

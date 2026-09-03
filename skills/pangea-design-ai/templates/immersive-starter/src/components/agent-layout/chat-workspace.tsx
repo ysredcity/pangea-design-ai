@@ -2,12 +2,13 @@ import { ConversationPage } from "./conversation-page"
 import { NewConversationPage } from "./new-conversation-page"
 import type { Conversation } from "./sidebar"
 import type { ContextItem } from "./composer"
-import type { AppConfig } from "./app-config"
-import type { ArtifactTarget } from "./panel-types"
+import type { AppConfig } from "@/agent-ui/immersive/contracts"
+import type { ArtifactTarget } from "@/agent-ui/immersive/contracts"
 import { cn } from "@/lib/utils"
 
 type ChatWorkspaceProps = {
   config: AppConfig
+  createDraftScene: import("@/agent-ui/immersive/contracts").ImmersiveDraftSceneFactory
   activeConversation: Conversation | null
   activeConversationPinned: boolean
   isSidebarDocked: boolean
@@ -24,6 +25,7 @@ type ChatWorkspaceProps = {
 
 export function ChatWorkspace({
   config,
+  createDraftScene,
   activeConversation,
   activeConversationPinned,
   isSidebarDocked,
@@ -47,6 +49,7 @@ export function ChatWorkspace({
       {activeConversation ? (
         <ConversationPage
           config={config}
+          createDraftScene={createDraftScene}
           conversation={activeConversation}
           pinned={activeConversationPinned}
           isSidebarDocked={isSidebarDocked}

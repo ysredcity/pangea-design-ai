@@ -8,7 +8,7 @@ meta:
   layer: artifact
   title: 文件元信息 File Meta
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/file-meta.ts
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/file-meta.ts
   whenToUse: [为 Composer 与消息附件生成一致文件类型、大小和本地预览信息]
   whenNotToUse: [伪装 Office 二进制已被解析, 在此维护文件图标或专家头像]
   composeWith: [MessageAttachmentList, LibraryFileIcon, FilePreviewBody, PanelView]

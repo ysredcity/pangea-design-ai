@@ -8,7 +8,7 @@ meta:
   layer: conversation
   title: 智能体身份 AgentIdentity
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
   whenToUse: [每轮智能体响应开场, 指定专家或回退到产品身份]
   whenNotToUse: [显示用户身份, 以展示文本作为专家视觉映射的唯一来源]
   composeWith: [ProductIdentity, WelcomeExpert, AgentAvatar]

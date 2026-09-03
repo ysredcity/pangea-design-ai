@@ -8,7 +8,7 @@ meta:
   layer: conversation
   title: 用户消息 UserMessage
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
   whenToUse: [渲染 rich ConversationTurnData 的用户侧消息]
   whenNotToUse: [用用户消息展示智能体交付物, 为无 target 的附件伪造打开入口]
   composeWith: [MarkdownContent, CopyAction, ArtifactRouter]

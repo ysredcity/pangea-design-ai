@@ -8,7 +8,7 @@ meta:
   layer: delegation
   title: 意图输入区 Composer
   exported: true
-  source: packages/agent-ui/src/conversation/composer.tsx; skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/composer.tsx
+  source: packages/agent-ui/src/conversation/composer.tsx; skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/composer.tsx
   whenToUse: [需要轻量文本提交时使用 shared Composer, 需要上下文标签附件连接器或专家状态时使用 immersive Composer]
   whenNotToUse: [把沉浸式 props 传给共享 Composer, 把基础 shared 输入当作富委托工作台]
   composeWith: [ConversationFlow, icon-registry.ts, resource-visuals.tsx]

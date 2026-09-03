@@ -8,7 +8,7 @@ meta:
   layer: artifact
   title: 浏览器容器 Browser Container
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/panel-containers.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/panel-containers.tsx
   whenToUse: [在独立面板内阅读网页摘要、来源和关键结论]
   whenNotToUse: [把网页产物伪装为共享 Canvas 字段, 在顶层 Tab 行加入网页专属操作]
   composeWith: [BrowserToolbar, BrowserBody, panel-registry, ArtifactPanel]

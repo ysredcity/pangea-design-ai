@@ -8,7 +8,7 @@ meta:
   layer: shell
   title: 对话工作区 ChatWorkspace
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/chat-workspace.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/chat-workspace.tsx
   whenToUse: [装配沉浸式中间对话区域, 在新对话页与活动会话之间切换]
   whenNotToUse: [拥有会话或面板状态, 实现 PanelView 容器, 复用为 Copilot 工作画布]
   composeWith: [AgentShell, ConversationPage, NewConversationPage]

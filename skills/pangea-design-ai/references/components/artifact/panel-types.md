@@ -8,7 +8,7 @@ meta:
   layer: artifact
   title: 面板类型 Panel Types
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/panel-types.ts
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/panel-types.ts
   whenToUse: [为沉浸式产物选择搜索、浏览器、文件预览或图片查看展示]
   whenNotToUse: [扩展 shared ArtifactTarget, 将 PanelTab 或 Canvas 字段传入跨形态数据]
   composeWith: [panelContainers, panelViewKey, ArtifactPanel, ImageViewer]

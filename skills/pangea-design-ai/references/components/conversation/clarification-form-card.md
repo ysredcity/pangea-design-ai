@@ -8,7 +8,7 @@ meta:
   layer: conversation
   title: 澄清表单卡 ClarificationFormCard
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/clarification-form-card.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/clarification-form-card.tsx
   whenToUse: [缺少三个以上结构化关键信息, 需要一次补齐日期事由偏好等字段]
   whenNotToUse: [一两个可自然追问的缺口, 用浏览器原生日期输入或另造表单体系]
   composeWith: [ClarificationFormData, AssistantMessage, Popover, Calendar]

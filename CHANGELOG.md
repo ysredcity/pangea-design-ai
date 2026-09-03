@@ -1,6 +1,6 @@
 # 变更日志（CHANGELOG）
 
-本文件记录 `agent-ux-react` skill 的重要变更。格式参考 [Keep a Changelog](https://keepachangelog.com/)。
+本文件记录 `pangea-design-ai` skill 的重要变更。格式参考 [Keep a Changelog](https://keepachangelog.com/)。
 
 事实源与版本约定见 [CONTRIBUTING.md](./CONTRIBUTING.md)。设计依据：《智能体产品交互设计指南 V1.4》（海信集团）。技术栈：React 19 + Vite + TypeScript + Tailwind CSS v4 + shadcn/ui + lucide-react。
 
@@ -12,15 +12,35 @@
 
 ## [Unreleased]
 
-### 计划中
+### 后续
 
-本 skill 正在按 `docs/proposals/agent-layout-integration.md` 分七阶段重构，采纳一个已成型的沉浸式工作台成品作为沉浸式形态的事实源。剩余阶段：
+- **视觉 token**：补全字体、间距、圆角、阴影与组件级 token，等待设计稿作为事实源。
+- **需求规格化**：补充“生成剧本数据映射规则”。
+- **Website / Showcase**：v0.1.0 已保留可运行的文档、模板演示与 JSON 编辑能力；体验与信息架构优化暂缓到后续独立迭代，不阻塞 skill 发布。
 
-- **Phase 5**：剧本引擎适配双数据源。
-- **Phase 7**：`website/` 文档站 + 组件画廊 + 沉浸式在线编辑器。
-- 将完整沉浸式 `AgentApp` 壳层抽取进 package；当前成熟的 panel/image adapter 仍留在模板形态层。
-- 补全视觉 token：字体、间距、圆角、阴影（等待设计稿）。
-- 需求规格化流程补一节"生成剧本数据的映射规则"。
+### Added
+
+- **可分发归档**：新增 `releases/pangea-design-ai-v0.1.0.zip`，包含 v0.1.0 skill 入口、规则参考、校验脚本与两套脚手架源码；不包含 `node_modules`、构建产物或模板本地 `.workbuddy` 记忆。旧 `agent-ux-react-v0.1.0.zip` 保留为更名前的历史归档。
+
+### Fixed
+
+- **门禁与依赖健康**：消除两套模板的 Oxlint warning；移动断点与 Composer 专家选择不再通过 effect 同步派生状态，保留的 shadcn mixed-export API 均使用精确局部抑制。传递依赖 `qs` 已更新至无已知审计漏洞的版本，`npm audit` 结果为 0 vulnerabilities。
+
+## [0.1.0] - 2026-09-03
+
+首个可管理的稳定基线：沉浸式 Agent 与助手式 Copilot 两套独立模板、共享 Base UI 运行时、富场景剧本引擎、组件文档/扩展地图与根级质量门禁均已可用。
+
+### Added（Phase 7：静态 Website / Showcase）
+
+- **新增独立 `website/` workspace**：静态 Vite 站点提供设计规则导览、按信息层组织的组件图谱，以及只面向沉浸式形态的本地剧本编辑器；可独立运行 `npm run gate:website`，适合部署到 Cloudflare Pages。
+- **JSON 编辑与预览闭环**：编辑器使用 `resolveTargets()` 解析 `targetId`，以 `parseScript()` 暴露软约束问题，并将中立场景适配后挂载 package-owned `ImmersiveAgentApp` 预览；配置自动保存至 localStorage，支持 JSON 导入、导出与重置，且不会读写真实脚手架文件。
+- **边界保持明确**：website 不做 Copilot 编辑器、后端、鉴权、协作、主题 token 编辑或新增容器/产品块配置；沉浸式完整壳层由 package 提供，website 不复制或深链 template-local 的 panel/shell 实现。
+
+### Added（Phase 5：双数据源富场景剧本引擎）
+
+- **富场景成为唯一运行时契约**：共享引擎以 `ConversationScene[]` 为输入，覆盖 L1/L2/L3 执行、澄清、用户/智能体附件、产品块和显式审批结果；不再以一期七块模型渲染第二套消息 UI。
+- **TS 与 JSON 两条作者路径均已建立**：沉浸式模板通过 `agent-layout/scenes.ts` 输出经 TypeScript 校验的默认场景；JSON 编辑器数据通过 `resolveTargets()` 把 `targetId` 解析为产品注册表中的目标对象，保持共享层不依赖 panel 或 canvas。
+- **剧本播放器与质量门禁完成改造**：`ScriptPlayer` 变为委托产品 rich renderer 的中立桥接；`check-scripts.mjs` 会识别 TS 富场景入口，并校验 JSON 富场景的 target ID、澄清/追问约束及高风险审批的五字段、显式 pending 与双结果契约。Copilot 一期 JSON 继续兼容校验。
 
 ### Changed（沉浸式 Base UI 脚手架已整合）
 
@@ -28,6 +48,14 @@
 - **模板可独立运行且进入根 workspace 验证**：包名统一为 `immersive-starter`，新增 `npm run gate`（Oxlint + TypeScript + Vite 构建）；根 `npm run gate` 先验证 Base UI 沉浸式，再验证 legacy Copilot。
 - **隔离 Base UI 与旧 Radix 同步机制**：`sync-agent-ui.mjs` 现仅同步 Copilot，不能再覆盖沉浸式模板的 Base UI `src/components/ui/`；后续 Phase 2 才会建立新的分层导出与同源机制。
 - **清理上游项目专属资料并补充模板说明**：不再分发上游 `AGENTS.md`、`HANDOFF.md` 与工具状态；模板 README 说明独立使用、真实修改入口与纯前端边界。
+
+### Changed（设计规则：操作确认与状态语言扩充）
+
+- **新增"确认卡出现时机"规则**（`design.md` 3.4.1）：只给建议或结论时不出确认卡；用户表达同意后才在真正写入/修改/发送/删除前请求授权，且必须指明具体作用对象。
+- **新增"待确认期间阻断新指令"规则**（`design.md` 3.4.2）：高风险确认待决时输入区整体禁用，在执行过程与回复之间给出 destructive 语义的等待提示，会话列表同步标记，批准或拒绝后解除并回写结果；待决判定必须来自显式状态，不能从卡片文案、按钮名或块 ID 推断。
+- **状态语言从四种扩为五种**：新增「等待用户批准」（destructive 语义 +「需要你的批准」+ 会话列表「等待批准」），并明确它与「等待用户回复」缺的东西不同、不可互借、同一轮不并存。
+- **新增对话默认定位契约**（`design.md` 3.8）：进入或切换任意对话默认停在最新一轮，且需在首次绘制前完成，避免顶部到底部的跳动。
+- **质量门禁同步扩充**：G6 覆盖五种状态与 destructive 审批语义，G7 新增确认卡时机、待确认阻断与显式状态判定，G8 新增默认定位检查；扩展点地图新增"待批准阻断"改哪里、不要碰哪里。
 
 ### Changed（设计规则与文档体系升级）
 
@@ -82,3 +110,22 @@
 - **Copilot 改用 Base UI 对话域**：合同审阅示例由 `CopilotApp` 装配，共享消息/执行/Composer 与中立交付物入口；交付物点击只更新左侧合同工作区，不会出现沉浸式右侧产物面板。
 - **同步与验证重建**：同步脚本同时物化两个模板的 Base UI 源码和零依赖质量脚本，并可用 `--check` 验证漂移；根 gate 固定执行 package 类型检查、双模板 drift、沉浸式与 Copilot 验证。复制模板后可独立运行 `npm install && npm run gate`。
 - **扩展边界明确**：`AppConfig` 保持身份/导航/欢迎页职责；业务场景、面板容器与产品专属对话块仍走 TypeScript 扩展点。
+
+### Changed（Phase 7：模板演示与组件详情扩展）
+
+- **Website 补齐双模板演示入口**：新增“沉浸式 Agent”与“助手式 Copilot”可切换演示。前者直接挂载 package-owned `ImmersiveAgentApp` 呈现真实 AgentShell、rich ConversationFlow、Composer 与产物容器；后者复用共享 `CopilotApp` 呈现合同审阅主工作区与对话辅助区；这不是 Copilot 在线编辑器，也不复制模板内部壳层。
+- **组件图谱升级为单组件说明体验**：catalog 中登记的 2 个布局壳层和 9 个组件均可进入独立详情，查看选型、反选、变体、组合/边界、常见误区、源码及规范文档链接；公共组件使用真实共享实现展示，模板内部职责采用结构示意，避免虚假承诺为可直接 import 的 API。
+
+### Fixed（Phase 7.1：website 产品主题基座）
+
+- **修复站内真实组件无主题渲染的问题**：此前 `website/src/index.css` 缺少 `@theme inline` 语义 token 映射，构建产物中 `bg-card`、`text-muted-foreground`、`border-border`、`bg-primary` 等工具类生成数量为 0，导致已接入的真实共享组件（`ConversationFlow`、`ConfirmCard`、`ErrorState`、`FollowUpSuggestions`、`CopilotApp`）只拿到结构类而没有产品配色。现已引入与沉浸式模板一致的完整语义 token、`tw-animate-css` 与 Geist 字体，上述工具类均已生成。
+- **两套设计语言显式分离**：站点自身的编辑风格变量统一改为 `--site-*` 前缀，产品语义 token 占用标准 shadcn 名称；演示区域通过 `.product-surface` 作用域套用产品默认边框与描边，不接管站点排版。
+- **移除误导性的形态示意**：无法脱离宿主壳层独立运行的模板内部实现（`AgentShell`、`ArtifactCard`、`TaskProgress`、`MessageBubble`、`MessageActions`、两个布局壳层）不再绘制结构示意图，改为明确标注「模板内部实现」、给出真实事实源路径与启动模板工程的命令。可独立运行的共享组件标注为「真实组件 · 形态展示」。
+
+### Added（Phase 8：真实沉浸式运行时抽取）
+- `@agent-ux/agent-ui/immersive` 现公开明确命名的 `ImmersiveAgentApp` 与 rich contracts，并拥有完整 agent-layout、Base UI、hooks、utility 和 canonical theme/typeset。
+- immersive 模板通过同步脚本单向物化 runtime，保留产品 config、scenes 和 panel data；Copilot 未接收 immersive 文件。
+- website 已切换为真实 `ImmersiveAgentApp`，在本地将 JSON 的中立 ArtifactTarget 显式适配为 panel/image targets，替换 shared ConversationFlow 投影。
+
+### Changed
+- Phase 7.1 website 产品 token bridge 改为直接导入 package canonical theme；完整壳层抽取不再是技术债。

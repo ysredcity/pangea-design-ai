@@ -8,7 +8,7 @@ meta:
   layer: conversation
   title: 智能体续流程 AssistantContinuation
   exported: false
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
   whenToUse: [在宿主中显示澄清提交后的跟进执行与最终提问]
   whenNotToUse: [作为独立流式组件 import, 为任意回复伪造状态机]
   composeWith: [AgentResponseBlock, ClarificationFollowUpData]

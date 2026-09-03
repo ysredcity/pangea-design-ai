@@ -8,7 +8,7 @@ meta:
   layer: registry
   title: 图标注册表 Icon Registry
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/icon-registry.ts
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/icon-registry.ts
   whenToUse: [新增或复用导航与上下文对象图标, 保持跨区域视觉一致]
   whenNotToUse: [在组件 JSX 中临时映射对象图标, 使用非 Lucide 图标]
   composeWith: [AgentSidebar, Composer, MessageContext]

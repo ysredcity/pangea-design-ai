@@ -1,16 +1,17 @@
 {
   "name": "agent-ux-guide",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
-  "workspaces": ["packages/*", "skills/agent-ux-react/templates/*"],
+  "workspaces": ["packages/*", "skills/pangea-design-ai/templates/*", "website"],
   "scripts": {
     "sync:agent-ui": "node scripts/sync-agent-ui.mjs",
     "check:agent-ui-drift": "node scripts/sync-agent-ui.mjs --check",
     "check:agent-ui-types": "npm run check --workspace=@agent-ux/agent-ui",
-    "check:component-docs": "node skills/agent-ux-react/scripts/check-component-docs.mjs",
+    "check:component-docs": "node skills/pangea-design-ai/scripts/check-component-docs.mjs",
     "gate:immersive": "npm run gate --workspace=immersive-starter",
     "gate:copilot": "npm run gate --workspace=copilot-starter",
-    "gate": "npm run check:agent-ui-types && npm run check:agent-ui-drift && npm run check:component-docs && npm run gate:immersive && npm run gate:copilot"
+    "gate:website": "npm run gate --workspace=agent-ux-website",
+    "gate": "npm run check:agent-ui-types && npm run check:agent-ui-drift && npm run check:component-docs && npm run gate:immersive && npm run gate:copilot && npm run gate:website"
   }
 }

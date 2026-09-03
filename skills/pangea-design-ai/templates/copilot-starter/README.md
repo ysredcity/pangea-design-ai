@@ -1,6 +1,6 @@
 # 助手式 Copilot 工作台模板
 
-这是 `agent-ux-react` skill 的助手式 Copilot 脚手架：左侧资源区、中间主工作画布与右侧 AI 对话辅助区。工程采用 **Vite 8 + React 19 + TypeScript + Tailwind CSS v4 + shadcn v4（底层 Base UI）**。
+这是 `pangea-design-ai` skill 的助手式 Copilot 脚手架：左侧资源区、中间主工作画布与右侧 AI 对话辅助区。工程采用 **Vite 8 + React 19 + TypeScript + Tailwind CSS v4 + shadcn v4（底层 Base UI）**。
 
 ## 使用方式
 
@@ -22,7 +22,7 @@ npm run gate
 npm run dev
 ```
 
-`src/agent-ui/` 与 `scripts/agent-ux/` 是从 skill 唯一源码物化的分发文件；在本仓库内维护时不要手改，先改 `packages/agent-ui/` 或 `skills/agent-ux-react/scripts/`，再执行根目录的 `npm run sync:agent-ui`。
+`src/agent-ui/` 与 `scripts/agent-ux/` 是从 skill 唯一源码物化的分发文件；在本仓库内维护时不要手改，先改 `packages/agent-ui/` 或 `skills/pangea-design-ai/scripts/`，再执行根目录的 `npm run sync:agent-ui`。
 
 ## 修改入口
 

@@ -8,7 +8,7 @@ meta:
   layer: conversation
   title: 对话轮次 ConversationTurn
   exported: false
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
   whenToUse: [在 ConversationFlow 宿主内渲染一个 rich turn]
   whenNotToUse: [从外部 import, 在子组件各自判断当前轮与澄清时序]
   composeWith: [UserMessage, AgentResponseBlock, AssistantContinuation]

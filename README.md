@@ -4,6 +4,8 @@
 
 事实源 = [《智能体产品交互设计指南 V1.4》](docs/智能体产品交互设计指南V1.4.md)（海信集团）。技术栈 = **React 19 + Vite + TypeScript + Tailwind CSS v4 + shadcn/ui + lucide-react**。
 
+> **当前稳定基线：v0.1.0（2026-09-03）**。该版本冻结了两套独立脚手架、共享运行时、剧本引擎、组件文档与质量门禁；后续遵循语义化版本管理。
+
 ## 核心目的与受众
 
 产出物是一个**可运行的 React 工程**，服务两类使用者（差别只在数据来源）：
@@ -13,7 +15,7 @@
 
 ## 界面形态与脚手架
 
-智能体产品的界面形态分三类（见 [design.md 二](skills/agent-ux-react/references/design.md#二界面形态选型)），本 skill 按标准化程度分层覆盖：
+智能体产品的界面形态分三类（见 [design.md 二](skills/pangea-design-ai/references/design.md#二界面形态选型)），本 skill 按标准化程度分层覆盖：
 
 | 形态 | 说明 | 模板化程度 |
 |---|---|---|
@@ -33,8 +35,8 @@ agent-ux-guide/
 ├── PROJECT_CONTEXT.md
 ├── docs/
 │   └── 智能体产品交互设计指南V1.4.md   # 原始设计依据（人读，不供 agent 直接消费）
-└── skills/
-    └── agent-ux-react/
+├── skills/
+│   └── pangea-design-ai/
         ├── SKILL.md                       # skill 入口：两阶段确认门 + 界面形态决策树 + 索引
         ├── references/
         │   ├── design.md                  # 全局设计规则（唯一事实源，源自设计指南 V1.4）
@@ -45,25 +47,42 @@ agent-ux-guide/
         └── templates/
             ├── immersive-starter/          # 沉浸式 Agent 可运行脚手架
             └── copilot-starter/             # 助手式 Copilot 可运行脚手架
+└── website/                                # 静态文档站、双模板演示、组件详情与沉浸式 JSON 剧本编辑器（独立 workspace）
 ```
 
 ## 快速开始
 
 ### 作为 skill 使用
-把 `skills/agent-ux-react/SKILL.md` 作为入口交给支持 skill 的 agent；agent 按需加载 `references/` 下的文档。
+把 `skills/pangea-design-ai/SKILL.md` 作为入口交给支持 skill 的 agent；agent 按需加载 `references/` 下的文档。
 
 ### 起一个可运行工程
 ```bash
-cp -R skills/agent-ux-react/templates/immersive-starter my-agent-app   # 沉浸式
+cp -R skills/pangea-design-ai/templates/immersive-starter my-agent-app   # 沉浸式
 # 或
-cp -R skills/agent-ux-react/templates/copilot-starter my-agent-app     # 助手式
+cp -R skills/pangea-design-ai/templates/copilot-starter my-agent-app     # 助手式
 cd my-agent-app && npm install && npm run dev
 ```
+
+## Website / Showcase
+
+仓库内的 `website/` 是面向设计系统浏览与剧本试验的独立静态 workspace；它不随 skill 脚手架复制给最终用户。
+
+```bash
+npm install
+npm run gate:website
+# Cloudflare Pages：Root directory = website，Build command = npm run build，Build output = dist
+```
+
+站点当前作为 **v0.1.0 的内部 showcase 基线**保留：文档导览、双模板演示与本地 JSON 剧本编辑能力均可用，但体验、信息架构与演示质量的优化已暂缓到独立后续迭代，不阻塞 skill 的使用或发布。
 
 ## 相关文档
 
 - 设计依据：[docs/智能体产品交互设计指南V1.4.md](docs/智能体产品交互设计指南V1.4.md)
 - 贡献与维护规则：[CONTRIBUTING.md](./CONTRIBUTING.md)
 - 变更记录：[CHANGELOG.md](./CHANGELOG.md)
-- 全局设计规则：[skills/agent-ux-react/references/design.md](skills/agent-ux-react/references/design.md)
-- 设计 token：[skills/agent-ux-react/references/theme/design-tokens.md](skills/agent-ux-react/references/theme/design-tokens.md)
+- 全局设计规则：[skills/pangea-design-ai/references/design.md](skills/pangea-design-ai/references/design.md)
+- 设计 token：[skills/pangea-design-ai/references/theme/design-tokens.md](skills/pangea-design-ai/references/theme/design-tokens.md)
+
+## Phase 8 runtime ownership
+
+`@agent-ux/agent-ui/immersive` owns the complete `ImmersiveAgentApp` runtime, rich panel/image routes, Base UI closure, and canonical product `theme.css`/`typeset.css`. `immersive-starter` is a standalone materialized consumer through `scripts/sync-agent-ui.mjs`; its scenes, panel data, and product config remain template-owned. The website imports this package runtime directly and adapts neutral JSON targets locally, never importing template paths. See the Phase 8 implementation plan at `docs/plans/2026-09-03-phase-8-real-immersive-runtime.md`.

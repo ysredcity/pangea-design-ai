@@ -8,7 +8,7 @@ meta:
   layer: artifact
   title: 文件预览容器 File Preview Container
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/panel-containers.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/panel-containers.tsx
   whenToUse: [在独立面板中查看可读文件内容和文件元信息]
   whenNotToUse: [声称任意二进制文件已解析, 在消息正文重复完整文件内容]
   composeWith: [FilePreviewToolbar, FilePreviewBody, MarkdownContent, file-meta]

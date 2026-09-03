@@ -8,7 +8,7 @@ meta:
   layer: artifact
   title: 独立面板 ArtifactPanel
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/artifact-panel.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/artifact-panel.tsx
   whenToUse: [需要并排查看多个非图片产物的沉浸式右侧容器]
   whenNotToUse: [单张图片专注查看, Copilot 左侧画布, 承载类型专属容器逻辑]
   composeWith: [panelContainers, PanelTab, PanelView, AgentShell]

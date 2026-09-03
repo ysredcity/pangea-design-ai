@@ -13,7 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
-import type { ClarificationField, ClarificationFieldValue, ClarificationFormData } from "./conversation-data"
+import type { ClarificationField, ClarificationFieldValue, ClarificationFormData } from "@/agent-ui/immersive/contracts"
 
 type OptionField = Extract<ClarificationField, { type: "single-select" | "multi-select" }>
 type DateRangeValue = Extract<ClarificationFieldValue, { start: string; end: string }>

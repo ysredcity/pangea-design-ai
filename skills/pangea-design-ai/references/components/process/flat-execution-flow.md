@@ -8,7 +8,7 @@ meta:
   layer: process
   title: 扁平执行流 FlatExecutionFlow
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
   whenToUse: [简单任务在 L1 下展示动作、依据和可查看产物]
   whenNotToUse: [需要分头协调的长链路, 代替带状态节点的 ExecutionStep]
   composeWith: [ExecutionProcess, ExecutionActionBadge, ReasoningPanel]

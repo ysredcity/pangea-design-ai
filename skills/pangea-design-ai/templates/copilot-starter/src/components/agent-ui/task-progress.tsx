@@ -83,6 +83,8 @@ export function TaskProgress({ status, elapsedMs, tasks, steps }: TaskProgressDa
 }
 
 /** 把接口名/工具名转成用户可理解的描述。禁止直接展示原始接口名。 */
+// toolCallLabel 是模板对外可复用的显示文案映射。
+// oxlint-disable-next-line react/only-export-components
 export function toolCallLabel(rawToolName: string, fallback = '正在处理'): string {
   const map: Record<string, string> = {
     search_docs: '正在读取文档',

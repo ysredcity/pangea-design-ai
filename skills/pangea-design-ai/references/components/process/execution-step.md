@@ -8,13 +8,13 @@ meta:
   layer: process
   title: 执行步骤 ExecutionStep
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
   whenToUse: [在非 flat 的 L1 过程内展示带状态的 L3 步骤]
   whenNotToUse: [创建 L2 分组, 取代无状态的 flat 详情]
   composeWith: [ExecutionProcess, ExecutionActionBadge, ReasoningPanel]
   composeBoundary: [使用 immersive ExecutionStepData 与 ArtifactRouter, 不接受 shared 同名类型]
   pitfalls: [状态只靠颜色, 非最后节点遗漏 connected 连接线]
-  designRules: [design.md#32-执行过程透明, design.md#41-四种状态语言, design.md#323-有产物的动作才做成可点击资源]
+  designRules: [design.md#32-执行过程透明, design.md#41-五种状态语言, design.md#323-有产物的动作才做成可点击资源]
 ---
 
 # 执行步骤 ExecutionStep

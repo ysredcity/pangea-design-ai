@@ -6,7 +6,7 @@
 
 ## 1. 项目是什么
 
-`agent-ux-react`：**智能体产品交互设计的 React skill**——给 AI agent 消费的知识库，让 agent 产出「交互符合《智能体产品交互设计指南》+ 视觉符合 shadcn 主题」的前端代码。
+`pangea-design-ai`：**智能体产品交互设计的 React skill**——给 AI agent 消费的知识库，让 agent 产出「交互符合《智能体产品交互设计指南》+ 视觉符合 shadcn 主题」的前端代码。
 
 设计依据：`docs/智能体产品交互设计指南V1.4.md`（海信集团，人读原文）。技术栈：**React 19 + Vite + TypeScript + Tailwind CSS v4 + shadcn/ui + lucide-react**。
 
@@ -16,7 +16,7 @@
 
 本项目参照 `/Users/yangshuo/Code/pangea-design-skill` 的**治理骨架**（README/CONTRIBUTING/CHANGELOG/PROJECT_CONTEXT 四件套分工、design.md 唯一设计规则事实源、frontmatter meta + catalog.json 机读索引、quality-gates 分级门禁、两阶段确认门），但**内容与技术栈完全不同**：
 
-| 维度 | pangea-design-skill | agent-ux-react（本项目） |
+| 维度 | pangea-design-skill | pangea-design-ai（本项目） |
 |---|---|---|
 | 领域 | 海信 B 端/中后台管理系统 | 智能体产品（AI Agent/Copilot） |
 | 技术栈 | Vue 3 + Arco Design Vue + 定制主题包 | React 19 + shadcn/ui + Tailwind v4 |
@@ -27,7 +27,7 @@
 ## 3. 当前状态（Status）
 
 - ✅ **仓库治理骨架已建**：`README.md`、`CONTRIBUTING.md`、`CHANGELOG.md`、`PROJECT_CONTEXT.md`（本文件）、`.gitignore`。
-- ✅ **skill 主体已建**：`skills/agent-ux-react/`。
+- ✅ **skill 主体已建**：`skills/pangea-design-ai/`。
   - `SKILL.md`：两阶段确认门 + 定位/技术栈 + 界面形态决策树 + 关键约定 + 全局设计规则结论表 + 完整索引 + PM Demo 自动化预览约定。
   - `references/design.md`：《智能体产品交互设计指南 V1.4》的**完整机读转写**，四大分组（核心原则/能力识别引导/界面形态/场景链路/全局规则，实际编号为零~四共 5 组），含速查目录、锚点、机检提示。
   - `references/theme/design-tokens.md`：**只有语义色 token 完整**（用户已提供的 shadcn+Tailwind v4 `:root`/`.dark` 变量表，含亮暗色对照与自定义变量的特别说明），字体/间距/圆角/阴影/组件级 token **明确标注为待补充**，文件内有清单式 TODO。
@@ -40,20 +40,23 @@
 - ✅ **`packages/agent-ui` workspaces 重构已完成（2026-08-27，第四轮）**：详见第 3.1 节，`docs/proposals/website-showcase.md` 第 4 节方案已落地实现，**取代**了本节此前记录的"两份拷贝，不做共享 workspace"的做法。
   - `scripts/build-catalog.mjs`（零依赖 frontmatter 解析器，已生成 `references/_generated/catalog.json`：2 个布局外壳 + 9 个组件）与 `scripts/check-tokens.mjs`（扫描 `.tsx`/`.css` 裸 hex/rgb，两套脚手架均"通过：未发现裸色值"）均已实现并接入两套脚手架的 `npm run gate`。
 - ✅ **Phase 3 组件文档与扩展地图已完成（2026-09-03，Batch A–D）**：六层组件目录现覆盖 shared conversation、immersive rich implementation、Copilot 左画布边界及 Phase 4 规范占位；根 `check:component-docs` 零依赖校验 metadata、源码事实源、六层 layer 与设计规则文档路径，并在模板 gate 前运行。
+- ✅ **v0.1.0 稳定基线已定义（2026-09-03）**：以语义化版本管理仓库根、`@agent-ux/agent-ui`、两套 active 模板与 website workspace；当前版本冻结已完成的 Phase 0–8 能力。`website/` 保留为内部 showcase，但其体验优化已暂缓，不阻塞 skill 发布。
+- ✅ **Phase 7 与 Phase 8 Website / Showcase 已完成（2026-09-03）**：根 `website/` workspace 提供设计规则导览、沉浸式 Agent 与助手式 Copilot 的明确演示入口、按 catalog 划分的组件图谱及单组件详情、`targetId` → 注册表 → `ConversationScene[]` 的本地 JSON 编辑与预览、localStorage 自动保存和 JSON 导入导出。沉浸式演示直接使用 `@agent-ux/agent-ui/immersive` 的真实 `ImmersiveAgentApp`；模板由同步脚本物化同一运行时，website 只在 target adapter 边界做中立 JSON → panel/image 映射。
+- ✅ **Phase 5 双数据源剧本引擎已完成（2026-09-03）**：共享引擎现在只消费富 `ConversationScene[]`；沉浸式由 `agent-layout/scenes.ts` 提供 TypeScript 场景，JSON 编辑器数据用 `resolveTargets()` 在加载边界解析 `targetId`。`ScriptPlayer` 不再渲染一期七块，而委托 rich renderer；`check-scripts.mjs` 同时支持 TS 场景入口、JSON 富场景与 Copilot 既有 JSON 兼容校验。`chat-5` 的分阶段续流程时序未在本 Phase 数据化。
 - ✅ **Phase 4 交互式对话卡与治理回填已完成（2026-09-03，Batch A–C）**：shared `ConfirmCard`、`ErrorState`、`FollowUpSuggestions` 已公开导出；`ProductBlockAction` 经 `ProductBlockContext.onAction` 回写。immersive rich adapter 保持 local `data`/结果状态，Copilot action 经 `routeArtifact` 只更新左侧画布；共享域不含 panel/canvas。置顶报表示例已进一步实现三轮高风险审批：pending 会话状态统一驱动审批提示、Composer 禁用和侧栏“等待批准”，批准/拒绝显示本地演示收尾。
 
 ### 3.1 `packages/agent-ui` workspaces 重构（第四轮，已完成）
 
 对应 `docs/proposals/website-showcase.md` 第 4 节推荐方案，用户已拍板确认后落地实现：
 
-- **根目录新增 `package.json`**（`agent-ux-guide`），声明 `workspaces: ["packages/*", "skills/agent-ux-react/templates/*"]`。`npm install` 已在根目录跑过一次，统一安装并 hoist 依赖（845 个包，含两套脚手架 + 新包）。
+- **根目录新增 `package.json`**（`agent-ux-guide`），声明 `workspaces: ["packages/*", "skills/pangea-design-ai/templates/*"]`。`npm install` 已在根目录跑过一次，统一安装并 hoist 依赖（845 个包，含两套脚手架 + 新包）。
 - **新增 `packages/agent-ui/`**（workspace 包 `@agent-ux/agent-ui`，`private: true`，不发布 npm）：唯一源码所在地。
   - `src/*.tsx`（9 个）：`composer.tsx`、`message-bubble.tsx`、`task-progress.tsx`、`clarify-card.tsx`、`confirm-card.tsx`、`artifact-card.tsx`、`message-actions.tsx`、`follow-up-suggestions.tsx`、`error-state.tsx`——内容与此前脚手架里的版本逐字节相同，只是把 `@/lib/utils`、`@/components/ui/button`、`@/components/ui/dropdown-menu` 这类脚手架专属别名改成了包内相对路径（`./lib/utils`、`./ui/button`、`./ui/dropdown-menu`）。
   - `src/layout/immersive-shell.tsx`、`src/layout/copilot-shell.tsx`：两个布局外壳组件源码（kebab-case 文件名，区别于脚手架里历史遗留的 PascalCase `ImmersiveShell.tsx`/`CopilotShell.tsx`，同步脚本负责改名映射）。
   - `src/ui/button.tsx`、`src/ui/dropdown-menu.tsx`：`agent-ui` 组件依赖的两个 shadcn 基础组件，**包内也放一份**，让包完全自包含、不要求消费方预先有 `@/components/ui/button`。
   - `src/lib/utils.ts`：`cn()` 工具函数。
   - `src/index.ts`：barrel export，包含 9 个组件 + `layout/immersive-shell` + `layout/copilot-shell`（`website/` 将来会用到布局导出，脚手架不需要，同步时会剔除）。
-- **新增 `scripts/sync-agent-ui.mjs`**（仓库根目录 `scripts/`，注意区别于 `skills/agent-ux-react/scripts/` 下的脚本）：
+- **新增 `scripts/sync-agent-ui.mjs`**（仓库根目录 `scripts/`，注意区别于 `skills/pangea-design-ai/scripts/` 下的脚本）：
   - 把 `packages/agent-ui/src/*` 物化拷贝进两套脚手架对应位置，同时用正则把相对路径导入改写成 `@/` 别名（`from './lib/utils'` → `from '@/lib/utils'` 等，兼容单/双引号）。
   - **每个脚手架只拿自己的布局外壳**：`immersive-starter` 只同步 `immersive-shell.tsx`（落地为 `ImmersiveShell.tsx`），`copilot-starter` 只同步 `copilot-shell.tsx`（落地为 `CopilotShell.tsx`）——最初实现漏了这一点，两个脚手架都会拿到对方的布局外壳，已修正为按脚手架名查表决定同步哪个。
   - **`index.ts` 同步例外**：剔除 `from './layout/...'` 的 export 行（脚手架没有对应扁平路径），只保留 9 个组件的 barrel export。
@@ -89,6 +92,7 @@
 - **Vite 8 + `vite.config.ts` 用 `__dirname` 会有 native config loader 的过时警告**（非报错，但会污染 `npm run build` 输出），改用 `import.meta.dirname`（Node 20.11+/22+ 原生支持）即可消除。
 - **实测环境的包版本比预期新**：`vite@^8.2.2`、`tailwindcss@^4.3.3`、`react@^19.2.8`、`typescript@~6.0.2`——均是 `npm create vite@latest` / `npm install <pkg>` 拿到的当前最新版，比写文档时设想的"React 19 + Vite 6 + Tailwind v4"版本号更新；文档里 `project-structure.md` 给的版本号示例（`vite: ^6.0.0` 等）已经偏旧，**这是文档与实际不一致的已知差异，暂不强行改文档去匹配某个快照版本号**（版本号本来就该用 `^`/`~` 让其自然升级，文档里的版本号只是示意）。
 - **Phase 4 卡片回写边界（2026-09-03）**：`ConfirmCard`、`ErrorState`、`FollowUpSuggestions` 是 shared public API，但只派发中立 `ProductBlockAction`；`ProductBlockContext.onAction` 的消费者拥有业务结果。沉浸式 local renderer 使用 `data`/rich context 并显示本地演示反馈；`ConversationPage` 会将 follow-up 选择的 `content` 回填 Composer，用户发送后才追加本地 `sentMessages`，并隐藏历史回复中的 follow-up；仍不触发真实请求或业务执行。Copilot 使用 `payload`/shared context，action 与交付物都经 `routeArtifact` 更新左侧画布。两种 renderer API 不可互换，shared 永不加入 panel/canvas。`actionStatus` 尚未由 active renderer 传入；follow-up 的完成轮次/禁用场景由 scene 或 renderer 策略保证，当前卡片本身不强制。
+- **审批规则已沉淀为通用设计规则（2026-09-03）**：`design.md` 新增 3.4.1（确认卡只出现在即将执行的那一轮）、3.4.2（待确认期间阻断新指令）、3.8 的"默认定位到最新一轮"，并把 4.1 从四种状态扩为五种（新增「等待用户批准」，destructive 语义）。`quality-gates.md` 的 G6/G7/G8、`SKILL.md` 状态语言结论表、`extension-map.md` 的"待批准阻断"条目与 `confirm-card.md` 的 whenNotToUse/pitfalls/designRules 已同步。旧锚点 `#41-四种状态语言` 已全仓替换为 `#41-五种状态语言`。
 - **报表高风险审批流（2026-09-03）**：置顶 `pinned-1` 场景改为“符号建议 → 是否调整报表 → 用户允许后写入前审批”三轮。`Conversation` 的 `approvalStatus` 由 `AgentShell` 单一持有，并驱动侧栏 destructive “等待批准”标签、rich Flow 在执行过程与回复间展示 destructive “需要你的批准”、Composer 的全量禁用和确认卡可见性；批准/拒绝后均追加场景声明的本地演示执行与结果消息，解除禁用并移除标签。`ConversationPage` 在首次进入或切换任意会话时同步定位到消息容器底部。此状态属于沉浸式壳层，shared ConfirmCard 仍只派发中立 action，不得声称真实文件已被写入。
 - **`ConfirmCard`/`ClarifyCard` 里用 `console.warn` 做硬约束的运行时提示**（字段数超限、高风险缺字段等），这是本项目独有的"轻量运行时机检"手法——G5 门禁文档里说的"人工核对字段数"，实际组件代码里补了一层开发期兜底提示，不依赖人工数数。这个模式后续如果要加新组件，建议延续（对超限情况给 `console.warn` 而不是 silently 不管）。
 
@@ -120,9 +124,15 @@ agent-ued-guide/
 │           ├── script-engine/          # 剧本引擎（新增，第五轮，详见 3.2 节）
 │           │   ├── types.ts / parse.ts / match.ts / interpolate.ts / runtime.ts / script-player.tsx
 │           │   └── index.ts
+│           ├── immersive/              # Phase 8 真实沉浸式运行时：agent-layout、ui、hooks、lib、contracts、theme.css、typeset.css
+│           │   ├── agent-app.tsx / contracts.ts / index.ts
+│           │   ├── agent-layout/ / ui/ / hooks/ / lib/
+│           │   └── theme.css / typeset.css
 │           └── index.ts
-├── website/                            # 待实现（docs/proposals/website-showcase.md）
-└── skills/agent-ux-react/
+├── website/                            # Phase 7 静态文档站、双模板演示、组件详情与本地 JSON 剧本编辑器（独立 workspace）
+├── releases/                           # 可分发的版本归档
+│   └── pangea-design-ai-v0.1.0.zip       # v0.1.0 skill 完整 ZIP（不含 node_modules/dist）
+└── skills/pangea-design-ai/
     ├── SKILL.md                            # skill 入口
     ├── references/
     │   ├── design.md                       # 全局设计规则唯一事实源（★核心，已完成）
@@ -189,7 +199,7 @@ agent-ued-guide/
   - `runtime.ts`：`useScriptRuntime(doc)` React hook，管理对话轮次状态机（`entries`/`values`），暴露 `send`/`advance`/`reset`。
   - `script-player.tsx`：`<ScriptPlayer>` 组件，把 entries 渲染成 agent-ui 组件树，内部 `useProgressiveReveal` 按 `block.delayMs` 渐进式揭示多个 block（对齐 design.md 3.2"过程可见"）。
 - **两个示例场景改为剧本驱动**：`immersive-starter/src/mock/scenarios.json`（3 个场景：合作协议审核/Q2报销筛选/合同风险扫描）、`copilot-starter/src/mock/scenarios.json`（1 个场景：调整违约金条款）。对应页面 `Conversation.tsx`/`ContractReview.tsx` 里原来的 `if (text.includes(...))` 分支全部移除，改用 `useScriptRuntime` + `<ScriptPlayer>`。
-- **新增 `skills/agent-ux-react/scripts/check-scripts.mjs`**：纯 Node 环境校验 `scenarios.json`（规则与 `parse.ts` 相同但独立实现），接入两套脚手架的 `npm run gate`（`check:tokens` → `check:scripts` → `tsc -b` → `vite build`）。
+- **新增 `skills/pangea-design-ai/scripts/check-scripts.mjs`**：纯 Node 环境校验 `scenarios.json`（规则与 `parse.ts` 相同但独立实现），接入两套脚手架的 `npm run gate`（`check:tokens` → `check:scripts` → `tsc -b` → `vite build`）。
 - **`sync-agent-ui.mjs` 扩展**：新增对 `script-engine/` 子目录的整体同步（`buildCommonPlan` 里新增一段读取 `script-engine/` 下所有文件），发现子目录内部的相对导入（如 `../clarify-card`）因为整体拷贝、层级关系不变，**不需要**改写路径——一开始设计时想改写成 `@/` 别名，写完发现是多余的，已撤回改成"保持相对路径不变"的简化实现。
 - **tsconfig 补充 `resolveJsonModule: true`**（两套脚手架的 `tsconfig.app.json`）：`import scenariosData from '@/mock/scenarios.json'` 需要这个选项才能被 TS 正确识别类型。
 - **回归验证**：根目录 `npm run gate` 全流程通过（漂移检测 → 包类型检查 → 两套脚手架的 check:tokens+check:scripts+构建）；两个已在后台运行的 dev server 文件被覆盖后 HMR 自动生效，`curl` 复测返回 200，且日志显示最新几次 HMR 更新（针对 `Conversation.tsx`/`ContractReview.tsx`）均无报错。
@@ -323,7 +333,7 @@ G0 需求确认（新增"每项能力判过配置能否覆盖"）/ G1 编译与�
 
 ## 6. 待办 / 下一步（Next）
 
-- [x] ~~Phase 3 组件文档、扩展地图与事实校验~~ —— **已完成（2026-09-03，Batch A–D）**：六层正文、Copilot 左画布定位和精确扩展路径已以实际源码回填；新增零依赖 `skills/agent-ux-react/scripts/check-component-docs.mjs`，校验 component frontmatter、六层 layer、源码存在性、Phase 4 planned 边界及 designRules 文档路径，并在 root gate 的类型/漂移检查后、模板 gate 前运行。shared `ArtifactTarget` 保持中立；沉浸式本地 adapter 仍是 panel/image 展示层；Copilot 只通过产品页 `routeArtifact(target)` 更新左侧画布。
+- [x] ~~Phase 3 组件文档、扩展地图与事实校验~~ —— **已完成（2026-09-03，Batch A–D）**：六层正文、Copilot 左画布定位和精确扩展路径已以实际源码回填；新增零依赖 `skills/pangea-design-ai/scripts/check-component-docs.mjs`，校验 component frontmatter、六层 layer、源码存在性、Phase 4 planned 边界及 designRules 文档路径，并在 root gate 的类型/漂移检查后、模板 gate 前运行。shared `ArtifactTarget` 保持中立；沉浸式本地 adapter 仍是 panel/image 展示层；Copilot 只通过产品页 `routeArtifact(target)` 更新左侧画布。
 - [x] ~~Phase 4 交互式对话卡、无障碍与治理回填~~ —— **已完成（2026-09-03，Batch A–C）**：三张 shared 卡片和 `onAction` 事件回写已以实际 API 文档化，沉浸式/ Copilot renderer 边界已记录，并完成根级文档、类型、漂移与 gate 验证。后续仅保留 `actionStatus` 传入、follow-up 场景策略强化与实际新回合/业务执行等产品行为，不属于本阶段已验证的纯前端展示回写。
 - [ ] **等待用户提供视觉资产**：调色板完整取值、字体/字号/字重档位、间距/圆角/阴影档位、基础布局与核心组件设计稿。收到后回填 `design-tokens.md` 并同步两套脚手架的 `globals.css`（当前圆角占位为 shadcn 默认 `0.5rem`）。
 - [ ] **验证 PM Demo 自动化预览在真实 agent 执行环境下的可靠性**：目前只是文档约定"每轮修改自动重启 dev server"，没有类似 Kiro Hooks 的机制强制保障，实际效果依赖执行 agent 是否遵守约定。
@@ -338,7 +348,7 @@ G0 需求确认（新增"每项能力判过配置能否覆盖"）/ G1 编译与�
 - [ ] ~~原第三步 `website/`~~ —— **后移到 Phase 7（最后）**，让位给组件文档体系与扩展点地图。
 - [ ] **剧本引擎遗留待办**（第五轮新增，均已记在 `docs/proposals/mock-script-engine.md` 第 8 节「实现备注」）：
   - `requirement-intake.md` 补一节"生成剧本 JSON 的映射规则"，让 agent 需求确认后直接产出 `scenarios.json` 草稿。
-  - `scripts/check-scripts.mjs`（`skills/agent-ux-react/scripts/`）与 `packages/agent-ui/src/script-engine/parse.ts` 的校验规则是两处独立实现、手动保持一致，未来规则变化需要两处都改，暂无机械化保障。
+  - `scripts/check-scripts.mjs`（`skills/pangea-design-ai/scripts/`）与 `packages/agent-ui/src/script-engine/parse.ts` 的校验规则是两处独立实现、手动保持一致，未来规则变化需要两处都改，暂无机械化保障。
   - `Composer` 的 `@`/`/` 选择面板仍未实现（沿用此前已知待办），剧本里因此没有"能力选择"相关的块类型。
   - `taskProgress` 块的 `tasks[].status` 不会随 `steps` 播放自动推进（剧本作者需要手动把 `tasks` 写成期望的最终状态），这是实现时的简化决策，非缺陷。
 
@@ -358,13 +368,13 @@ G0 需求确认（新增"每项能力判过配置能否覆盖"）/ G1 编译与�
 - 第二轮：两套脚手架从零初始化到可运行验证完成。用 `npm create vite@latest --template react-ts` 起步，手工接入 Tailwind v4（`@tailwindcss/vite` 插件 + `@theme inline` 桥接用户提供的语义色变量）与 shadcn CLI（`new-york` 风格，`neutral` 基色，装了 button/badge/card/scroll-area/avatar/separator/tooltip/dialog/sheet/textarea/dropdown-menu/skeleton，copilot-starter 额外装了 resizable/tabs）。9 个 `agent-ui/` 组件写完并在两套脚手架分别落地一份代码；两套布局外壳组件写完（`ImmersiveShell`/`CopilotShell`）；各配一个演示场景页面。`scripts/build-catalog.mjs`（零依赖 YAML frontmatter 简化解析器）与 `scripts/check-tokens.mjs`（裸 hex/rgb 扫描）写完并接入 `npm run gate`，两套脚手架的 `gate` 均已实测通过；`npm run dev` 也各自实测跑通（curl 验证 HTTP 200）。踩坑记录见下方「关键结论」新增条目。
 - 第三轮：讨论并确认两份架构方案（不动代码），落成 `docs/proposals/mock-script-engine.md`、`docs/proposals/website-showcase.md`，用户全部确认后进入实现阶段，约定顺序为"先重构 workspaces，再做剧本引擎，最后做 website"。
 - 第四轮：完成方案顺序里的第一步——`packages/agent-ui` npm workspaces 重构。根目录新增 `package.json`（workspaces 根）与 `packages/agent-ui/`（唯一组件源码，含 9 个对话组件 + 2 个布局外壳 + button/dropdown-menu 基础件 + `cn()` 工具），新增 `scripts/sync-agent-ui.mjs` 做物化同步（含路径改写、按脚手架分发对应布局外壳、`--check` 漂移检测三个关键设计点，过程中发现并修正了"两个脚手架都拿到对方布局外壳"和"双引号 import 未被正则匹配"两处实现疏漏）。根 `package.json` 新增编排式 `npm run gate`。回归验证：两套脚手架单独 `gate` 与根目录整体 `gate` 均通过，`vite build` 产物大小基本不变，两个此前已运行的 `dev server`（5301/5302）在文件被覆盖后未重启即验证 HMR 生效、`curl` 仍返回 200。`CONTRIBUTING.md` 已同步修订目录结构图与「核心原则」第 8 条，新增 F 节说明同源机制。详见第 3.1 节。
-- 第五轮：完成方案顺序里的第二步——剧本引擎。在 `packages/agent-ui/src/script-engine/` 实现 `parseScript`/`matchTrigger`/`pickFallback`/`interpolate`/`useScriptRuntime`/`<ScriptPlayer>`，7 种块类型对应 agent-ui 已有 7 个可渲染组件（message-actions/composer 不作为块类型，因为它们不是"响应内容"而是"交互容器/输入区"）。两个示例场景迁移为 `scenarios.json` 驱动，移除页面里手写的 if/else。新增 `skills/agent-ux-react/scripts/check-scripts.mjs` 并接入两套脚手架 `gate`。`sync-agent-ui.mjs` 扩展支持子目录同步。tsconfig 补 `resolveJsonModule`。实现过程中对方案文档做了若干收敛（fallback 独立成文档级字段而非 trigger 的一种取值、字段名 `$schemaVersion`→`schemaVersion`、taskProgress 的 tasks 不自动随 steps 推进等），均已记录在 `docs/proposals/mock-script-engine.md` 第 8 节并同步本文件 6 节待办。回归验证：根目录 `npm run gate` 全流程通过，两个后台 dev server 热更新无报错。详见第 3.2 节。
+- 第五轮：完成方案顺序里的第二步——剧本引擎。在 `packages/agent-ui/src/script-engine/` 实现 `parseScript`/`matchTrigger`/`pickFallback`/`interpolate`/`useScriptRuntime`/`<ScriptPlayer>`，7 种块类型对应 agent-ui 已有 7 个可渲染组件（message-actions/composer 不作为块类型，因为它们不是"响应内容"而是"交互容器/输入区"）。两个示例场景迁移为 `scenarios.json` 驱动，移除页面里手写的 if/else。新增 `skills/pangea-design-ai/scripts/check-scripts.mjs` 并接入两套脚手架 `gate`。`sync-agent-ui.mjs` 扩展支持子目录同步。tsconfig 补 `resolveJsonModule`。实现过程中对方案文档做了若干收敛（fallback 独立成文档级字段而非 trigger 的一种取值、字段名 `$schemaVersion`→`schemaVersion`、taskProgress 的 tasks 不自动随 steps 推进等），均已记录在 `docs/proposals/mock-script-engine.md` 第 8 节并同步本文件 6 节待办。回归验证：根目录 `npm run gate` 全流程通过，两个后台 dev server 热更新无报错。详见第 3.2 节。
 - 2026-09-03 Phase 3 Batch B：新增 15 份委托/对话层组件文档并更新组件索引。所有 API、导出状态和私有边界均以 immersive-starter 实际源码核对；三项 Phase 4 缺口只记录不可变设计约束和实施前提，明确为 planned/unimplemented、`exported: false` 与 `source: Phase 4 planned`。`npm run gate --workspace=immersive-starter` 与 `git diff --check` 通过。
 - 2026-09-03 Phase 3 Batch C：新增 14 份过程/产物层组件文档并更新组件索引与台账。过程层以 rich `conversation-flow.tsx` 的公开导出为准，明确 L1/L2/L3、私有 action 图标/Disclosure 边界及点击条件；产物层明确 `PanelView`/`ImageView`/`PanelTab` 是沉浸式 adapter，shared `ArtifactTarget` 不含容器字段，Copilot 只路由至左侧画布。新容器的唯一扩展链是 panel types → containers → registry，壳层不写类型分支。验证：`npm run gate --workspace=immersive-starter` 与 `git diff --check` 均通过；保持 7 条既有 lint warning 与 >500 kB bundle 提示，未新增 warning。
 - 第六轮（本轮，纯方案不动代码）：**最大的方向调整**——采纳用户独立完成的 `/Users/yangshuo/Code/agent-layout`（沉浸式工作台成品，3346 行 + 三份文档）作为沉浸式事实源，反向重构 skill。新增 `docs/proposals/agent-layout-integration.md`，同时修订 `mock-script-engine.md`（新增第 9 节：JSON 唯一 → TS/JSON 双数据源，数据模型对齐 agent-layout）与 `website-showcase.md`（新增第 7 节：粒度 3 + 分层导出、四项刻意不配置化、实现顺序后移到最后）。六项决策全部确认（Base UI / 双数据源 / subtree 搬入 / 粒度 3 / 助手式保持轻量 / 组件文档体系）。新立铁律「agent 生成能力是主用途，website 是次要用途，冲突时牺牲 website」——这条由用户主动提出的关切推导而来，并已实际改变了两处设计决定。组件文档体系按 `DESIGN.md` 四层信息模型分组（约 30 份），与 pangea 有两处刻意差异（不拆 API/选型两层、底层基础件不做镜像）。`grep` 实测发现 `AgentResponseBlock`/`ConversationTurn`/`AssistantContinuation` 是私有组件而非 HANDOFF 描述暗示的公共 API，已记录完整导出清单。识别出三个真实风险（导航/类型安全/偷懒填配置）与对策，以及一个真实缺口（对话流缺自定义块扩展点）。详见 5.2 节。
 - 第七轮（本轮）：执行整合方案 **Phase 0**，纯文档不动代码。① `design.md` 重写为合并版（734 行七章，V1.4 骨架 + 沉浸式实测细则，引入〔指南〕/〔沉浸式契约〕/〔通用契约〕来源标记机制，并专设小节显式处理两组响应式数值的层级关系——回查指南原文确认它自称"最小极限数值非强制标准"，故沉浸式用实测契约、助手式沿用指南下限）；② `quality-gates.md` 从 G0–G7 扩到 G0–G9 + 反面清单自查 11 条，检查项主体换成实测沉淀而非推理条目；③ `metadata-schema.md` 新增 `layer`/`exported`/`designRules` 三字段并扩 `kind`，写明 `exported` 必须以 grep 实测为准；④ 建 `components/` 六层目录骨架 + 索引（含约 30 项组件清单表与 exported 标注）+ `base-inventory.md`（21 个 Base UI 基础件与六条已踩坑），删除旧 `component-selection/`；⑤ `extension-map.md` 提前建骨架（因多处已引用，避免断链），文件级路径留待 Phase 1 回填；⑥ `SKILL.md` 重写，技术栈改 Base UI，**新增「第二道门：每项能力先判断能否用配置覆盖」** 作为防 agent 偷懒的核心机制。踩坑：zsh 的 `$path` 与 `$PATH` 绑定，用作普通变量名会冲掉 PATH。最终用 node 校验 12 个文件全部相对链接可达。详见 5.3 节。
-- 第八轮（Phase 1，已完成）：用户确认 `agent-layout` 不再独立演进后，因原目录不是 Git 仓库而先在本地创建 `main` 初始提交 `9c9061f` 并关联空远程 `ysredcity/pangea-design-ai`（全程未 push）；随后将旧 Radix `immersive-starter` 移至 `archive/immersive-starter-radix/`（`39c386c`），通过**非 `--squash`** `git subtree add` 将 `agent-layout/main` 导入 `skills/agent-ux-react/templates/immersive-starter/`（导入提交 `32afb02`，上游历史锚点 `b6fbbfc` 可追溯）。上游未提交文档未进入导入，导入后的 `AGENTS.md`/`HANDOFF.md` 与本地工具状态不再随模板分发；README 改为 skill 模板说明。新模板包名为 `immersive-starter`，新增 lint+build gate；Root gate 改为先执行 Base UI `gate:immersive`，再执行 legacy `gate:copilot`。为防旧 Radix UI 污染 Base UI，`sync-agent-ui.mjs` 已永久收缩为仅同步 Copilot，兼容旧命令名但明确标注 legacy。运行 `npm install` 后，`npm run gate --workspace=immersive-starter` 和根 `npm run gate` 均通过；沉浸式存在 7 条上游既有 Oxlint warning 与单 bundle 超 500kB 提示，均未阻断。治理文档、工程结构和扩展地图已按当前事实源回填精确路径；下一步是 Phase 2（分层导出、AppConfig 与自定义对话块扩展点）。
-- 第九轮（Phase 2 第一纵切）：仅在 `skills/agent-ux-react/templates/immersive-starter/` 落地配置入口与产品块扩展点。新增受 `satisfies AppConfig` 约束的 `app-config.ts`，集中产品 identity（name/avatar）、导航、首屏专家（id/label/visualKey）及推荐数据；`App.tsx` 以配置装配 `AgentShell`，并由壳层透传到侧栏、新对话页、对话流与头像。新增可选 `ProductConversationBlock` 与 `renderProductBlock`，插槽严格位于助手正文/附件/澄清之后、续流程之前，未知/未配置 renderer 返回空而不影响原场景；公开中立 `ArtifactRouter`（暂等同 `ArtifactTarget → void`），不让产品块耦合 Panel UI。未改 `packages/agent-ui` 或 Copilot，未提交/推送。验证：`npm run gate --workspace=immersive-starter` 通过（保留 7 条上游既有 lint warning 与 bundle >500kB 提示），`git diff --check` 通过。
+- 第八轮（Phase 1，已完成）：用户确认 `agent-layout` 不再独立演进后，因原目录不是 Git 仓库而先在本地创建 `main` 初始提交 `9c9061f` 并关联空远程 `ysredcity/pangea-design-ai`（全程未 push）；随后将旧 Radix `immersive-starter` 移至 `archive/immersive-starter-radix/`（`39c386c`），通过**非 `--squash`** `git subtree add` 将 `agent-layout/main` 导入 `skills/pangea-design-ai/templates/immersive-starter/`（导入提交 `32afb02`，上游历史锚点 `b6fbbfc` 可追溯）。上游未提交文档未进入导入，导入后的 `AGENTS.md`/`HANDOFF.md` 与本地工具状态不再随模板分发；README 改为 skill 模板说明。新模板包名为 `immersive-starter`，新增 lint+build gate；Root gate 改为先执行 Base UI `gate:immersive`，再执行 legacy `gate:copilot`。为防旧 Radix UI 污染 Base UI，`sync-agent-ui.mjs` 已永久收缩为仅同步 Copilot，兼容旧命令名但明确标注 legacy。运行 `npm install` 后，`npm run gate --workspace=immersive-starter` 和根 `npm run gate` 均通过；沉浸式存在 7 条上游既有 Oxlint warning 与单 bundle 超 500kB 提示，均未阻断。治理文档、工程结构和扩展地图已按当前事实源回填精确路径；下一步是 Phase 2（分层导出、AppConfig 与自定义对话块扩展点）。
+- 第九轮（Phase 2 第一纵切）：仅在 `skills/pangea-design-ai/templates/immersive-starter/` 落地配置入口与产品块扩展点。新增受 `satisfies AppConfig` 约束的 `app-config.ts`，集中产品 identity（name/avatar）、导航、首屏专家（id/label/visualKey）及推荐数据；`App.tsx` 以配置装配 `AgentShell`，并由壳层透传到侧栏、新对话页、对话流与头像。新增可选 `ProductConversationBlock` 与 `renderProductBlock`，插槽严格位于助手正文/附件/澄清之后、续流程之前，未知/未配置 renderer 返回空而不影响原场景；公开中立 `ArtifactRouter`（暂等同 `ArtifactTarget → void`），不让产品块耦合 Panel UI。未改 `packages/agent-ui` 或 Copilot，未提交/推送。验证：`npm run gate --workspace=immersive-starter` 通过（保留 7 条上游既有 lint warning 与 bundle >500kB 提示），`git diff --check` 通过。
 
 
 ### 3.3 Phase 2：共享 Base UI 对话域与 Copilot 迁移（2026-09-03，已完成可运行纵切）
@@ -390,3 +400,38 @@ G0 需求确认（新增"每项能力判过配置能否覆盖"）/ G1 编译与�
 - 2026-09-03 Follow-up 交互收口：点击建议只将完整提示词回填 Composer，不再伪造用户消息；rich renderer 现在传递 `isLatestTurn`，`ConversationPage` 仅为尚未发送后续用户消息的最新回复渲染 follow-up。用户实际发送后列表消失，追加的本地用户消息仍不触发真实请求。
 - 2026-09-03 Follow-up 视觉收口：移除点击建议后的灰色本地结果提示条；确认/错误恢复仍保留各自反馈，跟进建议仅回填 Composer，避免在用户尚未发送前制造冗余状态。
 - 2026-09-03 ConfirmCard 细化：shared `ui/Button` 已从无依赖声明的 Radix Slot 残留迁为 Base UI shadcn 实现（无 `asChild` 消费方）；确认卡桌面复用 `default` 尺寸，≤659px 以 `lg` 等效 36px 高度均分动作区，标题为 15px，`description?: ReactNode` 作为可组合描述插槽。
+
+## 本轮变更日志（续）
+
+- 2026-09-03：完成 Phase 5 双数据源剧本引擎；新增富场景 `ConversationScene[]` 契约、JSON `resolveTargets()` 边界、TS 场景入口和双模式 `check-scripts.mjs`，并保持报表高风险审批语义与 Copilot 一期 JSON 兼容。
+- 2026-09-03：完成 Phase 7 website/showcase。新增 `website/` 独立静态 workspace（文档导览、组件图谱、沉浸式 JSON 编辑/预览、本地持久化与导入导出），并接入根级 `gate:website`；完整 AgentApp 壳层抽取仍是独立技术债。
+
+
+## 本轮变更日志（续）
+
+- 2026-09-03：Phase 7 website 扩展完成。新增“模板演示”导航，明确呈现沉浸式 Agent 与助手式 Copilot；Copilot 使用共享 `CopilotApp` 的固定合同审阅演示，不引入 Copilot 在线编辑器。
+- 2026-09-03：组件图谱从六张静态卡片升级为 catalog 的 11 项可浏览详情（2 个布局壳层 + 9 个组件）；详情复用现有 Markdown 规范事实源，展示变体、组合边界、常见误区与真实/结构化预览。新增网站文件：`components/template-demos-view.tsx`、`components/copilot-preview.tsx`、`components/component-detail-view.tsx`。
+
+- 2026-09-03（Phase 7.1）：**修正一个此前未被发现的实质缺陷**——website 的构建产物里语义色工具类生成数为 0（`bg-card`/`text-muted-foreground`/`border-border`/`bg-primary` 全部缺失），因为 `website/src/index.css` 只有站点自己的编辑风格变量，没有 shadcn 的 `@theme inline` 映射。结果是即使接入了真实共享组件，也只有结构没有产品配色。已引入与 `immersive-starter/src/index.css` 一致的完整语义 token + `tw-animate-css` + Geist 字体；验证后上述工具类均为 1。
+- 2026-09-03（Phase 7.1）：确立**双设计语言分离约定**。站点编辑风格变量统一加 `--site-*` 前缀（`--site-ink/--site-paper/--site-line/--site-accent/--site-danger` 等九个），产品语义 token 占用标准 shadcn 名称（`--background/--foreground/--primary/--border/...`）。原先 `--muted` 与 `--accent` 两个名字在两套语言里含义冲突（站点当文字色/品牌色用，产品当 4% 黑色背景用），这是必须重命名的根因。演示区用 `.product-surface` 作用域，不使用模板的 `@layer base` 全局 body 覆盖。
+- 2026-09-03（Phase 7.1）：website 新增显式依赖 `tw-animate-css@^1.4.0`（共享组件用到 `animate-in/animate-out/fade-in-0/zoom-in-95/slide-in-from-*`）与 `@fontsource-variable/geist@^5.3.0`（此前 CSS 已引用该字体名但从未导入）。`npm install` 已执行，lockfile 更新。**未引入 `shadcn` 包**——经 grep 核实共享组件不使用 `data-open`/`data-closed` 等由 `shadcn/tailwind.css` 提供的自定义 variant，故不需要。
+- 2026-09-03（Phase 7.1）：组件详情不再对模板内部实现绘制结构示意图。可独立运行的共享组件（Composer/ConversationFlow/ConfirmCard/ErrorState/FollowUpSuggestions）标为「真实组件 · 形态展示」；模板内部实现（AgentShell/ArtifactCard/TaskProgress/MessageBubble/MessageActions 与两个布局壳层）标为「模板内部实现」，给出真实源码路径与启动模板的命令。
+- **Phase 8 待决（技术债）**：把真实沉浸式壳层抽进 `packages/agent-ui/immersive`，让 website 与模板消费同一份真实壳层。实测规模：`agent-layout/` 共 26 文件 3766 行（`agent-shell.tsx` 407 / `composer.tsx` 562 / `conversation-flow.tsx` 455 / `sidebar.tsx` 446 / `conversation-data.ts` 325 / `clarification-form-card.tsx` 263），依赖 21 个 Base UI 基础件中的 17 个，而 `packages/agent-ui/src/ui/` 目前只有 `button` 与 `dropdown-menu` 两个。`packages/agent-ui/src/immersive/agent-app.tsx` 当前只是 10 行占位，不是真实壳层。抽取时必须用不同子路径区分同名不兼容的 rich 与 shared `Composer`/`ConversationFlow`。已否决「website 深链 import 模板源码」方案：方向反转、`@` 别名冲突、无漂移防护。
+
+## Phase 8 完成记录（2026-09-03）
+
+- `packages/agent-ui/src/immersive/` 已成为 rich immersive runtime 的唯一源码：含 `ImmersiveAgentApp`、contracts、完整 `agent-layout`、Base UI closure、hooks/lib 和 canonical `theme.css`/`typeset.css`。
+- `scripts/sync-agent-ui.mjs` 新增 immersive-only materialization；template 是独立物化消费者，Copilot 不接收 immersive runtime。模板数据（scenes、panel data、app config）保留在模板侧，经 props 注入运行时。
+- website 直接导入 package runtime，并由 `website-document.ts` 将中立 JSON targets 显式适配为 `PanelView`/`ImageView`；Phase 7.1 token bridge 改为 package canonical theme import。
+- 验证：package check、sync --check、immersive gate、website gate 通过；仍有既有 Oxlint Fast Refresh/set-state warnings 与 Vite >500kB bundle warning。未执行 git commit/push。
+
+### 变更日志
+- 2026-09-03：完成 Phase 8 真实沉浸式运行时抽取、模板物化和 website runtime adapter；替换 Phase 7.1 website token bridge。
+
+## 变更日志
+
+- **2026-09-03 — Phase 8 真实沉浸式运行时完成**：`packages/agent-ui/src/immersive/` 现在是 rich AgentShell、Base UI 闭包、hooks、utility、显式 contracts 与 canonical theme/typeset 的唯一来源；`sync-agent-ui.mjs` 仅向 immersive-starter 单向物化完整独立源码，Copilot 不接收 immersive 文件；website 直接依赖 package runtime，并在 website-local adapter 中把中立 JSON `ArtifactTarget` 映射为 panel/image routes。Phase 7.1 的 website 产品 token bridge 已由 package canonical theme 取代。实施方案：`docs/plans/2026-09-03-phase-8-real-immersive-runtime.md`。
+- **2026-09-03 — v0.1.0 稳定基线**：开始以语义化版本管理根 workspace、`@agent-ux/agent-ui`、两套 active 模板与 website workspace；`CHANGELOG.md` 以 `[Unreleased]` + 带日期版本段记录发布。v0.1.0 冻结 Phase 0–8 的 skill、模板、运行时与质量门禁能力。website 仅保留为内部 showcase，体验与信息架构优化暂缓到独立后续迭代，不阻塞 skill 发布。
+- **2026-09-03 — v0.1.0 门禁清理**：将 `useIsMobile` 改为 lazy `matchMedia` 初始化，Composer 专家选择改为受控/非受控统一派生状态，消除两处 effect 同步状态 warning；为 shadcn 风格公开 helper/hook 的 intentional mixed exports 增加精确 Oxlint 抑制并同步 immersive 模板。`npm audit fix --package-lock-only --ignore-scripts` 将传递依赖 `qs` 更新到安全版本；`npm audit` 为 0 vulnerabilities。immersive 与 website 仍各有一个大于 500 kB 的初始 chunk 性能提示，已明确留作独立性能优化，不通过提高阈值掩盖。
+- **2026-09-03 — v0.1.0 分发归档**：新增 `releases/pangea-design-ai-v0.1.0.zip`，从 `skills/pangea-design-ai/` 打包当前稳定 skill，包含入口、参考文档、校验脚本和两套模板源码；明确排除 `node_modules`、`dist` 与 `.DS_Store`。已用 `unzip -t` 完整性校验并确认含 `pangea-design-ai/SKILL.md`，压缩包大小为 577,144 bytes。
+- **2026-09-03 — skill 更名与重新分发**：skill 目录与 frontmatter machine name 已从 `agent-ux-react` 统一更名为 `pangea-design-ai`；根 workspace、同步脚本、组件文档 metadata、维护文档及 lockfile workspace 键均已同步。保留 `@agent-ux/agent-ui` 及其运行时 imports，不把 skill 重命名扩展为破坏性包 API 变更。新增 `releases/pangea-design-ai-v0.1.0.zip`（573,604 bytes），内部顶层目录同名，已排除 `node_modules`、`dist`、`.DS_Store` 和模板 `.workbuddy` 本地记忆；旧 `agent-ux-react-v0.1.0.zip` 保留为更名前的历史归档。

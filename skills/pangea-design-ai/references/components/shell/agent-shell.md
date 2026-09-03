@@ -8,7 +8,7 @@ meta:
   layer: shell
   title: 智能体壳层 AgentShell
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/agent-shell.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/agent-shell.tsx
   whenToUse: [装配完整沉浸式工作台, 管理会话与独立产物面板状态]
   whenNotToUse: [新增 PanelView 内容, 将沉浸式右侧面板带入 Copilot, 作为共享 conversation API]
   composeWith: [AppConfig, AgentSidebar, ChatWorkspace, ArtifactPanel, ImageViewer]

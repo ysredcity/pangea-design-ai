@@ -8,7 +8,7 @@ meta:
   layer: process
   title: 执行动作徽标 ExecutionActionBadge
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
   whenToUse: [展示某一执行动作及其可查看产物]
   whenNotToUse: [为内部 API、脚本或无产物动作伪造链接, 复用为共享 ArtifactTarget API]
   composeWith: [ExecutionStep, FlatExecutionFlow, TaskBlock, ArtifactRouter]

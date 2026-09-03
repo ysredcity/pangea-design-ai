@@ -8,7 +8,7 @@ meta:
   layer: delegation
   title: 新对话页 NewConversationPage
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/new-conversation-page.tsx; skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/app-config.ts
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/new-conversation-page.tsx; skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/app-config.ts
   whenToUse: [沉浸式工作台的新对话首屏, 需要让用户选择专家或从具体推荐开始委托]
   whenNotToUse: [通用导航页, 用 AppConfig 偷偷承载业务场景主题面板或产品块]
   composeWith: [AppConfig, Composer, resource-visuals.tsx, AgentShell]

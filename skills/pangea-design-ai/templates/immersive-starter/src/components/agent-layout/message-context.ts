@@ -1,5 +1,5 @@
 import type { ContextItem } from "./composer"
-import type { MessageAttachment } from "./conversation-data"
+import type { MessageAttachment } from "@/agent-ui/immersive/contracts"
 
 /**
  * 把 Composer 发送出来的上下文拆成用户消息需要的部分，供对话页与新对话页共用：

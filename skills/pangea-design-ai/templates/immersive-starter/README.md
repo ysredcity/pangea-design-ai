@@ -1,6 +1,6 @@
 # 沉浸式 Agent 工作台模板
 
-这是 `agent-ux-react` skill 的沉浸式 Agent 脚手架：左侧导航、以对话为核心的工作区，以及可并排查看交付物的右侧面板。工程采用 **Vite 8 + React 19 + TypeScript + Tailwind CSS v4 + shadcn v4（底层 Base UI）**。
+这是 `pangea-design-ai` skill 的沉浸式 Agent 脚手架：左侧导航、以对话为核心的工作区，以及可并排查看交付物的右侧面板。工程采用 **Vite 8 + React 19 + TypeScript + Tailwind CSS v4 + shadcn v4（底层 Base UI）**。
 
 ## 使用方式
 

@@ -8,7 +8,7 @@ meta:
   layer: artifact
   title: 检索结果容器 Search Results Container
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/panel-containers.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/panel-containers.tsx
   whenToUse: [在右侧 PanelView 中浏览检索命中并进入网页预览]
   whenNotToUse: [直接在对话气泡中塞完整结果列表, 为每个结果另开 Tab]
   composeWith: [SearchResultsToolbar, SearchResultsBody, panel-registry, ArtifactPanel]

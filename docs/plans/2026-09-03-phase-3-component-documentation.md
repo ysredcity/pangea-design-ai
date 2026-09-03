@@ -60,9 +60,9 @@ meta:
 ### Task 1: 校正组件索引与 Base UI inventory 边界
 
 **Files:**
-- Modify: `skills/agent-ux-react/references/components/README.md`
-- Modify: `skills/agent-ux-react/references/components/base-inventory.md`
-- Modify: `skills/agent-ux-react/references/overview/extension-map.md`
+- Modify: `skills/pangea-design-ai/references/components/README.md`
+- Modify: `skills/pangea-design-ai/references/components/base-inventory.md`
+- Modify: `skills/pangea-design-ai/references/overview/extension-map.md`
 
 **Step 1: 更新组件索引的实现来源列**
 
@@ -107,7 +107,7 @@ Expected: 类型和物化检查通过；文档改动无空白错误。
 ### Task 2: 建立共享 conversation 契约文档
 
 **Files:**
-- Create: `skills/agent-ux-react/references/components/conversation/conversation-contracts.md`
+- Create: `skills/pangea-design-ai/references/components/conversation/conversation-contracts.md`
 - Reference: `packages/agent-ui/src/conversation/types.ts`
 - Reference: `packages/agent-ui/src/conversation/index.ts`
 - Reference: `packages/agent-ui/package.json`
@@ -135,12 +135,12 @@ Expected: 类型和物化检查通过；文档改动无空白错误。
 ### Task 3: 写共享/沉浸式双实现入口文档
 
 **Files:**
-- Create: `skills/agent-ux-react/references/components/delegation/composer.md`
-- Create: `skills/agent-ux-react/references/components/conversation/conversation-flow.md`
+- Create: `skills/pangea-design-ai/references/components/delegation/composer.md`
+- Create: `skills/pangea-design-ai/references/components/conversation/conversation-flow.md`
 - Reference: `packages/agent-ui/src/conversation/composer.tsx`
 - Reference: `packages/agent-ui/src/conversation/conversation-flow.tsx`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/composer.tsx`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/composer.tsx`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx`
 
 **Step 1: 文档化 shared Composer**
 
@@ -167,9 +167,9 @@ Expected: 类型和物化检查通过；文档改动无空白错误。
 ### Task 4: 完成委托层文档
 
 **Files:**
-- Create: `skills/agent-ux-react/references/components/delegation/new-conversation-page.md`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/new-conversation-page.tsx`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/app-config.ts`
+- Create: `skills/pangea-design-ai/references/components/delegation/new-conversation-page.md`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/new-conversation-page.tsx`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/app-config.ts`
 
 **Step 1: 文档化 AppConfig 注入边界**
 
@@ -186,13 +186,13 @@ Expected: 类型和物化检查通过；文档改动无空白错误。
 ### Task 5: 完成公共消息与私有回复结构文档
 
 **Files:**
-- Create: `skills/agent-ux-react/references/components/conversation/user-message.md`
-- Create: `skills/agent-ux-react/references/components/conversation/agent-identity.md`
-- Create: `skills/agent-ux-react/references/components/conversation/assistant-message.md`
-- Create: `skills/agent-ux-react/references/components/conversation/agent-response-block.md`
-- Create: `skills/agent-ux-react/references/components/conversation/conversation-turn.md`
-- Create: `skills/agent-ux-react/references/components/conversation/assistant-continuation.md`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx`
+- Create: `skills/pangea-design-ai/references/components/conversation/user-message.md`
+- Create: `skills/pangea-design-ai/references/components/conversation/agent-identity.md`
+- Create: `skills/pangea-design-ai/references/components/conversation/assistant-message.md`
+- Create: `skills/pangea-design-ai/references/components/conversation/agent-response-block.md`
+- Create: `skills/pangea-design-ai/references/components/conversation/conversation-turn.md`
+- Create: `skills/pangea-design-ai/references/components/conversation/assistant-continuation.md`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx`
 
 **Step 1: 先写三个公共消息组件**
 
@@ -209,16 +209,16 @@ Expected: 类型和物化检查通过；文档改动无空白错误。
 ### Task 6: 完成表单、排版、标签与消息操作文档
 
 **Files:**
-- Create: `skills/agent-ux-react/references/components/conversation/clarification-form-card.md`
-- Create: `skills/agent-ux-react/references/components/conversation/message-actions.md`
-- Create: `skills/agent-ux-react/references/components/conversation/markdown-content.md`
-- Create: `skills/agent-ux-react/references/components/conversation/inline-tag.md`
-- Create: `skills/agent-ux-react/references/components/conversation/message-context.md`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/clarification-form-card.tsx`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/message-actions.tsx`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/markdown-content.tsx`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/inline-tag.ts`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/message-context.ts`
+- Create: `skills/pangea-design-ai/references/components/conversation/clarification-form-card.md`
+- Create: `skills/pangea-design-ai/references/components/conversation/message-actions.md`
+- Create: `skills/pangea-design-ai/references/components/conversation/markdown-content.md`
+- Create: `skills/pangea-design-ai/references/components/conversation/inline-tag.md`
+- Create: `skills/pangea-design-ai/references/components/conversation/message-context.md`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/clarification-form-card.tsx`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/message-actions.tsx`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/markdown-content.tsx`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/inline-tag.ts`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/message-context.ts`
 
 **Step 1: 澄清表单**
 
@@ -239,11 +239,11 @@ Expected: 类型和物化检查通过；文档改动无空白错误。
 ### Task 7: 写 Phase 4 缺口的规范占位文档
 
 **Files:**
-- Create: `skills/agent-ux-react/references/components/conversation/confirm-card.md`
-- Create: `skills/agent-ux-react/references/components/conversation/error-state.md`
-- Create: `skills/agent-ux-react/references/components/conversation/follow-up-suggestions.md`
-- Reference: `skills/agent-ux-react/references/design.md`
-- Reference: `skills/agent-ux-react/references/overview/quality-gates.md`
+- Create: `skills/pangea-design-ai/references/components/conversation/confirm-card.md`
+- Create: `skills/pangea-design-ai/references/components/conversation/error-state.md`
+- Create: `skills/pangea-design-ai/references/components/conversation/follow-up-suggestions.md`
+- Reference: `skills/pangea-design-ai/references/design.md`
+- Reference: `skills/pangea-design-ai/references/overview/quality-gates.md`
 
 **Step 1: 标注真实状态**
 
@@ -268,13 +268,13 @@ Expected: 类型和物化检查通过；文档改动无空白错误。
 ### Task 8: 完成执行过程层六份文档
 
 **Files:**
-- Create: `skills/agent-ux-react/references/components/process/execution-process.md`
-- Create: `skills/agent-ux-react/references/components/process/flat-execution-flow.md`
-- Create: `skills/agent-ux-react/references/components/process/task-block.md`
-- Create: `skills/agent-ux-react/references/components/process/execution-step.md`
-- Create: `skills/agent-ux-react/references/components/process/execution-action-badge.md`
-- Create: `skills/agent-ux-react/references/components/process/reasoning-panel.md`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx`
+- Create: `skills/pangea-design-ai/references/components/process/execution-process.md`
+- Create: `skills/pangea-design-ai/references/components/process/flat-execution-flow.md`
+- Create: `skills/pangea-design-ai/references/components/process/task-block.md`
+- Create: `skills/pangea-design-ai/references/components/process/execution-step.md`
+- Create: `skills/pangea-design-ai/references/components/process/execution-action-badge.md`
+- Create: `skills/pangea-design-ai/references/components/process/reasoning-panel.md`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx`
 
 **Step 1: L1/L2/L3 文档按依赖落地**
 
@@ -295,12 +295,12 @@ Expected: 类型和物化检查通过；文档改动无空白错误。
 ### Task 9: 先写沉浸式产物 adapter 契约与注册表文档
 
 **Files:**
-- Create: `skills/agent-ux-react/references/components/artifact/panel-types.md`
-- Create: `skills/agent-ux-react/references/components/artifact/panel-registry.md`
-- Create: `skills/agent-ux-react/references/components/artifact/file-meta.md`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/panel-types.ts`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/panel-registry.ts`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/file-meta.ts`
+- Create: `skills/pangea-design-ai/references/components/artifact/panel-types.md`
+- Create: `skills/pangea-design-ai/references/components/artifact/panel-registry.md`
+- Create: `skills/pangea-design-ai/references/components/artifact/file-meta.md`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/panel-types.ts`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/panel-registry.ts`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/file-meta.ts`
 
 **Step 1: Panel types 与 shared contract 对照**
 
@@ -321,14 +321,14 @@ Expected: 类型和物化检查通过；文档改动无空白错误。
 ### Task 10: 完成容器、面板和查看器文档
 
 **Files:**
-- Create: `skills/agent-ux-react/references/components/artifact/container-search-results.md`
-- Create: `skills/agent-ux-react/references/components/artifact/container-browser.md`
-- Create: `skills/agent-ux-react/references/components/artifact/container-file-preview.md`
-- Create: `skills/agent-ux-react/references/components/artifact/artifact-panel.md`
-- Create: `skills/agent-ux-react/references/components/artifact/image-viewer.md`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/panel-containers.tsx`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/artifact-panel.tsx`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/image-viewer.tsx`
+- Create: `skills/pangea-design-ai/references/components/artifact/container-search-results.md`
+- Create: `skills/pangea-design-ai/references/components/artifact/container-browser.md`
+- Create: `skills/pangea-design-ai/references/components/artifact/container-file-preview.md`
+- Create: `skills/pangea-design-ai/references/components/artifact/artifact-panel.md`
+- Create: `skills/pangea-design-ai/references/components/artifact/image-viewer.md`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/panel-containers.tsx`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/artifact-panel.tsx`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/image-viewer.tsx`
 
 **Step 1: 三类容器**
 
@@ -347,14 +347,14 @@ Expected: 类型和物化检查通过；文档改动无空白错误。
 ### Task 11: 完成沉浸式壳层文档
 
 **Files:**
-- Create: `skills/agent-ux-react/references/components/shell/agent-shell.md`
-- Create: `skills/agent-ux-react/references/components/shell/chat-workspace.md`
-- Create: `skills/agent-ux-react/references/components/shell/conversation-page.md`
-- Create: `skills/agent-ux-react/references/components/shell/agent-sidebar.md`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/agent-shell.tsx`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/chat-workspace.tsx`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/conversation-page.tsx`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/sidebar.tsx`
+- Create: `skills/pangea-design-ai/references/components/shell/agent-shell.md`
+- Create: `skills/pangea-design-ai/references/components/shell/chat-workspace.md`
+- Create: `skills/pangea-design-ai/references/components/shell/conversation-page.md`
+- Create: `skills/pangea-design-ai/references/components/shell/agent-sidebar.md`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/agent-shell.tsx`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/chat-workspace.tsx`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-page.tsx`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/sidebar.tsx`
 
 **Step 1: AgentShell 状态归属**
 
@@ -375,12 +375,12 @@ Expected: 类型和物化检查通过；文档改动无空白错误。
 ### Task 12: 完成注册表与视觉映射文档
 
 **Files:**
-- Create: `skills/agent-ux-react/references/components/registry/icon-registry.md`
-- Create: `skills/agent-ux-react/references/components/registry/resource-visuals.md`
-- Create: `skills/agent-ux-react/references/components/registry/icon-button.md`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/icon-registry.ts`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/resource-visuals.tsx`
-- Reference: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/icon-button.tsx`
+- Create: `skills/pangea-design-ai/references/components/registry/icon-registry.md`
+- Create: `skills/pangea-design-ai/references/components/registry/resource-visuals.md`
+- Create: `skills/pangea-design-ai/references/components/registry/icon-button.md`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/icon-registry.ts`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/resource-visuals.tsx`
+- Reference: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/icon-button.tsx`
 
 **Step 1: icon registry**
 
@@ -401,11 +401,11 @@ Expected: 类型和物化检查通过；文档改动无空白错误。
 ### Task 13: 回填 Copilot 与产品扩展定位
 
 **Files:**
-- Modify: `skills/agent-ux-react/references/overview/extension-map.md`
-- Modify: `skills/agent-ux-react/references/overview/project-structure.md`
-- Modify: `skills/agent-ux-react/references/components/README.md`
+- Modify: `skills/pangea-design-ai/references/overview/extension-map.md`
+- Modify: `skills/pangea-design-ai/references/overview/project-structure.md`
+- Modify: `skills/pangea-design-ai/references/components/README.md`
 - Reference: `packages/agent-ui/src/copilot/copilot-app.tsx`
-- Reference: `skills/agent-ux-react/templates/copilot-starter/src/pages/ContractReview.tsx`
+- Reference: `skills/pangea-design-ai/templates/copilot-starter/src/pages/ContractReview.tsx`
 
 **Step 1: 写 Copilot 壳层边界**
 
@@ -422,9 +422,9 @@ Expected: 类型和物化检查通过；文档改动无空白错误。
 ### Task 14: 建立文档事实检查并完成总验证
 
 **Files:**
-- Modify: `skills/agent-ux-react/scripts/build-catalog.mjs` 或 create `skills/agent-ux-react/scripts/check-component-docs.mjs`
+- Modify: `skills/pangea-design-ai/scripts/build-catalog.mjs` 或 create `skills/pangea-design-ai/scripts/check-component-docs.mjs`
 - Modify: root `package.json`（仅在新检查器接入时）
-- Modify: `skills/agent-ux-react/references/_generated/catalog.json`（生成物）
+- Modify: `skills/pangea-design-ai/references/_generated/catalog.json`（生成物）
 - Modify: `PROJECT_CONTEXT.md`
 - Modify: `CHANGELOG.md`
 

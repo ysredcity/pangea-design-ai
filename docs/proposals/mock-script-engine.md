@@ -1,9 +1,9 @@
 # 方案：Mock 对话剧本引擎
 
-> 状态：**一期已实现，待随 agent-layout 整合重构**（2026-08-27）。
-> 一期代码位于 `packages/agent-ui/src/script-engine/`，两套脚手架已改用剧本 JSON 驱动示例场景，实现收敛见文末第 8 节「实现备注」。
+> 状态：**一期与 Phase 5 双数据源适配均已实现**（2026-09-03）。
+> 一期代码位于 `packages/agent-ui/src/script-engine/`；Phase 5 已将沉浸式默认作者入口切换为 TS 富场景，同时保留 JSON 编辑器入口的解析边界。
 > ⚠️ **后续变更**：采纳 [agent-layout 作为沉浸式事实源](./agent-layout-integration.md) 后，本方案有两处修订，见第 9 节。`script-player.tsx` 需重写、`runtime.ts` 需重构，`match/interpolate/parse` 大部分保留。
-> 关联：[SKILL.md](../../skills/agent-ux-react/SKILL.md) · [design.md](../../skills/agent-ux-react/references/design.md) · [component-selection/](../../skills/agent-ux-react/references/component-selection/)
+> 关联：[SKILL.md](../../skills/pangea-design-ai/SKILL.md) · [design.md](../../skills/pangea-design-ai/references/design.md) · [component-selection/](../../skills/pangea-design-ai/references/component-selection/)
 
 ## 1. 问题
 
@@ -143,7 +143,7 @@
 }
 ```
 
-**`taskProgress` 块字段说明**（对应 [task-progress.md](../../skills/agent-ux-react/references/component-selection/task-progress.md) 的三层结构，剧本里原样复用组件已有的 props，不新增字段）：
+**`taskProgress` 块字段说明**（对应 [task-progress.md](../../skills/pangea-design-ai/references/component-selection/task-progress.md) 的三层结构，剧本里原样复用组件已有的 props，不新增字段）：
 
 | 字段 | 对应组件层级 | 说明 |
 |---|---|---|
@@ -186,7 +186,7 @@
 - **`taskProgress` 块的 `tasks[].status` 不做"随 `steps` 播放自动推进"**：方案文档第 4 节表格里写"具体映射规则留到实现阶段定"，实现时决定**不做**自动映射——`tasks` 与 `steps` 是剧本作者分别声明的两组独立数据，播放时只对 `steps` 做渐进式 delay 揭示，`tasks[].status` 保持剧本里写的固定值。原因：自动推进需要额外的时间轴对齐规则（哪个 step 对应哪个 task 状态变化），复杂度收益不成正比，两个示例场景（合同风险扫描）改为直接把 `tasks` 全部写成 `done`，只用 `steps` 的 `delayMs` 做节奏演示。
 - **未新增 `agent-ui/mention-popover`、`agent-ui/slash-popover`**：`Composer` 组件的 `@`/`/` 选择面板本身尚未实现（这是此前已知的待办，不属于本轮范围），因此剧本里没有涉及"能力选择"相关的块类型。
 - **`branches` 校验为软约束（console.warn），不阻断渲染**：`parseScript`/`useScriptRuntime`/`scripts/check-scripts.mjs` 三处对"字段数超限""高风险缺字段""分支目标节点不存在"等问题只警告不报错，对齐组件层 `ClarifyCard`/`ConfirmCard` 已有的 `console.warn` 兜底哲学（mock 场景里"能跑起来但提示有问题"优先于"直接崩掉"）。
-- **`scripts/check-scripts.mjs` 独立实现，不复用 `parse.ts` 的规则代码**：因为该脚本要在纯 Node（无 TS 编译）环境下跑、且属于 `skills/agent-ux-react/scripts/`（面向 skill 消费者的机检工具）而非 `packages/agent-ui`（面向仓库内部开发），两处规则集当前是手动保持一致，未来规则变化需要两处都改（已记录在 PROJECT_CONTEXT.md 待办）。
+- **`scripts/check-scripts.mjs` 独立实现，不复用 `parse.ts` 的规则代码**：因为该脚本要在纯 Node（无 TS 编译）环境下跑、且属于 `skills/pangea-design-ai/scripts/`（面向 skill 消费者的机检工具）而非 `packages/agent-ui`（面向仓库内部开发），两处规则集当前是手动保持一致，未来规则变化需要两处都改（已记录在 PROJECT_CONTEXT.md 待办）。
 - **两个脚手架的示例页面已改为剧本驱动**：`immersive-starter/src/pages/Conversation.tsx` 与 `copilot-starter/src/pages/ContractReview.tsx` 里原来的 `if (text.includes(...))` 分支全部移除，改为 `useScriptRuntime(scenarios) + <ScriptPlayer>`，剧本内容在各自的 `src/mock/scenarios.json`。
 
 ---
@@ -252,3 +252,10 @@ JSON 路径（website 编辑器产出 / 消费）
 | `script-engine/script-player.tsx` | 重写，渲染目标改为 agent-layout 组件树 |
 | `scripts/check-scripts.mjs` | 适配新数据模型 |
 | 两套脚手架的 `scenarios.json` | immersive 的被 agent-layout 场景替换；copilot 的保留 |
+
+### 9.3 Phase 5 实施结果（2026-09-03）
+
+- `script-engine/types.ts` 已改为富 `ConversationScene<TTarget>[]` 契约，包含执行层级、澄清、附件、产品块以及显式 `awaitingApproval`/`approvalOutcomes`；共享层不引用沉浸式 `ArtifactTarget`、panel 或 Copilot canvas。
+- `resolveTargets()` 是 JSON 唯一的加载边界：JSON 使用 `targetId`，消费者传入自己的目标注册表；缺少注册项会抛出明确错误。TS 场景不经过该转换，保留 IDE 补全和 `tsc` 字段检查。
+- `ScriptPlayer` 已改为 renderer-neutral bridge，由 rich `ConversationFlow` 或其它产品 renderer 消费 resolved scene；不再维护旧七块的平行消息 UI。
+- `check-scripts.mjs` 会将 `agent-layout/scenes.ts` 识别为 TS 路径并交由 `tsc` 验证，同时保留对一期 `scenarios.json` 的兼容校验。`chat-5` 的 1.1s/1.4s 澄清续流程仍是 rich renderer 的交互实现，未在本 Phase 强行数据化。

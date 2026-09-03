@@ -8,7 +8,7 @@ meta:
   layer: shell
   title: 对话页 ConversationPage
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/conversation-page.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-page.tsx
   whenToUse: [展示一条活动沉浸式会话, 装配 rich 对话流与 Composer]
   whenNotToUse: [实现产物容器, 作为共享 ConversationFlow 的替代, 持有全局面板或侧栏状态]
   composeWith: [ChatWorkspace, ConversationFlow, Composer, IconButton, AppConfig]

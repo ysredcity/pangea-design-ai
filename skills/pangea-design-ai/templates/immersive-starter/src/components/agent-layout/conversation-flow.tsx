@@ -12,9 +12,9 @@ import { MarkdownContent } from "./markdown-content"
 import { AgentAvatar, LibraryFileIcon } from "./resource-visuals"
 import { ClarificationFormCard } from "./clarification-form-card"
 import type { ProductBlockAction } from "@/agent-ui/conversation"
-import { type AssistantAttachment, type ClarificationFollowUpData, type ClarificationFormData, type ConversationScene, type ConversationTurnData, type ExecutionActionData, type ExecutionData, type ExecutionStepData, type ExecutionTaskData, type ProductConversationBlock, type ReasoningData } from "./conversation-data"
-import type { ProductIdentity, WelcomeExpert } from "./app-config"
-import type { ArtifactTarget } from "./panel-types"
+import { type AssistantAttachment, type ClarificationFollowUpData, type ClarificationFormData, type ConversationScene, type ConversationTurnData, type ExecutionActionData, type ExecutionData, type ExecutionStepData, type ExecutionTaskData, type ProductConversationBlock, type ReasoningData } from "@/agent-ui/immersive/contracts"
+import type { ProductIdentity, WelcomeExpert } from "@/agent-ui/immersive/contracts"
+import type { ArtifactTarget } from "@/agent-ui/immersive/contracts"
 
 export type ArtifactRouter = (target: ArtifactTarget) => void
 export type ProductBlockActionHandler = (action: ProductBlockAction) => void

@@ -11,9 +11,8 @@ import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { ArtifactPanel } from "./artifact-panel"
 import { ChatWorkspace } from "./chat-workspace"
-import { AgentSidebar, initialConversations, initialPinnedConversations, type Conversation } from "./sidebar"
-import { conversationScenes, createDraftScene } from "./conversation-data"
-import type { AppConfig } from "./app-config"
+import { AgentSidebar, type Conversation } from "./sidebar"
+import type { ImmersiveAgentAppProps } from "@/agent-ui/immersive/contracts"
 import { splitSentContext } from "./message-context"
 import { ImageViewer } from "./image-viewer"
 import { panelViewKey, type ArtifactTarget, type ImageView, type PanelTab, type PanelView } from "./panel-types"
@@ -22,10 +21,11 @@ const SIDEBAR_WIDTH = 240
 const PANEL_MIN_WIDTH = 320
 const CHAT_MIN_WIDTH = 420
 
-export function AgentShell({ config }: { config: AppConfig }) {
+export function AgentShell({ config, scenes, initialPinnedConversations = [], initialConversations = [], createDraftScene }: ImmersiveAgentAppProps) {
+  const scenesById = Object.fromEntries(scenes.map((scene) => [scene.id, scene]))
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null)
-  const [pinnedConversations, setPinnedConversations] = useState<Conversation[]>(() => initialPinnedConversations.map((item) => ({ ...item, scene: conversationScenes[item.id] })))
-  const [conversations, setConversations] = useState<Conversation[]>(() => initialConversations.map((item) => ({ ...item, scene: conversationScenes[item.id] })))
+  const [pinnedConversations, setPinnedConversations] = useState<Conversation[]>(() => initialPinnedConversations.map((item) => ({ ...item, scene: scenesById[item.id] })))
+  const [conversations, setConversations] = useState<Conversation[]>(() => initialConversations.map((item) => ({ ...item, scene: scenesById[item.id] })))
   const [renamingConversation, setRenamingConversation] = useState<Conversation | null>(null)
   const [renameTitle, setRenameTitle] = useState("")
   const [readConversationIds, setReadConversationIds] = useState<Set<string>>(() => new Set())
@@ -260,6 +260,7 @@ export function AgentShell({ config }: { config: AppConfig }) {
         >
           <ChatWorkspace
             config={config}
+            createDraftScene={createDraftScene}
             activeConversation={activeConversation}
             isSidebarDocked={sidebarDocked}
             onNewChat={() => openConversation(null)}

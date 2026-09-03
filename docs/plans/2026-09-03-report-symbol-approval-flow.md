@@ -13,8 +13,8 @@
 ### Task 1: 定义场景与会话审批状态
 
 **Files:**
-- Modify: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/conversation-data.ts`
-- Modify: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/sidebar.tsx`
+- Modify: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-data.ts`
+- Modify: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/sidebar.tsx`
 
 **Step 1:** 为 rich turn 定义显式 `awaitingApproval` 与批准/拒绝后的执行和回复数据；将 `pinned-1` 改为首次建议、调整询问、用户“可以”后的高风险写入确认三轮。
 
@@ -23,8 +23,8 @@
 ### Task 2: 将审批状态接入沉浸式 Flow 与 Composer
 
 **Files:**
-- Modify: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx`
-- Modify: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/composer.tsx`
+- Modify: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx`
+- Modify: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/composer.tsx`
 
 **Step 1:** 由 Flow 的显式审批状态决定确认卡、过程与回复之间的“需要你的审批”提示，以及批准/拒绝后的后续 AgentResponseBlock。
 
@@ -33,9 +33,9 @@
 ### Task 3: 由壳层拥有审批结果
 
 **Files:**
-- Modify: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/conversation-page.tsx`
-- Modify: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/chat-workspace.tsx`
-- Modify: `skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/agent-shell.tsx`
+- Modify: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-page.tsx`
+- Modify: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/chat-workspace.tsx`
+- Modify: `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/agent-shell.tsx`
 
 **Step 1:** 将确认 action 从页面上抛给 AgentShell，并映射为 approved/rejected 会话状态。
 
@@ -44,9 +44,9 @@
 ### Task 4: 回填文档与验证
 
 **Files:**
-- Modify: `skills/agent-ux-react/references/components/conversation/conversation-flow.md`
-- Modify: `skills/agent-ux-react/references/components/delegation/composer.md`
-- Modify: `skills/agent-ux-react/references/components/shell/agent-sidebar.md`
+- Modify: `skills/pangea-design-ai/references/components/conversation/conversation-flow.md`
+- Modify: `skills/pangea-design-ai/references/components/delegation/composer.md`
+- Modify: `skills/pangea-design-ai/references/components/shell/agent-sidebar.md`
 - Modify: `docs/plans/2026-09-03-phase-4-interactive-conversation-cards.md`
 - Modify: `PROJECT_CONTEXT.md`
 - Modify: `CHANGELOG.md`

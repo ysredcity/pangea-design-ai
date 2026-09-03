@@ -8,7 +8,7 @@ user-invocable: false
 
 ## 适用范围
 
-本清单**只描述** `skills/agent-ux-react/templates/immersive-starter/src/components/ui/` 中沉浸式模板使用的 21 个 Base UI 基础件。它不是 `@agent-ux/agent-ui` 的 root public API，也不表示每个基础件可从包根入口导入。共享对话 API 的事实源是 `packages/agent-ui/src/conversation/`；Copilot 的基础件和装配边界应读取其自身模板或 `/copilot` 子路径。
+本清单**只描述** `skills/pangea-design-ai/templates/immersive-starter/src/components/ui/` 中沉浸式模板使用的 21 个 Base UI 基础件。它不是 `@agent-ux/agent-ui` 的 root public API，也不表示每个基础件可从包根入口导入。共享对话 API 的事实源是 `packages/agent-ui/src/conversation/`；Copilot 的基础件和装配边界应读取其自身模板或 `/copilot` 子路径。
 
 ## 为什么这里不是 API 镜像
 

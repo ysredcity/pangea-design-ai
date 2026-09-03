@@ -1,6 +1,6 @@
 # 方案：整合 agent-layout 作为沉浸式事实源
 
-> 状态：**方案已确认；Phase 0–4 与 Copilot Base UI 迁移已实施**（2026-09-03）。本文档保留方向、组件文档体系与已验证边界；Phase 5 及以后尚未完成。
+> 状态：**已实施；Phase 0–5、Phase 7–8 与 Copilot Base UI 迁移均已完成**（2026-09-03）。本文档保留方向、组件文档体系、运行时所有权与已验证边界。
 > 关联：[mock-script-engine.md](./mock-script-engine.md) · [website-showcase.md](./website-showcase.md) · [agent-layout/DESIGN.md](/Users/yangshuo/Code/agent-layout/DESIGN.md) · [agent-layout/HANDOFF.md](/Users/yangshuo/Code/agent-layout/HANDOFF.md)
 
 ## 1. 背景与结论
@@ -61,7 +61,7 @@
 
 ### 4.2 配置化改造范围
 
-把散在各处的硬编码提成 `AppConfig`，使 `<AgentApp config={...} scenes={...} />` 成为 immersive-starter 与 website 播放器共用的唯一入口：
+把散在各处的硬编码提成 `ImmersiveAppConfig`，使 `<ImmersiveAgentApp config={...} scenes={...} />` 成为 immersive-starter 与 website 播放器共用的唯一入口：
 
 - `conversation-data.ts` 的 `DEFAULT_AGENT_NAME`
 - `resource-visuals.tsx` 的 `AgentAvatar`（产品身份头像）
@@ -282,7 +282,9 @@ JSON 路径（website 编辑器产出 / 消费）
 
 **超出范围、需单独决定**：`chat-5` 澄清表单提交后的续流程时序（1.1 秒 → 插入步骤 → 1.4 秒 → 最终确认）写在 `conversation-flow.tsx` 里，是**代码不是数据**。若希望 PM 在编辑器里编排分阶段推进，需把时序也提成数据（对应剧本引擎的 `steps[].delayMs`）。
 
-## 实施状态（2026-09-03）\n\nPhase 0（设计规则/门禁/组件文档骨架）、Phase 1（subtree 整合）、Phase 2（`AppConfig`、产品块插槽、共享 Base UI 对话域）和 Phase 3（组件正文与扩展地图）已完成。**Phase 4 的 ConfirmCard、ErrorState、FollowUpSuggestions、其 `ProductBlockAction` 回写与直接涉及的键盘/live-region/44px 约束也已实施。** Copilot 已在同一条 Base UI 链路上复用 shared card：`routeArtifact` 只更新左侧画布，不进入沉浸式 panel/Tab。Phase 5 的双数据源剧本适配、完整 immersive `AgentApp` 壳层抽取与 Phase 7 website 尚未完成；不能误写为 Phase 5 已完成。\n\n## 9. 改造顺序
+## 实施状态（2026-09-03）
+
+Phase 0（设计规则/门禁/组件文档骨架）、Phase 1（subtree 整合）、Phase 2（`AppConfig`、产品块插槽、共享 Base UI 对话域）、Phase 3（组件正文与扩展地图）、Phase 4（三张交互卡与无障碍边界）、Phase 5（富 `ConversationScene[]` 的 TS/JSON 双数据源）、Copilot Base UI 迁移、Phase 7 website 与 **Phase 8 真实沉浸式运行时抽取均已完成。** Phase 7 提供沉浸式 Agent / 助手式 Copilot 模板演示，以及 catalog 中登记组件的详情与形态展示；Phase 8 将完整壳层、Base UI 闭包、hooks、utility、contracts 与 canonical theme/typeset 收敛进 package，模板与 website 不再维护第二套运行时。
 
 | Phase | 内容 | 产出 |
 |---|---|---|
@@ -291,9 +293,10 @@ JSON 路径（website 编辑器产出 / 消费）
 | **2** ✅ | `packages/agent-ui` 分层导出（共享 conversation / immersive / copilot）；`AppConfig` 配置化改造；补"对话流自定义块"扩展点 | 共享对话域与双 Base UI 壳层入口成立；完整沉浸式 `AgentApp` 壳层抽取后续补齐 |
 | **3** ✅ | 写组件文档（按 5.2 的目录，逐个核对源码而非照抄 HANDOFF）+ `extension-map.md` | 组件 API、形态边界与精确扩展路径已完成 |
 | **4** ✅ | 补三个 V1.4 缺口组件（`confirm-card` / `error-state` / `follow-up-suggestions`）+ 无障碍层 | 三张 shared Base UI 卡、`onAction` 回写、键盘/44px/live-region 边界已实施；实际业务结果仍由消费者拥有 |
-| **5** | 剧本引擎适配双数据源（`resolveTargets` + `check-scripts.mjs` 适配新数据模型） | 编辑器数据链路就绪 |
+| **5** ✅ | 剧本引擎适配双数据源（`resolveTargets` + `check-scripts.mjs` 适配新数据模型） | 引擎以富 `ConversationScene[]` 为唯一输入；沉浸式使用 TS 场景、JSON 在边界解析 targetId；编辑器数据链路就绪 |
 | ~~**6**~~ ✅ | `copilot-starter` 迁移到 Base UI，复用共享对话域 | 已随 Phase 2 一并完成；Copilot 产物仅进入左侧画布 |
-| **7** | `website/`（文档站 + 组件画廊 + 播放器 + 在线编辑器） | 最后做 |
+| **7** ✅ | `website/`（文档站 + 双模板演示 + 组件详情/形态展示 + 播放器 + 在线编辑器） | 独立 Vite workspace；静态文档、沉浸式 Agent / Copilot 模板演示、catalog 组件详情，本地 JSON 编辑、targetId 解析预览、导入导出与 localStorage 已实施 |
+| **8** ✅ | 真实沉浸式运行时抽取与同源消费 | `packages/agent-ui/src/immersive/` 成为完整 runtime、contracts 与 canonical theme/typeset 的唯一来源；模板单向物化、website 直接依赖并在本地适配中立 target |
 
 ## 10. 废弃物清单
 
@@ -318,3 +321,7 @@ JSON 路径（website 编辑器产出 / 消费）
 | `docs/proposals/website-showcase.md` | 已按第 4 节更新 |
 
 `immersive-starter` 那批组件本来就是"等设计稿之前的占位实现"，而 agent-layout 就是那份设计稿的成品形态——作废是预期内的，不是返工。
+
+## Phase 8 implementation record
+
+**已实施（2026-09-03）**：rich runtime 的唯一源码已迁到 `packages/agent-ui/src/immersive/`，对外仅公开 `ImmersiveAgentApp` 和显式 immersive contracts。模板只通过 `sync-agent-ui.mjs` 物化独立副本，产品 seed data 不进入 package；website 通过自己的 neutral-target adapter 使用同一 runtime。canonical theme/typeset 由 package 所有，避免 website 与模板维护两套产品 token。

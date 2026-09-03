@@ -8,7 +8,7 @@ meta:
   layer: conversation
   title: 消息操作 Message Actions
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/message-actions.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/message-actions.tsx
   whenToUse: [给消息复用复制与反馈操作]
   whenNotToUse: [为用户与智能体消息复制另一套动作, 将无意义的内部过程加入动作栏]
   composeWith: [IconButton, Tooltip, Dialog, UserMessage, AssistantMessage]

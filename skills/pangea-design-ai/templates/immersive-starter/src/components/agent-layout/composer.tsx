@@ -79,7 +79,7 @@ type ComposerProps = {
 
 export function Composer({ disabled = false, onSend, draft, onDraftChange, selectedExpert, onSelectedExpertChange, menuSide = "above" }: ComposerProps) {
   const [uploads, setUploads] = useState<UploadItem[]>([])
-  const [experts, setExperts] = useState<ContextItem[]>([])
+  const [uncontrolledExpert, setUncontrolledExpert] = useState<string | null>(null)
   const [recording, setRecording] = useState(false)
   const [hasContent, setHasContent] = useState(false)
   const [trigger, setTrigger] = useState<TriggerState | null>(null)
@@ -89,6 +89,9 @@ export function Composer({ disabled = false, onSend, draft, onDraftChange, selec
   const iconTemplatesRef = useRef<HTMLDivElement>(null)
   const savedRangeRef = useRef<Range | null>(null)
   const mediaStreamRef = useRef<MediaStream | null>(null)
+
+  const effectiveExpert = selectedExpert === undefined ? uncontrolledExpert : selectedExpert
+  const experts: ContextItem[] = effectiveExpert ? [{ id: `专家-${effectiveExpert}`, label: effectiveExpert, type: "专家" }] : []
 
   // 受控草稿（新对话页的推荐指令）直接参与判断，这样外部写入草稿时不必在 effect 里再 setState
   const hasText = hasContent || Boolean(draft?.trim())
@@ -136,10 +139,10 @@ export function Composer({ disabled = false, onSend, draft, onDraftChange, selec
     editor.textContent = draft
   }, [draft])
 
-  useEffect(() => {
-    if (selectedExpert === undefined) return
-    setExperts(selectedExpert ? [{ id: `专家-${selectedExpert}`, label: selectedExpert, type: "专家" }] : [])
-  }, [selectedExpert])
+  const setExpert = (expert: string | null) => {
+    if (selectedExpert === undefined) setUncontrolledExpert(expert)
+    onSelectedExpertChange?.(expert)
+  }
 
   /** 在最后的光标位置插入内联标签，插入后补一个空格便于继续输入 */
   const insertInlineTag = (label: string, type: InlineContextType) => {
@@ -186,8 +189,7 @@ export function Composer({ disabled = false, onSend, draft, onDraftChange, selec
 
   const addContext = (label: string, type: ContextType) => {
     if (type === "专家") {
-      onSelectedExpertChange?.(label)
-      setExperts([{ id: `${type}-${label}`, label, type }])
+      setExpert(label)
       return
     }
     if (inlineContextTypes.includes(type as InlineContextType)) insertInlineTag(label, type as InlineContextType)
@@ -322,7 +324,7 @@ export function Composer({ disabled = false, onSend, draft, onDraftChange, selec
             {experts.map((expert) => (
               <span key={expert.id} className="flex h-9 shrink-0 items-center gap-1 rounded-full bg-primary-bg px-2 text-sm font-medium text-primary">
                 <ExpertAvatar expert={expert.label} className="size-5 [&_svg]:size-3" /><span className="px-0.5">{expert.label}</span>
-                <button type="button" disabled={interactionsDisabled} aria-label={`移除${expert.label}`} className="rounded-full hover:bg-primary/10" onClick={() => { setExperts([]); onSelectedExpertChange?.(null) }}><X className="size-4" /></button>
+                <button type="button" disabled={interactionsDisabled} aria-label={`移除${expert.label}`} className="rounded-full hover:bg-primary/10" onClick={() => setExpert(null)}><X className="size-4" /></button>
               </span>
             ))}
           </div>

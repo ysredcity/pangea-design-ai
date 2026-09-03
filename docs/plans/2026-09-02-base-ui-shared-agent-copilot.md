@@ -236,8 +236,8 @@ Copilot 的 `routeArtifact(target)` 将 target 映射为左侧画布/文档预�
 **Files:**
 - Rewrite: `scripts/sync-agent-ui.mjs`
 - Modify: root `package.json`
-- Modify: `skills/agent-ux-react/templates/immersive-starter/package.json`
-- Modify: `skills/agent-ux-react/templates/copilot-starter/package.json`
+- Modify: `skills/pangea-design-ai/templates/immersive-starter/package.json`
+- Modify: `skills/pangea-design-ai/templates/copilot-starter/package.json`
 - Delete: 旧 Radix `packages/agent-ui/src/` 文件与不再需要的模板物化目录
 
 **Step 1: 生成两套模板的物化源码**
@@ -266,10 +266,10 @@ npm run build
 ## Task 6: 同步文档、质量门禁和台账
 
 **Files:**
-- Modify: `skills/agent-ux-react/SKILL.md`
-- Modify: `skills/agent-ux-react/references/overview/project-structure.md`
-- Modify: `skills/agent-ux-react/references/overview/extension-map.md`
-- Modify: `skills/agent-ux-react/references/components/README.md`
+- Modify: `skills/pangea-design-ai/SKILL.md`
+- Modify: `skills/pangea-design-ai/references/overview/project-structure.md`
+- Modify: `skills/pangea-design-ai/references/overview/extension-map.md`
+- Modify: `skills/pangea-design-ai/references/components/README.md`
 - Modify: `CONTRIBUTING.md`
 - Modify: `docs/proposals/agent-layout-integration.md`
 - Modify: `CHANGELOG.md`

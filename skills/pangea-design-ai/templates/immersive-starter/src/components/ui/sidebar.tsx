@@ -5,22 +5,22 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
+import { Button } from "./button"
+import { Input } from "./input"
+import { Separator } from "./separator"
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet"
-import { Skeleton } from "@/components/ui/skeleton"
+} from "./sheet"
+import { Skeleton } from "./skeleton"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
+} from "./tooltip"
 import { PanelLeftIcon } from "lucide-react"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
@@ -693,6 +693,8 @@ function SidebarMenuSubButton({
   })
 }
 
+// useSidebar 是 SidebarProvider 的配套公开 hook，需与组件保持同一 UI primitive 模块。
+/* oxlint-disable react/only-export-components */
 export {
   Sidebar,
   SidebarContent,
@@ -719,3 +721,4 @@ export {
   SidebarTrigger,
   useSidebar,
 }
+/* oxlint-enable react/only-export-components */

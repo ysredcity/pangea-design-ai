@@ -1,11 +1,13 @@
 ---
-name: agent-ux-react
+name: pangea-design-ai
 description: "⚠️ 硬约束（最高优先级）：任何「生成/新建智能体产品界面」的需求，必须先输出「界面架构需求文档」并经用户明确确认，确认后的下一轮才写代码；禁止同一轮里既出需求文档又动工程。本 skill 是智能体产品交互设计的 React 前端参考，事实源为《智能体产品交互设计指南V1.4》（海信集团）+ 沉浸式工作台实测契约，技术栈为 Vite 8 + React 19 + TypeScript + Tailwind CSS v4 + shadcn v4（底层 Base UI）+ lucide-react。当用户要求构建智能体产品、AI 助手、Agent、Copilot、对话式界面，或提到沉浸式/助手式/嵌入式界面形态、对话流、执行过程 L1/L2/L3、动作 Badge、深度思考面板、澄清表单、确认卡片、产物面板与容器 Tab、意图输入/Composer、内联标签，或使用 shadcn、Base UI、Tailwind、lucide-react 编写前端代码时使用。覆盖需求规格化、界面形态选型、四层信息模型归位、组件体系、视觉 token、响应式与无障碍、质量门禁。"
 ---
 
-# Agent UX React Skill
+# Pangea Design AI Skill
 
 智能体产品交互设计的 React 实现说明。
+
+> **当前稳定基线：v0.1.0（2026-09-03）**。该版本已固化两套独立脚手架、共享 Base UI 运行时、富场景剧本引擎、组件文档与根级质量门禁；具体发布记录见 [CHANGELOG.md](../../CHANGELOG.md)。
 
 **设计规则事实源**：[references/design.md](references/design.md)，由两份上游合并而成——《[智能体产品交互设计指南 V1.4](../../docs/智能体产品交互设计指南V1.4.md)》（海信集团，提供骨架与三形态覆盖）+ 沉浸式工作台实测契约（提供已验证的具体数值与判定规则）。正文用〔指南〕/〔沉浸式契约〕/〔通用契约〕标注来源，冲突时以 design.md 为准。
 
@@ -122,7 +124,7 @@ description: "⚠️ 硬约束（最高优先级）：任何「生成/新建智�
 | [消息操作](references/design.md#36-消息操作) | 悬停操作栏常驻占位+透明度切换（不条件渲染）；复制原地变对勾不弹 Toast |
 | [后续引导](references/design.md#37-后续引导) | 2–4 个基于上下文的推荐追问，四类场景禁用 |
 | [间距契约](references/design.md#38-一轮对话的结构与间距契约) | 消息块间 20px、身份到执行 8px、执行到正文 20px、用户消息内部 8px |
-| [状态语言](references/design.md#41-四种状态语言) | 执行中/等待回复/完成未读/已提交，四种唯一表达不互借；"需要你的回复"只在最后一轮 |
+| [状态语言](references/design.md#41-五种状态语言) | 执行中/等待回复/等待批准/完成未读/已提交，五种唯一表达不互借；"需要你的回复"只在最后一轮，"需要你的批准"用 destructive 语义 |
 | [动效](references/design.md#43-动效原则) | 只解释空间与状态；收起态不可聚焦；切换对话立即清理；同一效果只一个实现 |
 | [风险分级](references/design.md#51-风险分级与人工接管) | 低（只读直接执行）/中（轻量确认）/高（强确认+完整审计），写操作不得静默执行 |
 | [异常处理](references/design.md#52-异常处理) | 说清"发生了什么/影响了什么/下一步怎么做"，不得暗示未完成的任务已成功 |
@@ -185,17 +187,15 @@ description: "⚠️ 硬约束（最高优先级）：任何「生成/新建智�
 
 > 与 pangea-design-skill 的刻意差异：那边因平台安全扫描把"会话开始自动装依赖/起服务"判定为风险而移除；本 skill 按用户明确要求**保留自动启动**。若未来涉及上传第三方平台分发，需重新评估该权衡。
 
-## 当前状态与后续补充
+## 当前版本与后续补充
 
-本 skill 正在按 [agent-layout 整合方案](../../docs/proposals/agent-layout-integration.md) 分阶段重构，已完成 **Phase 0–2**：设计规则与质量门禁升级、沉浸式 Base UI 成品整合，以及共享对话域和 Copilot Base UI 迁移。两套模板均会物化 Base UI 源码与零依赖质量脚本，复制后可独立执行 `npm install && npm run gate`。
+**v0.1.0** 是首个可管理的稳定基线：Phase 0–8 均已完成，包含合并后的设计规则与 G0–G9 门禁、组件文档与扩展地图、三张 shared 交互卡、TS/JSON 双数据源剧本引擎、Base UI 沉浸式/助手式模板，以及 package-owned 的完整 `ImmersiveAgentApp` 运行时。两套模板复制到仓库外后均可独立执行 `npm install && npm run gate`。
 
-尚未完成：
+当前不阻塞 v0.1.0、但应在后续版本单独处理的事项：
 
-- **组件文档正文**（Phase 3）：`components/` 六个子目录当前只有索引与骨架，约 30 份组件文档待写。**写作时必须逐个核对源码，不能照抄上游交接文档的叙述**——已实测发现三处描述与实际导出不符。
-- **扩展点地图补全**（Phase 3）：当前共享域、沉浸式与 Copilot 路由已回填；其余组件的文件级说明待随正文补齐。
-- **三个指南缺口组件**（Phase 4）：确认卡片、异常状态、后续引导。
-- **无障碍补齐**（Phase 4）：见 design.md 5.3 的提示。
-- **视觉 token 全量**：字体/间距/圆角/阴影/组件级 token，等待设计稿。
-- **剧本引擎适配**（Phase 5）、**website**（Phase 7），以及完整沉浸式 `AgentApp` 壳层的 package 抽取。
+- **视觉 token 全量**：字体、间距、圆角、阴影与组件级 token，等待设计稿作为事实源。
+- **需求规格化映射**：补充从确认需求到剧本数据的映射规则。
+- **Website / Showcase**：当前功能作为内部展示基线保留；体验、信息架构与演示质量优化暂缓，不应反向影响 skill、模板或共享运行时。
+- **嵌入式参考实现**：继续按场景生成，不在当前版本固化第三套模板。
 
-在组件文档补齐之前，涉及具体组件用法时**直接读工程源码**（路径见 [components/README.md](references/components/README.md) 的组件清单表），不要凭猜测调用 API。
+版本升级、变更记录与发布前验证见 [CONTRIBUTING.md](../../CONTRIBUTING.md) 和 [CHANGELOG.md](../../CHANGELOG.md)。

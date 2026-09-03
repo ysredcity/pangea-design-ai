@@ -8,7 +8,7 @@ meta:
   layer: conversation
   title: 消息上下文 Message Context
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/message-context.ts
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/message-context.ts
   whenToUse: [将 immersive Composer 的发送值拆为用户消息内容附件与专家]
   whenNotToUse: [把全部 ContextItem 原样塞进消息数据, 将连接器显示为用户正文]
   composeWith: [Composer ContextItem, ConversationTurnData, inline-tag, UserMessage]

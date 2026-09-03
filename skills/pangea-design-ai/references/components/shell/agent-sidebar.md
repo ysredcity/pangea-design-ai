@@ -8,7 +8,7 @@ meta:
   layer: shell
   title: 智能体侧栏 AgentSidebar
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/sidebar.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/sidebar.tsx
   whenToUse: [显示沉浸式产品导航和会话列表, 以停靠或抽屉方式呈现侧栏]
   whenNotToUse: [拥有会话数据, 用普通导航配置替代新对话动作, 在 JSX 硬编码对象图标]
   composeWith: [AgentShell, AppConfig, iconRegistry, AgentAvatar, IconButton]

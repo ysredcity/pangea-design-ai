@@ -8,7 +8,7 @@ meta:
   layer: artifact
   title: 面板容器注册表 Panel Registry
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/panel-registry.ts
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/panel-registry.ts
   whenToUse: [注册新的沉浸式 PanelView 容器类型, 查找既有容器的图标与渲染入口]
   whenNotToUse: [只替换示例内容, 在 ArtifactPanel 或 AgentShell 写类型分支]
   composeWith: [PanelView, ArtifactPanel, panel-containers]

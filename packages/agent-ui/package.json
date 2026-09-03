@@ -1,7 +1,7 @@
 {
   "name": "@agent-ux/agent-ui",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "description": "Base UI agent conversation source, materialized into independent templates.",
   "main": "src/index.ts",
@@ -10,7 +10,9 @@
     ".": "./src/index.ts",
     "./conversation": "./src/conversation/index.ts",
     "./immersive": "./src/immersive/index.ts",
-    "./copilot": "./src/copilot/index.ts"
+    "./immersive/theme.css": "./src/immersive/theme.css",
+    "./copilot": "./src/copilot/index.ts",
+    "./script-engine": "./src/script-engine/index.ts"
   },
   "scripts": { "check": "tsc --noEmit" },
   "dependencies": {

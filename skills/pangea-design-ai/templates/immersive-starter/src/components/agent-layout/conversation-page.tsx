@@ -9,13 +9,14 @@ import { IconButton } from "./icon-button"
 import type { Conversation } from "./sidebar"
 import { ConversationFlow, UserMessage } from "./conversation-flow"
 import type { ProductBlockAction } from "@/agent-ui/conversation"
-import { createDraftScene, formatTimestamp, type MessageAttachment } from "./conversation-data"
+import { formatTimestamp, type MessageAttachment } from "@/agent-ui/immersive/contracts"
 import { splitSentContext } from "./message-context"
-import type { AppConfig } from "./app-config"
-import type { ArtifactTarget } from "./panel-types"
+import type { AppConfig } from "@/agent-ui/immersive/contracts"
+import type { ArtifactTarget } from "@/agent-ui/immersive/contracts"
 
 type ConversationPageProps = {
   config: AppConfig
+  createDraftScene: (content: string, expert?: string, attachments?: MessageAttachment[]) => NonNullable<Conversation["scene"]>
   conversation: Conversation
   isSidebarDocked: boolean
   onNewChat: () => void
@@ -27,7 +28,7 @@ type ConversationPageProps = {
   pinned: boolean
 }
 
-export function ConversationPage({ config, conversation, isSidebarDocked, onApprovalStatusChange, onNewChat, onOpenArtifact, onOpenSidebar, onPinnedChange, onRename, pinned }: ConversationPageProps) {
+export function ConversationPage({ config, conversation, createDraftScene, isSidebarDocked, onApprovalStatusChange, onNewChat, onOpenArtifact, onOpenSidebar, onPinnedChange, onRename, pinned }: ConversationPageProps) {
   const mobile = useMediaQuery("(max-width: 659px)")
   const contentRef = useRef<HTMLDivElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)

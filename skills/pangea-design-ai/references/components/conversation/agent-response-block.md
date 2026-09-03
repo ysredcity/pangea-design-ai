@@ -8,7 +8,7 @@ meta:
   layer: conversation
   title: 智能体回复块 AgentResponseBlock
   exported: false
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
   whenToUse: [在 conversation-flow 宿主内编排一段智能体响应]
   whenNotToUse: [从其他页面直接 import, 更改产品块插槽位置而不审查完整回复时序]
   composeWith: [AgentIdentity, ExecutionProcess, AssistantMessage, ProductBlockRenderer]

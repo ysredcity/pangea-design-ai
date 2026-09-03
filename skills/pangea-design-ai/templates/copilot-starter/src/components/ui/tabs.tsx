@@ -86,4 +86,6 @@ function TabsContent({
   )
 }
 
+// tabsListVariants 是模板公开的 shadcn 风格样式 API。
+// oxlint-disable-next-line react/only-export-components
 export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants }

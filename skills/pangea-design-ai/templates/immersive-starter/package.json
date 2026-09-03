@@ -1,13 +1,14 @@
 {
   "name": "immersive-starter",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "gate": "npm run lint && npm run build",
+    "check:scripts": "node ./scripts/agent-ux/check-scripts.mjs --template-dir .",
+    "gate": "npm run lint && npm run check:scripts && npm run build",
     "preview": "vite preview"
   },
   "dependencies": {

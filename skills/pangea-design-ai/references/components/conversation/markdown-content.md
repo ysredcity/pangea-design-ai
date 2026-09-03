@@ -8,7 +8,7 @@ meta:
   layer: conversation
   title: Markdown 内容 MarkdownContent
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/markdown-content.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/markdown-content.tsx
   whenToUse: [渲染无内联标签的对话正文或推理内容]
   whenNotToUse: [将 badge 与块级 Markdown 混在同一 ReactMarkdown 树, 在业务组件逐项手写排版]
   composeWith: [react-markdown, remark-gfm, typeset.css, AssistantMessage]

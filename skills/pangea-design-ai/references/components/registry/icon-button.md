@@ -8,7 +8,7 @@ meta:
   layer: registry
   title: 图标按钮 IconButton
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/icon-button.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/icon-button.tsx
   whenToUse: [渲染沉浸式紧凑图标操作, 需要统一 ghost 与圆形基线]
   whenNotToUse: [没有可访问名称的纯图标控制, 以自定义 SVG 替代 Lucide, 将它作为状态表达的唯一方式]
   composeWith: [Button, Tooltip, Lucide icons]

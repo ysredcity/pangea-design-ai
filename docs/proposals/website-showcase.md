@@ -1,6 +1,6 @@
 # 方案：Website / Showcase（含在线编辑器）
 
-> 状态：**方案已确认，待实现**（含 npm workspaces + `packages/agent-ui` 同源方案）。本文档定方向和结构，代码尚未开始。
+> 状态：**已实施**（2026-09-03）。`website/` 已作为第三个内部 workspace 提供静态文档导览、组件图谱与本地 JSON 剧本编辑/预览；沉浸式 website 预览与 `immersive-starter` 现直接消费同一份 package-owned 真实运行时。
 > ⚠️ **后续变更**：workspaces 同源机制已于 2026-08-27 实现；采纳 [agent-layout 作为沉浸式事实源](./agent-layout-integration.md) 后，第 4 节的抽取粒度与第 3 节的可编辑配置项有修订，见第 7 节。**实现顺序调整为最后一步**（Phase 7），排在组件文档体系与扩展点地图之后。
 > 关联：[README.md](../../README.md) · [CONTRIBUTING.md](../../CONTRIBUTING.md) · [mock-script-engine.md](./mock-script-engine.md)
 
@@ -33,11 +33,11 @@
 
 | 配置项 | 对应 design.md | 说明 |
 |---|---|---|
-| 应用名称 / 头像 / 一句话描述 | [1.1 能力识别](../../skills/agent-ux-react/references/design.md#11-能力识别) | 功能导向命名校验（黑名单：不允许配置成人名等，机检可选） |
-| 欢迎语 + 3–5 个推荐操作 | [1.2 首屏引导](../../skills/agent-ux-react/references/design.md#12-首屏引导) | 推荐操作数量做范围校验（3–5） |
-| 左侧导航固定入口 | [2.1 界面形态](../../skills/agent-ux-react/references/design.md#21-界面形态选型) | 图标（复用 lucide-react 名称）+ 文案 + 是否高亮当前会话的列表 |
+| 应用名称 / 头像 / 一句话描述 | [1.1 能力识别](../../skills/pangea-design-ai/references/design.md#11-能力识别) | 功能导向命名校验（黑名单：不允许配置成人名等，机检可选） |
+| 欢迎语 + 3–5 个推荐操作 | [1.2 首屏引导](../../skills/pangea-design-ai/references/design.md#12-首屏引导) | 推荐操作数量做范围校验（3–5） |
+| 左侧导航固定入口 | [2.1 界面形态](../../skills/pangea-design-ai/references/design.md#21-界面形态选型) | 图标（复用 lucide-react 名称）+ 文案 + 是否高亮当前会话的列表 |
 | 对话剧本 | 全部场景链路环节 | 见 [mock-script-engine.md](./mock-script-engine.md) 的 `scenarios.json` schema |
-| 主题（可选，后置） | [design-tokens.md](../../skills/agent-ux-react/references/theme/design-tokens.md) | 待视觉 token 全量补充后再评估是否开放给编辑器调整，本轮不做 |
+| 主题（可选，后置） | [design-tokens.md](../../skills/pangea-design-ai/references/theme/design-tokens.md) | 待视觉 token 全量补充后再评估是否开放给编辑器调整，本轮不做 |
 
 配置对象 + 剧本 JSON 合并为一份可导出文件，例如：
 
@@ -61,7 +61,7 @@
 
 ```
 agent-ued-guide/
-├── package.json                 # workspaces 根，声明 workspaces: ["packages/*", "skills/agent-ux-react/templates/*", "website"]
+├── package.json                 # workspaces 根，声明 workspaces: ["packages/*", "skills/pangea-design-ai/templates/*", "website"]
 ├── packages/
 │   └── agent-ui/                 # 唯一源码：9 个组件 + 布局外壳组件 + 剧本引擎
 │       ├── src/
@@ -69,7 +69,7 @@ agent-ued-guide/
 │       │   ├── layout/immersive-shell.tsx / copilot-shell.tsx
 │       │   └── script-engine/     # mock-script-engine.md 落地后的引擎代码
 │       └── package.json           # name: "@agent-ux/agent-ui"
-├── skills/agent-ux-react/templates/
+├── skills/pangea-design-ai/templates/
 │   ├── immersive-starter/         # dependencies: "@agent-ux/agent-ui": "workspace:*"（开发态）
 │   └── copilot-starter/            # 同上
 └── website/
@@ -86,8 +86,8 @@ agent-ued-guide/
 ```
 node scripts/sync-agent-ui.mjs
 # 从 packages/agent-ui/src/*.tsx 拷贝到：
-#   skills/agent-ux-react/templates/immersive-starter/src/components/agent-ui/
-#   skills/agent-ux-react/templates/copilot-starter/src/components/agent-ui/
+#   skills/pangea-design-ai/templates/immersive-starter/src/components/agent-ui/
+#   skills/pangea-design-ai/templates/copilot-starter/src/components/agent-ui/
 # 拷贝时替换 import 路径（去掉 workspace 包名前缀，改成脚手架内相对路径 @/lib/utils 等）
 ```
 
@@ -114,7 +114,7 @@ node scripts/sync-agent-ui.mjs
 | 部署方式 | Cloudflare Pages，纯静态产物（`vite build` 输出） | 与你确认的"零后端"一致 |
 | 编辑器数据持久化 | `localStorage` 自动保存 + 手动导入/导出 JSON 文件 | 已按你的第 2 点确认 |
 | 站内是否嵌入"组件画廊" | 是，由 `_generated/catalog.json` 驱动，每个组件一个可交互 demo 页 | 复用已有元数据，无需额外维护 |
-| `website/` 是否影响现有 `skills/agent-ux-react` 的发布/打包流程 | 不影响，`website/` 是独立 workspace，`skills/agent-ux-react` 仍可单独打包上传给智能体平台（不含 `website/`） | 需要在后续 `scripts/pack-skill.sh`（如果参照 pangea 建立）里显式排除 `website/` |
+| `website/` 是否影响现有 `skills/pangea-design-ai` 的发布/打包流程 | 不影响，`website/` 是独立 workspace，`skills/pangea-design-ai` 仍可单独打包上传给智能体平台（不含 `website/`） | 需要在后续 `scripts/pack-skill.sh`（如果参照 pangea 建立）里显式排除 `website/` |
 
 ## 6. 明确不在本轮方案范围内
 
@@ -196,3 +196,30 @@ node scripts/sync-agent-ui.mjs
 - 从组件反查它依据的设计原则
 
 详见 [整合方案 5.2 / 5.3](./agent-layout-integration.md#52-分组方式按-designmd-的四层信息模型)。
+
+### 7.6 Phase 7 实施结果（2026-09-03）
+
+- 新增根 `website/` Vite workspace，使用本地 `file:../packages/agent-ui` 链接消费共享组件源码；当前 npm 环境不支持 `workspace:*` 协议，因此保留同源语义但采用兼容声明。
+- website 提供四项单页导航：规范导览、模板演示、按信息层组织的组件图谱、仅面向沉浸式的本地剧本编辑器。模板演示分别呈现沉浸式 Agent 与助手式 Copilot；Copilot 仅提供固定工作区示例，不参数化为在线编辑器。
+- 编辑器使用 `JsonConversationScene[]`、`resolveTargets()` 与 `parseScript()` 形成“JSON → 已解析场景 → 预览”的链路；草稿只写入 localStorage，支持导入、导出和重置。
+- Cloudflare Pages 配置：Root directory 为 `website`，Build command 为 `npm run build`，Build output directory 为 `dist`。不需要服务器端配置。
+- website 预览器通过 `@agent-ux/agent-ui/immersive` 的真实 `ImmersiveAgentApp` 呈现 AgentShell、侧栏、rich ConversationFlow、Composer、Panel Tab、ImageViewer 与响应式布局；website 仅在 adapter 边界将 JSON 中立 target 映射为 rich panel/image target，不复制模板壳层。
+- 模板由 `sync-agent-ui.mjs` 从 `packages/agent-ui/src/immersive` 单向物化，保留 template-owned product config、scenes 与 panel data；Copilot 不接收任何 immersive runtime 文件。
+- 组件图谱覆盖 catalog 中的 2 个布局壳层与 9 个组件；每项都有站内详情、变体切换、组合边界、常见误区、源码与现有 Markdown 规范文档入口。
+
+### 7.7 Phase 7.1 主题基座修正（2026-09-03）
+
+初版 website 存在一个实质缺陷：构建产物中语义色工具类生成数为 0，已接入的真实共享组件只有结构没有产品配色。根因是 `website/src/index.css` 缺少 shadcn 的 `@theme inline` 语义 token 映射。
+
+修正结论：
+
+- website 引入与 `immersive-starter/src/index.css` 一致的完整语义 token、`tw-animate-css` 与 Geist 字体；共享组件不依赖 `shadcn/tailwind.css` 的自定义 variant，故不引入 `shadcn` 包。
+- 站点自身编辑风格变量统一加 `--site-*` 前缀，产品语义 token 占用标准 shadcn 名称。两套语言此前在 `--muted` 与 `--accent` 上语义冲突，这是重命名的根因。
+- 演示区通过 `.product-surface` 作用域套用产品默认边框与描边，不复制模板的 `@layer base` 全局 body 覆盖，站点排版不被接管。
+- 可独立运行的共享组件标注「真实组件 · 形态展示」；模板内部实现不再绘制结构示意图，改为标注「模板内部实现」并给出真实源码路径与启动模板工程的命令。
+
+真实沉浸式壳层的抽取已在 Phase 8 完成：`@agent-ux/agent-ui/immersive` 是唯一运行时源；template 与 website 分别通过物化与直接依赖消费。
+
+## Phase 8 update
+
+website 已不再把 rich scene 投影为 shared `ConversationFlow`，而是直接挂载 package-owned `ImmersiveAgentApp`。JSON authoring schema 保持中立；website-local adapter 负责把执行步骤、附件、澄清续流程和审批结果中的 target 路由为 immersive panel/image target，且不深链模板源码。

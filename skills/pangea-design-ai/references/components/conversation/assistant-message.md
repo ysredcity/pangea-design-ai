@@ -8,7 +8,7 @@ meta:
   layer: conversation
   title: 智能体消息 AssistantMessage
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
   whenToUse: [渲染 rich assistant 正文、交付物附件与可选澄清]
   whenNotToUse: [渲染用户输入, 以普通文本替代目标导向交付物]
   composeWith: [MarkdownContent, ClarificationFormCard, CopyAction, FeedbackActions, ArtifactRouter]

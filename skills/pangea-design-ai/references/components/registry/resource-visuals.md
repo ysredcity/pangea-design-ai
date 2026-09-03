@@ -8,7 +8,7 @@ meta:
   layer: registry
   title: 资源视觉映射 Resource Visuals
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/resource-visuals.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/resource-visuals.tsx
   whenToUse: [渲染文件类型图标, 渲染专家或产品智能体头像]
   whenNotToUse: [为导航/上下文对象选图标, 用中文展示名作为专家稳定映射键]
   composeWith: [LibraryFileIcon, ExpertAvatar, AgentAvatar, AppConfig]

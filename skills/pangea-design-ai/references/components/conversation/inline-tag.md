@@ -8,7 +8,7 @@ meta:
   layer: conversation
   title: 内联标签 Inline Tag
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/inline-tag.ts
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/inline-tag.ts
   whenToUse: [在消息正文保留文件库最近对话技能的语义位置]
   whenNotToUse: [表示本地上传实体附件或连接器调用, 让各组件自行编写标签正则]
   composeWith: [Composer, MessageContent, icon-registry.ts]

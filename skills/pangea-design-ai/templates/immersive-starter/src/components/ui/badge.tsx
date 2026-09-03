@@ -49,4 +49,6 @@ function Badge({
   })
 }
 
+// badgeVariants 是 shadcn 风格的公开样式 API，不应为 Fast Refresh 拆分其导出。
+// oxlint-disable-next-line react/only-export-components
 export { Badge, badgeVariants }

@@ -8,13 +8,13 @@ meta:
   layer: process
   title: 执行过程 ExecutionProcess
   exported: true
-  source: skills/agent-ux-react/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
+  source: skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx
   whenToUse: [展示一轮沉浸式任务的总体状态与可展开执行证据]
   whenNotToUse: [替代共享 ConversationTurn 的浅层 execution, 为简单任务强行增加 L2]
   composeWith: [ReasoningPanel, FlatExecutionFlow, ExecutionStep, TaskBlock]
   composeBoundary: [仅沉浸式 rich flow 使用 ExecutionData, shared 域不含 L1/L2/L3 完整树]
   pitfalls: [完成过程默认展开, 将 L2 当作必需层级]
-  designRules: [design.md#32-执行过程透明, design.md#38-一轮对话的结构与间距契约, design.md#41-四种状态语言]
+  designRules: [design.md#32-执行过程透明, design.md#38-一轮对话的结构与间距契约, design.md#41-五种状态语言]
 ---
 
 # 执行过程 ExecutionProcess

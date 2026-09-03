@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, IndentIncrease } from "lucide-react"
 
 import { RecommendationList } from "@/agent-ui/conversation"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import type { AppConfig, WelcomeExpert } from "./app-config"
+import type { AppConfig, WelcomeExpert } from "@/agent-ui/immersive/contracts"
 import { Composer, type ContextItem } from "./composer"
 import { IconButton } from "./icon-button"
 import { AgentAvatar } from "./resource-visuals"
