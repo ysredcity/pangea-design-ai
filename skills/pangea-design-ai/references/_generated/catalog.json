@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-27T04:41:52.704Z",
+  "generatedAt": "2026-09-04T23:48:23.090Z",
   "layoutShells": [
     {
       "id": "copilot-shell",
@@ -104,362 +104,1420 @@
   ],
   "components": [
     {
-      "id": "artifact-card",
+      "id": "artifact-panel",
       "kind": "component",
-      "title": "制品卡片 ArtifactCard",
+      "layer": "artifact",
+      "title": "独立面板 ArtifactPanel",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/artifact-panel.tsx",
       "whenToUse": [
-        "AI生成了文档/表格/图片/视频/代码等可独立处理的产物"
+        "需要并排查看多个非图片产物的沉浸式右侧容器"
       ],
       "whenNotToUse": [
-        "简短文本结果直接用Markdown展示即可",
-        "不需要面板承载的轻量信息"
-      ],
-      "variants": [
-        "文档",
-        "表格",
-        "图片",
-        "视频",
-        "代码",
-        "报表/图表"
+        "单张图片专注查看",
+        "Copilot 左侧画布",
+        "承载类型专属容器逻辑"
       ],
       "composeWith": [
-        "layout/side-panel(沉浸式右侧面板或助手式对话辅助区旁的展示区)"
+        "panelContainers",
+        "PanelTab",
+        "PanelView",
+        "AgentShell"
       ],
       "composeBoundary": [
-        "对话流内只展示摘要不展示完整产物内容",
-        "面板操作结果要同步回对话流"
+        "壳层只管理 Tab/全局操作/layout",
+        "Toolbar 与 Body 来自 registry"
       ],
       "pitfalls": [
-        "不要在对话流里直接渲染完整文档内容",
-        "面板不承载全局导航和系统设置"
+        "按 view.type 在壳层分支",
+        "窄屏仍显示无效全屏切换"
       ],
-      "previewRoute": "/",
-      "source": "src/components/agent-ui/artifact-card.tsx",
-      "tags": [
-        "对话流",
-        "卡片",
-        "制品",
-        "面板"
+      "designRules": [
+        "design.md#22-响应式与空间分配",
+        "design.md#35-结果呈现与产物容器",
+        "design.md#53-无障碍与包容性"
       ],
-      "doc": "references/component-selection/artifact-card.md"
+      "doc": "references/components/artifact/artifact-panel.md"
     },
     {
-      "id": "clarify-card",
+      "id": "container-browser",
       "kind": "component",
-      "title": "澄清卡片 ClarifyCard",
+      "layer": "artifact",
+      "title": "浏览器容器 Browser Container",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/panel-containers.tsx",
       "whenToUse": [
-        "待澄清事项超过2个",
-        "事项需要枚举",
-        "关键参数缺失导致任务无法执行"
+        "在独立面板内阅读网页摘要、来源和关键结论"
       ],
       "whenNotToUse": [
-        "待澄清事项<=2个→用自然语言追问",
-        "需要用户对已生成结果做决策→confirm-card"
-      ],
-      "variants": [
-        "单字段",
-        "多字段(<=10)",
-        "含\"其他\"输入项"
+        "把网页产物伪装为共享 Canvas 字段",
+        "在顶层 Tab 行加入网页专属操作"
       ],
       "composeWith": [
-        "ui/radio-group",
-        "ui/select",
-        "ui/button"
+        "BrowserToolbar",
+        "BrowserBody",
+        "panel-registry",
+        "ArtifactPanel"
       ],
       "composeBoundary": [
-        "无Tabs/Menu等深层导航",
-        "无内部滚动",
-        "字段数<=10",
-        "按钮数<=3且主按钮<=1"
+        "网页专属地址/打开操作属于容器 Toolbar",
+        "Tab 顶栏只保留全局操作"
       ],
       "pitfalls": [
-        "选择优于输入不要默认给文本框",
-        "必须提供跳过/忽略入口",
-        "追问期间对话入口要有等待态"
+        "假装返回按钮可用",
+        "用新 Tab 替代当前容器导航"
       ],
-      "previewRoute": "/",
-      "source": "src/components/agent-ui/clarify-card.tsx",
-      "tags": [
-        "对话流",
-        "卡片",
-        "澄清"
+      "designRules": [
+        "design.md#35-结果呈现与产物容器",
+        "design.md#64-图标"
       ],
-      "doc": "references/component-selection/clarify-card.md"
+      "doc": "references/components/artifact/container-browser.md"
     },
     {
-      "id": "composer",
+      "id": "container-file-preview",
       "kind": "component",
-      "title": "意图输入区 Composer",
+      "layer": "artifact",
+      "title": "文件预览容器 File Preview Container",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/panel-containers.tsx",
       "whenToUse": [
-        "对话流底部的统一输入入口",
-        "需要混合编辑提示词/上下文/能力"
+        "在独立面板中查看可读文件内容和文件元信息"
       ],
       "whenNotToUse": [
-        "澄清卡片的表单录入→用 clarify-card",
-        "纯展示无需输入→不适用"
-      ],
-      "variants": [
-        "基础输入(仅提示词)",
-        "含上下文标签",
-        "含能力标签",
-        "语音输入态"
+        "声称任意二进制文件已解析",
+        "在消息正文重复完整文件内容"
       ],
       "composeWith": [
-        "agent-ui/mention-popover(@选择器)",
-        "agent-ui/slash-popover(/选择器)",
-        "ui/textarea"
+        "FilePreviewToolbar",
+        "FilePreviewBody",
+        "MarkdownContent",
+        "file-meta"
       ],
       "composeBoundary": [
-        "已选上下文/能力必须在输入区内显式呈现为标签",
-        "不与澄清卡片的表单字段混用"
+        "文件操作属于容器 Toolbar",
+        "内容经 MarkdownContent",
+        "元信息工具不负责视觉图标"
       ],
       "pitfalls": [
-        "占位提示要随场景动态变化不能写死",
-        "异步操作(语音转写/文件上传/上下文解析)必须展示处理中态"
+        "绕过 MarkdownContent",
+        "将下载/外部打开写到 Tab 全局控制"
       ],
-      "previewRoute": "/",
-      "source": "src/components/agent-ui/composer.tsx",
-      "tags": [
-        "输入",
-        "对话流"
+      "designRules": [
+        "design.md#35-结果呈现与产物容器",
+        "design.md#62-字号阶梯"
       ],
-      "doc": "references/component-selection/composer.md"
+      "doc": "references/components/artifact/container-file-preview.md"
+    },
+    {
+      "id": "container-search-results",
+      "kind": "component",
+      "layer": "artifact",
+      "title": "检索结果容器 Search Results Container",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/panel-containers.tsx",
+      "whenToUse": [
+        "在右侧 PanelView 中浏览检索命中并进入网页预览"
+      ],
+      "whenNotToUse": [
+        "直接在对话气泡中塞完整结果列表",
+        "为每个结果另开 Tab"
+      ],
+      "composeWith": [
+        "SearchResultsToolbar",
+        "SearchResultsBody",
+        "panel-registry",
+        "ArtifactPanel"
+      ],
+      "composeBoundary": [
+        "点击结果通过 onNavigate 替换当前容器",
+        "不创建新 Tab"
+      ],
+      "pitfalls": [
+        "将搜索结果链接跳为外部页面",
+        "在壳层实现检索类型 UI"
+      ],
+      "designRules": [
+        "design.md#35-结果呈现与产物容器",
+        "design.md#53-无障碍与包容性"
+      ],
+      "doc": "references/components/artifact/container-search-results.md"
+    },
+    {
+      "id": "file-meta",
+      "kind": "contract",
+      "layer": "artifact",
+      "title": "文件元信息 File Meta",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/file-meta.ts",
+      "whenToUse": [
+        "为 Composer 与消息附件生成一致文件类型、大小和本地预览信息"
+      ],
+      "whenNotToUse": [
+        "伪装 Office 二进制已被解析",
+        "在此维护文件图标或专家头像"
+      ],
+      "composeWith": [
+        "MessageAttachmentList",
+        "LibraryFileIcon",
+        "FilePreviewBody",
+        "PanelView"
+      ],
+      "composeBoundary": [
+        "元信息与预览 adapter 在此",
+        "文件/专家视觉映射在 resource-visuals.tsx"
+      ],
+      "pitfalls": [
+        "将本地文件当持久化内容",
+        "复制格式化逻辑"
+      ],
+      "designRules": [
+        "design.md#35-结果呈现与产物容器",
+        "design.md#64-图标"
+      ],
+      "doc": "references/components/artifact/file-meta.md"
+    },
+    {
+      "id": "image-viewer",
+      "kind": "component",
+      "layer": "artifact",
+      "title": "图片查看器 ImageViewer",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/image-viewer.tsx",
+      "whenToUse": [
+        "专注查看单个 immersive ImageView 图片产物"
+      ],
+      "whenNotToUse": [
+        "多文档并排查看",
+        "将图片塞进右侧 PanelTab",
+        "处理 shared ArtifactTarget"
+      ],
+      "composeWith": [
+        "ImageView",
+        "AgentShell",
+        "IconButton"
+      ],
+      "composeBoundary": [
+        "ViewerAction 为文件私有",
+        "图片不进入 ArtifactPanel tabs"
+      ],
+      "pitfalls": [
+        "遗漏 Esc/蒙层关闭",
+        "以为下载会跨壳层路由"
+      ],
+      "designRules": [
+        "design.md#35-结果呈现与产物容器",
+        "design.md#43-动效原则",
+        "design.md#53-无障碍与包容性"
+      ],
+      "doc": "references/components/artifact/image-viewer.md"
+    },
+    {
+      "id": "panel-registry",
+      "kind": "contract",
+      "layer": "artifact",
+      "title": "面板容器注册表 Panel Registry",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/panel-registry.ts",
+      "whenToUse": [
+        "注册新的沉浸式 PanelView 容器类型",
+        "查找既有容器的图标与渲染入口"
+      ],
+      "whenNotToUse": [
+        "只替换示例内容",
+        "在 ArtifactPanel 或 AgentShell 写类型分支"
+      ],
+      "composeWith": [
+        "PanelView",
+        "ArtifactPanel",
+        "panel-containers"
+      ],
+      "composeBoundary": [
+        "registry 覆盖所有 PanelView type",
+        "壳层只根据注册结果装配"
+      ],
+      "pitfalls": [
+        "漏注册联合类型成员",
+        "将类型相关操作放在 Tab 顶栏"
+      ],
+      "designRules": [
+        "design.md#35-结果呈现与产物容器",
+        "design.md#64-图标"
+      ],
+      "doc": "references/components/artifact/panel-registry.md"
+    },
+    {
+      "id": "panel-types",
+      "kind": "contract",
+      "layer": "artifact",
+      "title": "面板类型 Panel Types",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/panel-types.ts",
+      "whenToUse": [
+        "为沉浸式产物选择搜索、浏览器、文件预览或图片查看展示"
+      ],
+      "whenNotToUse": [
+        "扩展 shared ArtifactTarget",
+        "将 PanelTab 或 Canvas 字段传入跨形态数据"
+      ],
+      "composeWith": [
+        "panelContainers",
+        "panelViewKey",
+        "ArtifactPanel",
+        "ImageViewer"
+      ],
+      "composeBoundary": [
+        "PanelView/ImageView/PanelTab 是 immersive adapter",
+        "shared ArtifactTarget 保持中立"
+      ],
+      "pitfalls": [
+        "把同名 shared ArtifactTarget 当作本类型",
+        "为 ImageView 创建 Tab"
+      ],
+      "designRules": [
+        "design.md#35-结果呈现与产物容器",
+        "design.md#323-有产物的动作才做成可点击资源"
+      ],
+      "doc": "references/components/artifact/panel-types.md"
+    },
+    {
+      "id": "agent-identity",
+      "kind": "component",
+      "layer": "conversation",
+      "title": "智能体身份 AgentIdentity",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx",
+      "whenToUse": [
+        "每轮智能体响应开场",
+        "指定专家或回退到产品身份"
+      ],
+      "whenNotToUse": [
+        "显示用户身份",
+        "以展示文本作为专家视觉映射的唯一来源"
+      ],
+      "composeWith": [
+        "ProductIdentity",
+        "WelcomeExpert",
+        "AgentAvatar"
+      ],
+      "composeBoundary": [
+        "专家优先按 id 或 label 解析",
+        "找不到时回退 raw expert 再回退 identity.name"
+      ],
+      "pitfalls": [
+        "在消息 JSX 复制专家头像映射",
+        "把连接器显示为智能体身份"
+      ],
+      "designRules": [
+        "design.md#31-对话流的基本顺序",
+        "design.md#12-能力识别与低成本表达"
+      ],
+      "doc": "references/components/conversation/agent-identity.md"
+    },
+    {
+      "id": "agent-response-block",
+      "kind": "component",
+      "layer": "conversation",
+      "title": "智能体回复块 AgentResponseBlock",
+      "exported": "false",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx",
+      "whenToUse": [
+        "在 conversation-flow 宿主内编排一段智能体响应"
+      ],
+      "whenNotToUse": [
+        "从其他页面直接 import",
+        "更改产品块插槽位置而不审查完整回复时序"
+      ],
+      "composeWith": [
+        "AgentIdentity",
+        "ExecutionProcess",
+        "AssistantMessage",
+        "ProductBlockRenderer"
+      ],
+      "composeBoundary": [
+        "私有实现不得直接 import",
+        "产品块只在 assistant 之后且 continuation 之前"
+      ],
+      "pitfalls": [
+        "把产品块放到正文前",
+        "将它描述为稳定公共 API"
+      ],
+      "designRules": [
+        "design.md#31-对话流的基本顺序",
+        "design.md#323-有产物的动作才做成可点击资源"
+      ],
+      "doc": "references/components/conversation/agent-response-block.md"
+    },
+    {
+      "id": "assistant-continuation",
+      "kind": "component",
+      "layer": "conversation",
+      "title": "智能体续流程 AssistantContinuation",
+      "exported": "false",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx",
+      "whenToUse": [
+        "在宿主中显示澄清提交后的跟进执行与最终提问"
+      ],
+      "whenNotToUse": [
+        "作为独立流式组件 import",
+        "为任意回复伪造状态机"
+      ],
+      "composeWith": [
+        "AgentResponseBlock",
+        "ClarificationFollowUpData"
+      ],
+      "composeBoundary": [
+        "私有实现不得直接 import",
+        "phase 由 ConversationFlow 管理"
+      ],
+      "pitfalls": [
+        "将 validating 或 assembling 时标为需要回复",
+        "忽略 reduced-motion 的立即推进"
+      ],
+      "designRules": [
+        "design.md#33-追问澄清",
+        "design.md#32-执行过程与可信度",
+        "design.md#31-对话流的基本顺序"
+      ],
+      "doc": "references/components/conversation/assistant-continuation.md"
+    },
+    {
+      "id": "assistant-message",
+      "kind": "component",
+      "layer": "conversation",
+      "title": "智能体消息 AssistantMessage",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx",
+      "whenToUse": [
+        "渲染 rich assistant 正文、交付物附件与可选澄清"
+      ],
+      "whenNotToUse": [
+        "渲染用户输入",
+        "以普通文本替代目标导向交付物"
+      ],
+      "composeWith": [
+        "MarkdownContent",
+        "ClarificationFormCard",
+        "CopyAction",
+        "FeedbackActions",
+        "ArtifactRouter"
+      ],
+      "composeBoundary": [
+        "needsReply 由宿主时序决定",
+        "智能体附件必须有 target",
+        "消息操作统一复用"
+      ],
+      "pitfalls": [
+        "在历史问题显示需要你的回复",
+        "绕过 MarkdownContent",
+        "将附件改成用户侧右对齐"
+      ],
+      "designRules": [
+        "design.md#31-对话流的基本顺序",
+        "design.md#33-追问澄清",
+        "design.md#351-markdown内联响应",
+        "design.md#352-交付物必须是一等公民",
+        "design.md#36-消息操作"
+      ],
+      "doc": "references/components/conversation/assistant-message.md"
+    },
+    {
+      "id": "clarification-form-card",
+      "kind": "component",
+      "layer": "conversation",
+      "title": "澄清表单卡 ClarificationFormCard",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/clarification-form-card.tsx",
+      "whenToUse": [
+        "缺少三个以上结构化关键信息",
+        "需要一次补齐日期事由偏好等字段"
+      ],
+      "whenNotToUse": [
+        "一两个可自然追问的缺口",
+        "用浏览器原生日期输入或另造表单体系"
+      ],
+      "composeWith": [
+        "ClarificationFormData",
+        "AssistantMessage",
+        "Popover",
+        "Calendar"
+      ],
+      "composeBoundary": [
+        "required 字段不完整不可提交",
+        "submitted 后只读",
+        "字段和按钮上限是设计规则非当前运行时校验"
+      ],
+      "pitfalls": [
+        "把 <=10 字段和 <=3 按钮误称为源码强制",
+        "用 toISOString 处理本地日期"
+      ],
+      "designRules": [
+        "design.md#33-追问澄清",
+        "design.md#331-向智能体索要结构化信息用表单而不是追问",
+        "design.md#63-已成契约的组件尺寸"
+      ],
+      "doc": "references/components/conversation/clarification-form-card.md"
     },
     {
       "id": "confirm-card",
       "kind": "component",
-      "title": "确认卡片 ConfirmCard",
+      "layer": "conversation",
+      "title": "确认卡 ConfirmCard",
+      "exported": "true",
+      "source": "packages/agent-ui/src/conversation/confirm-card.tsx",
       "whenToUse": [
-        "中风险操作的轻量确认",
-        "高风险操作的强确认",
-        "用户对已有数据或待执行操作做选择"
+        "需要用户对中风险或高风险动作作出明确 confirm/cancel/skip 决定"
       ],
       "whenNotToUse": [
-        "待澄清信息缺失(还没到执行阶段)→clarify-card",
-        "低风险只读操作无需确认"
-      ],
-      "variants": [
-        "轻量确认(中风险)",
-        "强确认(高风险",
-        "字段含对象/动作/影响范围/后果/操作人)"
+        "只展示信息或可直接执行的低风险操作",
+        "用自然语言替代高风险五字段确认",
+        "挂在仅给建议或结论的回复上"
       ],
       "composeWith": [
-        "agent-ui/message-bubble"
+        "共享 ConversationFlow",
+        "ProductBlockContext.onAction",
+        "产品 renderer"
       ],
       "composeBoundary": [
-        "无Tabs/Menu等深层导航",
-        "无内部滚动",
-        "字段<=10且直接可见不靠悬停点击触发",
-        "按钮<=3且主按钮<=1"
+        "卡片只派发中立 ProductBlockAction",
+        "rich flow 或产品页拥有结果状态与后续展示",
+        "不包含 panel/canvas 或后端结果"
       ],
       "pitfalls": [
-        "不重复AI已用文字表达的信息",
-        "高风险操作不得用自然语言确认必须走确认卡片",
-        "执行结果必须回写对话流"
+        "高风险确认缺少五字段仍尝试确认",
+        "超过字段/按钮限制",
+        "将 action 派发误写成后端成功",
+        "在建议轮弹确认卡",
+        "待确认期间仍允许发送新指令"
       ],
-      "previewRoute": "/",
-      "source": "src/components/agent-ui/confirm-card.tsx",
-      "tags": [
-        "对话流",
-        "卡片",
-        "确认",
-        "风险"
+      "designRules": [
+        "design.md#34-操作确认",
+        "design.md#341-确认卡应出现在即将执行的那一轮不在建议轮",
+        "design.md#342-待确认期间阻断新指令",
+        "design.md#51-风险分级与人工接管",
+        "design.md#41-五种状态语言"
       ],
-      "doc": "references/component-selection/confirm-card.md"
+      "doc": "references/components/conversation/confirm-card.md"
+    },
+    {
+      "id": "conversation-contracts",
+      "kind": "contract",
+      "layer": "conversation",
+      "title": "共享对话契约 Conversation Contracts",
+      "exported": "true",
+      "source": "packages/agent-ui/src/conversation/types.ts",
+      "whenToUse": [
+        "跨形态传递中立对话场景、路由用户可查看的产物、注册产品专属对话块"
+      ],
+      "whenNotToUse": [
+        "描述沉浸式 PanelView 或 PanelTab、描述 Copilot 左画布实现、声明富澄清或 L1/L2/L3 数据"
+      ],
+      "composeWith": [
+        "Composer",
+        "ConversationFlow",
+        "产品 renderProductBlock registry"
+      ],
+      "composeBoundary": [
+        "共享契约不得含 PanelView、ImageView、PanelTab 或 Canvas 类型",
+        "形态专属展示由 adapter 或页面路由负责"
+      ],
+      "pitfalls": [
+        "同名 immersive ArtifactTarget 不是共享类型",
+        "未知产品块不能降级为 Markdown"
+      ],
+      "designRules": [
+        "design.md#323-有产物的动作才做成可点击资源",
+        "design.md#七扩展新能力的决策流程"
+      ],
+      "doc": "references/components/conversation/conversation-contracts.md"
+    },
+    {
+      "id": "conversation-flow",
+      "kind": "component",
+      "layer": "conversation",
+      "title": "对话流 ConversationFlow",
+      "exported": "true",
+      "source": "packages/agent-ui/src/conversation/conversation-flow.tsx; skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx",
+      "whenToUse": [
+        "需要共享轻量场景渲染时使用 shared Flow",
+        "需要身份开场 L1/L2/L3 附件澄清和消息操作时使用 immersive Flow"
+      ],
+      "whenNotToUse": [
+        "将共享场景直接替换沉浸式 rich scene",
+        "直接 import 沉浸式私有回复结构"
+      ],
+      "composeWith": [
+        "Conversation Contracts",
+        "Composer",
+        "product block renderer",
+        "message-actions"
+      ],
+      "composeBoundary": [
+        "shared 与 immersive Flow 的 scene identity router renderer props 均不同",
+        "私有回复结构不得被 import"
+      ],
+      "pitfalls": [
+        "openArtifact 与 onOpenArtifact 不是可互换的 props",
+        "shared product block context 与 immersive context 不同"
+      ],
+      "designRules": [
+        "design.md#02-产品心智模型与四层信息分层",
+        "design.md#31-对话流的基本顺序",
+        "design.md#323-有产物的动作才做成可点击资源"
+      ],
+      "doc": "references/components/conversation/conversation-flow.md"
+    },
+    {
+      "id": "conversation-turn",
+      "kind": "component",
+      "layer": "conversation",
+      "title": "对话轮次 ConversationTurn",
+      "exported": "false",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx",
+      "whenToUse": [
+        "在 ConversationFlow 宿主内渲染一个 rich turn"
+      ],
+      "whenNotToUse": [
+        "从外部 import",
+        "在子组件各自判断当前轮与澄清时序"
+      ],
+      "composeWith": [
+        "UserMessage",
+        "AgentResponseBlock",
+        "AssistantContinuation"
+      ],
+      "composeBoundary": [
+        "私有实现不得直接 import",
+        "current 仅由 ConversationFlow 的最后一项计算"
+      ],
+      "pitfalls": [
+        "让历史轮显示等待回复",
+        "忽略澄清提交后才出现 continuation 的条件"
+      ],
+      "designRules": [
+        "design.md#31-对话流的基本顺序",
+        "design.md#33-追问澄清",
+        "design.md#36-消息操作"
+      ],
+      "doc": "references/components/conversation/conversation-turn.md"
     },
     {
       "id": "error-state",
       "kind": "component",
+      "layer": "conversation",
       "title": "异常状态 ErrorState",
+      "exported": "true",
+      "source": "packages/agent-ui/src/conversation/error-state.tsx",
       "whenToUse": [
-        "服务不可用",
-        "响应超时",
-        "执行失败",
-        "部分完成",
-        "权限不足",
-        "能力不支持",
-        "结果未知"
+        "向用户解释已发生的异常、影响和可选恢复路径"
       ],
       "whenNotToUse": [
-        "任务正常完成→不适用"
-      ],
-      "variants": [
-        "服务不可用",
-        "响应超时",
-        "执行失败",
-        "部分完成",
-        "权限不足",
-        "能力不支持",
-        "结果未知"
+        "任务成功完成",
+        "只有技术日志且无用户可理解影响",
+        "将失败伪装成成功"
       ],
       "composeWith": [
-        "agent-ui/message-bubble",
-        "agent-ui/confirm-card"
+        "共享 ConversationFlow",
+        "ProductBlockContext.onAction",
+        "产品 renderer"
       ],
       "composeBoundary": [
-        "必须说明发生了什么/影响了什么/下一步怎么做",
-        "不得在未完成时暗示已成功"
+        "卡片描述事实并派发中立恢复意图",
+        "业务方拥有 retry/permission/alternative 的实际执行和结果状态",
+        "不含 panel/canvas"
       ],
       "pitfalls": [
-        "不要只提示失败或错误码",
-        "重试前必须确认上次执行结果避免重复执行发送/发布/支付/删除等操作"
+        "只有错误码或颜色",
+        "缺失 fact/impact/nextStep",
+        "将 recovery action 写成真实重试成功"
       ],
-      "previewRoute": "/",
-      "source": "src/components/agent-ui/error-state.tsx",
-      "tags": [
-        "对话流",
-        "异常",
-        "可信"
+      "designRules": [
+        "design.md#42-异常与恢复",
+        "design.md#44-状态与反馈",
+        "design.md#九无障碍与可用性"
       ],
-      "doc": "references/component-selection/error-state.md"
+      "doc": "references/components/conversation/error-state.md"
     },
     {
       "id": "follow-up-suggestions",
       "kind": "component",
-      "title": "后续引导 FollowUpSuggestions",
+      "layer": "conversation",
+      "title": "后续建议 FollowUpSuggestions",
+      "exported": "true",
+      "source": "packages/agent-ui/src/conversation/follow-up-suggestions.tsx",
       "whenToUse": [
-        "交互正常结束且非高风险操作刚完成",
-        "有明确基于上下文的追问价值"
+        "已完成回答末尾且仍有上下文相关的下一步可供选择"
       ],
       "whenNotToUse": [
-        "用户已明确结束对话",
-        "用户表达不满或负面情绪",
-        "任务失败且无恢复路径",
-        "高风险操作刚完成需先确认结果"
-      ],
-      "variants": [
-        "2个推荐",
-        "3-4个推荐"
+        "等待澄清或用户回复",
+        "执行中",
+        "高风险确认待决",
+        "错误恢复待处理",
+        "新对话首屏推荐"
       ],
       "composeWith": [
-        "agent-ui/message-bubble"
+        "共享 ConversationFlow",
+        "ProductBlockContext.onAction",
+        "RecommendationList",
+        "产品 renderer"
       ],
       "composeBoundary": [
-        "数量2-4个",
-        "内容必须基于当前上下文生成而非固定话术"
+        "卡片只派发建议内容选择",
+        "产品/形态层决定是否创建下一轮",
+        "不含 panel/canvas 或真实执行状态"
       ],
       "pitfalls": [
-        "不要在天气/总结/参数查询等简单问答后过度延伸推荐无关内容",
-        "高风险操作后不展示推荐追问"
+        "建议数量不在2到4条",
+        "在禁用场景抢占主任务",
+        "将选择写成已经发送或已执行"
       ],
-      "previewRoute": "/",
-      "source": "src/components/agent-ui/follow-up-suggestions.tsx",
-      "tags": [
-        "对话流",
-        "引导",
-        "推荐"
+      "designRules": [
+        "design.md#37-后续引导",
+        "design.md#31-对话流的基本顺序",
+        "design.md#44-状态与反馈"
       ],
-      "doc": "references/component-selection/follow-up-suggestions.md"
+      "doc": "references/components/conversation/follow-up-suggestions.md"
+    },
+    {
+      "id": "inline-tag",
+      "kind": "contract",
+      "layer": "conversation",
+      "title": "内联标签 Inline Tag",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/inline-tag.ts",
+      "whenToUse": [
+        "在消息正文保留文件库最近对话技能的语义位置"
+      ],
+      "whenNotToUse": [
+        "表示本地上传实体附件或连接器调用",
+        "让各组件自行编写标签正则"
+      ],
+      "composeWith": [
+        "Composer",
+        "MessageContent",
+        "icon-registry.ts"
+      ],
+      "composeBoundary": [
+        "格式固定为 [[类型:名称]]",
+        "解析类型仅断言为 ContextType 不做运行时校验"
+      ],
+      "pitfalls": [
+        "将未知类型视为安全",
+        "将内联标签与完整 Markdown 混排"
+      ],
+      "designRules": [
+        "design.md#31-意图输入",
+        "design.md#35-结果呈现与产物容器"
+      ],
+      "doc": "references/components/conversation/inline-tag.md"
+    },
+    {
+      "id": "markdown-content",
+      "kind": "component",
+      "layer": "conversation",
+      "title": "Markdown 内容 MarkdownContent",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/markdown-content.tsx",
+      "whenToUse": [
+        "渲染无内联标签的对话正文或推理内容"
+      ],
+      "whenNotToUse": [
+        "将 badge 与块级 Markdown 混在同一 ReactMarkdown 树",
+        "在业务组件逐项手写排版"
+      ],
+      "composeWith": [
+        "react-markdown",
+        "remark-gfm",
+        "typeset.css",
+        "AssistantMessage"
+      ],
+      "composeBoundary": [
+        "children 必须是 string",
+        "带内联标签的消息转纯文本分段路径"
+      ],
+      "pitfalls": [
+        "把 className 当成内容安全策略",
+        "误称支持 badge 混排 Markdown"
+      ],
+      "designRules": [
+        "design.md#351-markdown内联响应",
+        "design.md#62-排版与阅读密度"
+      ],
+      "doc": "references/components/conversation/markdown-content.md"
     },
     {
       "id": "message-actions",
       "kind": "component",
-      "title": "消息操作栏 MessageActions",
+      "layer": "conversation",
+      "title": "消息操作 Message Actions",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/message-actions.tsx",
       "whenToUse": [
-        "每条智能体或用户消息末尾"
+        "给消息复用复制与反馈操作"
       ],
       "whenNotToUse": [
-        "消息仍在流式生成中→生成完成后才展示完整操作栏"
-      ],
-      "variants": [
-        "智能体消息操作",
-        "用户消息操作"
+        "为用户与智能体消息复制另一套动作",
+        "将无意义的内部过程加入动作栏"
       ],
       "composeWith": [
-        "agent-ui/message-bubble"
+        "IconButton",
+        "Tooltip",
+        "Dialog",
+        "UserMessage",
+        "AssistantMessage"
       ],
       "composeBoundary": [
-        "高频操作直接展示低频收纳进更多菜单",
-        "操作要按消息状态动态显示可用项"
+        "CopyAction 只接 content",
+        "FeedbackActions 的回调是 reasons 与 note",
+        "动作栏空间由消息宿主预留"
       ],
       "pitfalls": [
-        "避免提供无意义或容易误触的操作",
-        "重新生成/分享等影响后续流程的操作要明确反馈执行结果"
+        "未处理 clipboard 异常仍声称已复制",
+        "把 raw textarea 误推广为澄清表单模式"
       ],
-      "previewRoute": "/",
-      "source": "src/components/agent-ui/message-actions.tsx",
-      "tags": [
-        "对话流",
-        "操作"
+      "designRules": [
+        "design.md#36-消息操作",
+        "design.md#54-无障碍"
       ],
-      "doc": "references/component-selection/message-actions.md"
+      "doc": "references/components/conversation/message-actions.md"
     },
     {
-      "id": "message-bubble",
-      "kind": "component",
-      "title": "消息气泡 MessageBubble",
+      "id": "message-context",
+      "kind": "contract",
+      "layer": "conversation",
+      "title": "消息上下文 Message Context",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/message-context.ts",
       "whenToUse": [
-        "对话流中展示单条用户或智能体消息"
+        "将 immersive Composer 的发送值拆为用户消息内容附件与专家"
       ],
       "whenNotToUse": [
-        "制品摘要→用 artifact-card",
-        "需要用户决策→用 clarify-card/confirm-card"
-      ],
-      "variants": [
-        "用户消息",
-        "智能体消息(默认)",
-        "智能体消息-流式中",
-        "智能体消息-出错"
+        "把全部 ContextItem 原样塞进消息数据",
+        "将连接器显示为用户正文"
       ],
       "composeWith": [
-        "agent-ui/message-actions",
-        "agent-ui/task-progress",
-        "agent-ui/artifact-card",
-        "react-markdown"
+        "Composer ContextItem",
+        "ConversationTurnData",
+        "inline-tag",
+        "UserMessage"
       ],
       "composeBoundary": [
-        "不展示模型原始思维链或系统提示词",
-        "长内容应拆分或改用制品卡片而非塞进单条气泡"
+        "upload 是附件",
+        "文件库最近对话技能已在内容中",
+        "专家只进入 agent 侧",
+        "connector 不进消息流"
       ],
       "pitfalls": [
-        "流式输出用aria-live=polite的role=log容器避免屏幕阅读器重复朗读",
-        "不要在气泡内重复用户已知信息"
+        "空消息却无上下文时生成无意义已添加",
+        "将第一个专家之外的语义虚构为支持"
       ],
-      "previewRoute": "/",
-      "source": "src/components/agent-ui/message-bubble.tsx",
-      "tags": [
-        "对话流",
-        "消息"
+      "designRules": [
+        "design.md#31-意图输入",
+        "design.md#31-对话流的基本顺序",
+        "design.md#323-有产物的动作才做成可点击资源"
       ],
-      "doc": "references/component-selection/message-bubble.md"
+      "doc": "references/components/conversation/message-context.md"
     },
     {
-      "id": "task-progress",
+      "id": "recommendation-list",
       "kind": "component",
-      "title": "任务过程 TaskProgress",
+      "layer": "conversation",
+      "title": "推荐指令列表 RecommendationList",
+      "exported": "true",
+      "source": "packages/agent-ui/src/conversation/recommendation-list.tsx",
       "whenToUse": [
-        "多步骤任务",
-        "涉及工具调用",
-        "需要向用户解释正在发生什么"
+        "需要在对话相关场景中展示一组可选的单行指令"
       ],
       "whenNotToUse": [
-        "单轮简单问答无需展示过程",
-        "结果本身就是全部信息量"
-      ],
-      "variants": [
-        "仅状态层",
-        "状态层+执行层",
-        "状态层+任务层+执行层(长链路)"
+        "新对话首屏的多列推荐卡片",
+        "需要多选或分组的复杂菜单"
       ],
       "composeWith": [
-        "agent-ui/message-bubble"
+        "FollowUpSuggestions",
+        "NewConversationPage"
       ],
       "composeBoundary": [
-        "不展示模型内部原始思维链或系统提示词",
-        "工具调用要转成用户可理解的描述而非接口名"
+        "仅负责 36px 行布局、单击事件和箭头方向，不决定建议内容、消息创建或业务执行"
       ],
       "pitfalls": [
-        "任务层非必须不要为短任务强行加",
-        "执行层要渐进式展示不能一次性甩出全部步骤"
+        "为两个场景复制行样式",
+        "使用错误的箭头方向",
+        "把视觉高度改为44px"
       ],
-      "previewRoute": "/",
-      "source": "src/components/agent-ui/task-progress.tsx",
-      "tags": [
-        "对话流",
-        "过程展示",
-        "可信"
+      "designRules": [
+        "design.md#37-后续引导",
+        "design.md#31-对话流的基本顺序"
       ],
-      "doc": "references/component-selection/task-progress.md"
+      "doc": "references/components/conversation/recommendation-list.md"
+    },
+    {
+      "id": "user-message",
+      "kind": "component",
+      "layer": "conversation",
+      "title": "用户消息 UserMessage",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx",
+      "whenToUse": [
+        "渲染 rich ConversationTurnData 的用户侧消息"
+      ],
+      "whenNotToUse": [
+        "用用户消息展示智能体交付物",
+        "为无 target 的附件伪造打开入口"
+      ],
+      "composeWith": [
+        "MarkdownContent",
+        "CopyAction",
+        "ArtifactRouter"
+      ],
+      "composeBoundary": [
+        "附件位于气泡前且右对齐",
+        "target 与 router 同时存在才可打开"
+      ],
+      "pitfalls": [
+        "条件渲染操作栏导致布局跳动",
+        "把用户附件约束成必须 target"
+      ],
+      "designRules": [
+        "design.md#31-对话流的基本顺序",
+        "design.md#323-有产物的动作才做成可点击资源",
+        "design.md#352-交付物必须是一等公民",
+        "design.md#36-消息操作"
+      ],
+      "doc": "references/components/conversation/user-message.md"
+    },
+    {
+      "id": "composer",
+      "kind": "component",
+      "layer": "delegation",
+      "title": "意图输入区 Composer",
+      "exported": "true",
+      "source": "packages/agent-ui/src/conversation/composer.tsx; skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/composer.tsx",
+      "whenToUse": [
+        "需要轻量文本提交时使用 shared Composer",
+        "需要上下文标签附件连接器或专家状态时使用 immersive Composer"
+      ],
+      "whenNotToUse": [
+        "把沉浸式 props 传给共享 Composer",
+        "把基础 shared 输入当作富委托工作台"
+      ],
+      "composeWith": [
+        "ConversationFlow",
+        "icon-registry.ts",
+        "resource-visuals.tsx"
+      ],
+      "composeBoundary": [
+        "两套同名组件的 onSend 签名与状态模型不兼容",
+        "新对象图标必须经注册表"
+      ],
+      "pitfalls": [
+        "shared Composer 不支持附件或 trigger 菜单",
+        "immersive contentEditable 的发送值与草稿值不同"
+      ],
+      "designRules": [
+        "design.md#12-能力识别与低成本表达",
+        "design.md#七扩展新能力的决策流程"
+      ],
+      "doc": "references/components/delegation/composer.md"
+    },
+    {
+      "id": "new-conversation-page",
+      "kind": "component",
+      "layer": "delegation",
+      "title": "新对话页 NewConversationPage",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/new-conversation-page.tsx; skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/app-config.ts",
+      "whenToUse": [
+        "沉浸式工作台的新对话首屏",
+        "需要让用户选择专家或从具体推荐开始委托"
+      ],
+      "whenNotToUse": [
+        "通用导航页",
+        "用 AppConfig 偷偷承载业务场景主题面板或产品块"
+      ],
+      "composeWith": [
+        "AppConfig",
+        "Composer",
+        "resource-visuals.tsx",
+        "AgentShell"
+      ],
+      "composeBoundary": [
+        "页面只消费 experts 与 welcome",
+        "专家用稳定 id label visualKey",
+        "业务场景与容器不属于配置"
+      ],
+      "pitfalls": [
+        "按专家展示文案做视觉映射",
+        "将 3 项分页实现误述为推荐数量上限"
+      ],
+      "designRules": [
+        "design.md#12-能力识别与低成本表达",
+        "design.md#31-意图输入",
+        "design.md#七扩展新能力的决策流程"
+      ],
+      "doc": "references/components/delegation/new-conversation-page.md"
+    },
+    {
+      "id": "execution-action-badge",
+      "kind": "component",
+      "layer": "process",
+      "title": "执行动作徽标 ExecutionActionBadge",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx",
+      "whenToUse": [
+        "展示某一执行动作及其可查看产物"
+      ],
+      "whenNotToUse": [
+        "为内部 API、脚本或无产物动作伪造链接",
+        "复用为共享 ArtifactTarget API"
+      ],
+      "composeWith": [
+        "ExecutionStep",
+        "FlatExecutionFlow",
+        "TaskBlock",
+        "ArtifactRouter"
+      ],
+      "composeBoundary": [
+        "actionIcons 是 conversation-flow 私有映射",
+        "immersive target 由 AgentShell 适配"
+      ],
+      "pitfalls": [
+        "按动作类型而非 target 决定可点击性",
+        "JSX 内重建图标映射"
+      ],
+      "designRules": [
+        "design.md#323-有产物的动作才做成可点击资源",
+        "design.md#64-图标"
+      ],
+      "doc": "references/components/process/execution-action-badge.md"
+    },
+    {
+      "id": "execution-process",
+      "kind": "component",
+      "layer": "process",
+      "title": "执行过程 ExecutionProcess",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx",
+      "whenToUse": [
+        "展示一轮沉浸式任务的总体状态与可展开执行证据"
+      ],
+      "whenNotToUse": [
+        "替代共享 ConversationTurn 的浅层 execution",
+        "为简单任务强行增加 L2"
+      ],
+      "composeWith": [
+        "ReasoningPanel",
+        "FlatExecutionFlow",
+        "ExecutionStep",
+        "TaskBlock"
+      ],
+      "composeBoundary": [
+        "仅沉浸式 rich flow 使用 ExecutionData",
+        "shared 域不含 L1/L2/L3 完整树"
+      ],
+      "pitfalls": [
+        "完成过程默认展开",
+        "将 L2 当作必需层级"
+      ],
+      "designRules": [
+        "design.md#32-执行过程透明",
+        "design.md#38-一轮对话的结构与间距契约",
+        "design.md#41-五种状态语言"
+      ],
+      "doc": "references/components/process/execution-process.md"
+    },
+    {
+      "id": "execution-step",
+      "kind": "component",
+      "layer": "process",
+      "title": "执行步骤 ExecutionStep",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx",
+      "whenToUse": [
+        "在非 flat 的 L1 过程内展示带状态的 L3 步骤"
+      ],
+      "whenNotToUse": [
+        "创建 L2 分组",
+        "取代无状态的 flat 详情"
+      ],
+      "composeWith": [
+        "ExecutionProcess",
+        "ExecutionActionBadge",
+        "ReasoningPanel"
+      ],
+      "composeBoundary": [
+        "使用 immersive ExecutionStepData 与 ArtifactRouter",
+        "不接受 shared 同名类型"
+      ],
+      "pitfalls": [
+        "状态只靠颜色",
+        "非最后节点遗漏 connected 连接线"
+      ],
+      "designRules": [
+        "design.md#32-执行过程透明",
+        "design.md#41-五种状态语言",
+        "design.md#323-有产物的动作才做成可点击资源"
+      ],
+      "doc": "references/components/process/execution-step.md"
+    },
+    {
+      "id": "flat-execution-flow",
+      "kind": "component",
+      "layer": "process",
+      "title": "扁平执行流 FlatExecutionFlow",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx",
+      "whenToUse": [
+        "简单任务在 L1 下展示动作、依据和可查看产物"
+      ],
+      "whenNotToUse": [
+        "需要分头协调的长链路",
+        "代替带状态节点的 ExecutionStep"
+      ],
+      "composeWith": [
+        "ExecutionProcess",
+        "ExecutionActionBadge",
+        "ReasoningPanel"
+      ],
+      "composeBoundary": [
+        "仅接收沉浸式 ExecutionStepData",
+        "不等同 shared ExecutionStep"
+      ],
+      "pitfalls": [
+        "为简单任务增加 TaskBlock",
+        "无 target 的动作伪造成按钮"
+      ],
+      "designRules": [
+        "design.md#32-执行过程透明",
+        "design.md#323-有产物的动作才做成可点击资源"
+      ],
+      "doc": "references/components/process/flat-execution-flow.md"
+    },
+    {
+      "id": "reasoning-panel",
+      "kind": "component",
+      "layer": "process",
+      "title": "思考面板 ReasoningPanel",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx",
+      "whenToUse": [
+        "复杂规划、协调执行或自纠错需要展示依据时"
+      ],
+      "whenNotToUse": [
+        "每轮执行默认追加一层思考",
+        "用作结论正文"
+      ],
+      "composeWith": [
+        "ExecutionProcess",
+        "ExecutionStep",
+        "FlatExecutionFlow",
+        "TaskBlock",
+        "MarkdownContent"
+      ],
+      "composeBoundary": [
+        "使用 immersive ReasoningData",
+        "disclosure 逻辑是 conversation-flow 私有实现"
+      ],
+      "pitfalls": [
+        "完成后默认展开",
+        "收起内容仍可聚焦"
+      ],
+      "designRules": [
+        "design.md#32-执行过程透明",
+        "design.md#38-一轮对话的结构与间距契约"
+      ],
+      "doc": "references/components/process/reasoning-panel.md"
+    },
+    {
+      "id": "task-block",
+      "kind": "component",
+      "layer": "process",
+      "title": "任务块 TaskBlock",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx",
+      "whenToUse": [
+        "规划、分头执行和汇总的长链路任务中承载 L2"
+      ],
+      "whenNotToUse": [
+        "简单任务",
+        "没有可查看 L3 的纯标题分组",
+        "L2 嵌套"
+      ],
+      "composeWith": [
+        "ExecutionProcess",
+        "ExecutionActionBadge",
+        "ReasoningPanel"
+      ],
+      "composeBoundary": [
+        "TaskExecutionStep 是宿主私有细节",
+        "不可从外部 import"
+      ],
+      "pitfalls": [
+        "用 L2 替代 L3",
+        "完成任务默认展开"
+      ],
+      "designRules": [
+        "design.md#32-执行过程透明",
+        "design.md#41-五种状态语言"
+      ],
+      "doc": "references/components/process/task-block.md"
+    },
+    {
+      "id": "icon-button",
+      "kind": "component",
+      "layer": "registry",
+      "title": "图标按钮 IconButton",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/icon-button.tsx",
+      "whenToUse": [
+        "渲染沉浸式紧凑图标操作",
+        "需要统一 ghost 与圆形基线"
+      ],
+      "whenNotToUse": [
+        "没有可访问名称的纯图标控制",
+        "以自定义 SVG 替代 Lucide",
+        "将它作为状态表达的唯一方式"
+      ],
+      "composeWith": [
+        "Button",
+        "Tooltip",
+        "Lucide icons"
+      ],
+      "composeBoundary": [
+        "组件统一底层 Button 外观；调用者负责具体图标、aria-label、Tooltip 与触控尺寸"
+      ],
+      "pitfalls": [
+        "认为组件自动添加 Tooltip",
+        "遗漏 aria-label",
+        "在默认尺寸下用于需要 44px 的触控场景"
+      ],
+      "designRules": [
+        "design.md#64-图标",
+        "design.md#65-无障碍",
+        "design.md#66-动效"
+      ],
+      "doc": "references/components/registry/icon-button.md"
+    },
+    {
+      "id": "icon-registry",
+      "kind": "contract",
+      "layer": "registry",
+      "title": "图标注册表 Icon Registry",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/icon-registry.ts",
+      "whenToUse": [
+        "新增或复用导航与上下文对象图标",
+        "保持跨区域视觉一致"
+      ],
+      "whenNotToUse": [
+        "在组件 JSX 中临时映射对象图标",
+        "使用非 Lucide 图标"
+      ],
+      "composeWith": [
+        "AgentSidebar",
+        "Composer",
+        "MessageContext"
+      ],
+      "composeBoundary": [
+        "注册表只映射对象到图标，Tooltip 与 aria-label 由实际交互控件提供"
+      ],
+      "pitfalls": [
+        "用展示文案替代稳定 key",
+        "侧栏和 Composer 为同对象使用不同图标",
+        "JSX 内硬编码映射"
+      ],
+      "designRules": [
+        "design.md#23-上下文与能力对象",
+        "design.md#64-图标",
+        "design.md#65-无障碍"
+      ],
+      "doc": "references/components/registry/icon-registry.md"
+    },
+    {
+      "id": "resource-visuals",
+      "kind": "component",
+      "layer": "registry",
+      "title": "资源视觉映射 Resource Visuals",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/resource-visuals.tsx",
+      "whenToUse": [
+        "渲染文件类型图标",
+        "渲染专家或产品智能体头像"
+      ],
+      "whenNotToUse": [
+        "为导航/上下文对象选图标",
+        "用中文展示名作为专家稳定映射键"
+      ],
+      "composeWith": [
+        "LibraryFileIcon",
+        "ExpertAvatar",
+        "AgentAvatar",
+        "AppConfig"
+      ],
+      "composeBoundary": [
+        "文件/专家/产品头像映射在此集中维护，导航与上下文图标由 icon-registry 维护"
+      ],
+      "pitfalls": [
+        "在 JSX 依据文件名硬编码图标",
+        "以专家展示文本作稳定 key",
+        "给文件图标加入业务色"
+      ],
+      "designRules": [
+        "design.md#12-首屏与能力识别",
+        "design.md#23-上下文与能力对象",
+        "design.md#64-图标"
+      ],
+      "doc": "references/components/registry/resource-visuals.md"
+    },
+    {
+      "id": "agent-shell",
+      "kind": "component",
+      "layer": "shell",
+      "title": "智能体壳层 AgentShell",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/agent-shell.tsx",
+      "whenToUse": [
+        "装配完整沉浸式工作台",
+        "管理会话与独立产物面板状态"
+      ],
+      "whenNotToUse": [
+        "新增 PanelView 内容",
+        "将沉浸式右侧面板带入 Copilot",
+        "作为共享 conversation API"
+      ],
+      "composeWith": [
+        "AppConfig",
+        "AgentSidebar",
+        "ChatWorkspace",
+        "ArtifactPanel",
+        "ImageViewer"
+      ],
+      "composeBoundary": [
+        "壳层管理状态和展示 adapter，容器按 panel registry 分派，Copilot 产品页自行 routeArtifact 到左侧画布"
+      ],
+      "pitfalls": [
+        "切换会话时保留旧 panel tabs",
+        "将 PanelView 分支写回壳层",
+        "混淆 shared 与 immersive 的 ArtifactTarget"
+      ],
+      "designRules": [
+        "design.md#22-沉浸式-agent-工作台",
+        "design.md#35-结果呈现与产物容器",
+        "design.md#42-状态语言"
+      ],
+      "doc": "references/components/shell/agent-shell.md"
+    },
+    {
+      "id": "agent-sidebar",
+      "kind": "component",
+      "layer": "shell",
+      "title": "智能体侧栏 AgentSidebar",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/sidebar.tsx",
+      "whenToUse": [
+        "显示沉浸式产品导航和会话列表",
+        "以停靠或抽屉方式呈现侧栏"
+      ],
+      "whenNotToUse": [
+        "拥有会话数据",
+        "用普通导航配置替代新对话动作",
+        "在 JSX 硬编码对象图标"
+      ],
+      "composeWith": [
+        "AgentShell",
+        "AppConfig",
+        "iconRegistry",
+        "AgentAvatar",
+        "IconButton"
+      ],
+      "composeBoundary": [
+        "会话列表与选择状态由 AgentShell 控制，侧栏只保存分组展开和单项菜单局部状态"
+      ],
+      "pitfalls": [
+        "把新对话作为普通可配置导航项",
+        "使用展示文案查图标",
+        "未读/等待/运行中只用颜色表达"
+      ],
+      "designRules": [
+        "design.md#12-首屏与能力识别",
+        "design.md#42-状态语言",
+        "design.md#64-图标",
+        "design.md#65-无障碍"
+      ],
+      "doc": "references/components/shell/agent-sidebar.md"
+    },
+    {
+      "id": "chat-workspace",
+      "kind": "component",
+      "layer": "shell",
+      "title": "对话工作区 ChatWorkspace",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/chat-workspace.tsx",
+      "whenToUse": [
+        "装配沉浸式中间对话区域",
+        "在新对话页与活动会话之间切换"
+      ],
+      "whenNotToUse": [
+        "拥有会话或面板状态",
+        "实现 PanelView 容器",
+        "复用为 Copilot 工作画布"
+      ],
+      "composeWith": [
+        "AgentShell",
+        "ConversationPage",
+        "NewConversationPage"
+      ],
+      "composeBoundary": [
+        "只选择页面与传递回调，状态和产物展示 adapter 保留在 AgentShell"
+      ],
+      "pitfalls": [
+        "把 panelOpen 当作容器渲染信号",
+        "忽略默认 split 的对话宽度上限",
+        "将其用作 Copilot 左画布"
+      ],
+      "designRules": [
+        "design.md#22-沉浸式-agent-工作台",
+        "design.md#25-响应式降级",
+        "design.md#35-结果呈现与产物容器"
+      ],
+      "doc": "references/components/shell/chat-workspace.md"
+    },
+    {
+      "id": "conversation-page",
+      "kind": "component",
+      "layer": "shell",
+      "title": "对话页 ConversationPage",
+      "exported": "true",
+      "source": "skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/conversation-page.tsx",
+      "whenToUse": [
+        "展示一条活动沉浸式会话",
+        "装配 rich 对话流与 Composer"
+      ],
+      "whenNotToUse": [
+        "实现产物容器",
+        "作为共享 ConversationFlow 的替代",
+        "持有全局面板或侧栏状态"
+      ],
+      "composeWith": [
+        "ChatWorkspace",
+        "ConversationFlow",
+        "Composer",
+        "IconButton",
+        "AppConfig"
+      ],
+      "composeBoundary": [
+        "页面只组合会话内容和向上传递 artifact router，不拥有 PanelTab 或容器实现"
+      ],
+      "pitfalls": [
+        "遗漏 ConversationFlow key",
+        "在页面加入 PanelView 分支",
+        "将本地 sentMessages 误当为 shell 会话数据"
+      ],
+      "designRules": [
+        "design.md#31-对话编排与身份",
+        "design.md#32-执行过程透明",
+        "design.md#33-追问澄清",
+        "design.md#64-图标"
+      ],
+      "doc": "references/components/shell/conversation-page.md"
     }
   ]
 }

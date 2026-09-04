@@ -24,6 +24,8 @@ description: "⚠️ 硬约束（最高优先级）：任何「生成/新建智�
 
 **唯一可跳过本门的情形**（从严解释）：① 已确认文档下的增量；② 纯样式/文案/单点微调；③ 用户**显式**要求「不用出文档，直接做」。
 
+**阶段一的需求文档只在对话回复里给出**——不要写成工程文件、不要落进产出目录、不要渲染成页面。它是待确认的文本，不是交付物。
+
 完整流程见 [需求规格化](references/overview/requirement-intake.md)。
 
 ## 🚦 第二道门：每项能力先判断「能否用配置覆盖」
@@ -42,6 +44,24 @@ description: "⚠️ 硬约束（最高优先级）：任何「生成/新建智�
 判定为"不能覆盖"后，依次走：
 1. [design.md 第七章的六问决策流程](references/design.md#七扩展新能力的决策流程) —— 决定它属于哪一层、有无产物、是否消息语义、要不要新层级、状态与图标是否已有归属。
 2. [extension-map.md](references/overview/extension-map.md) —— 查"改哪个文件、不要碰哪个文件"。
+
+## 🚦 第三道门：交付物只能是可运行的智能体应用
+
+**阶段二的唯一合法产物是一个能跑起来的智能体产品界面**——沉浸式工作台或助手式 Copilot，落在用户工作目录的独立工程里（见 [project-structure.md](references/overview/project-structure.md#你在哪里工作先读这节)）。
+
+以下形态**全部是错的**，即使它们看起来信息更完整、更"像交付"：
+
+| ❌ 错误形态 | 为什么错 |
+|---|---|
+| 设计规范导览站、组件图谱/组件画廊页 | 那是设计系统文档，不是用户的产品；本 skill 的 references 已承担该职责 |
+| 落地页 / 营销页 / 功能介绍页 | 智能体产品的入口是委托，不是宣传 |
+| 剧本或配置 JSON 编辑器、后台管理式配置面板 | 配置是开发者改代码的入口，不是终端用户界面 |
+| 把需求文档渲染成 HTML/页面充当产物 | 文档不是应用 |
+| 只有静态占位、无法真正走通一轮对话的"演示页" | 违反交付物一等公民与执行过程透明 |
+
+**自检**：产物首屏必须能让用户**发起一次委托**（沉浸式：欢迎语 + 可点击推荐 + 输入区；助手式：主工作区 + 辅助对话区），并能走通至少一轮「委托 → 执行过程 → 结论 → 可点击交付物」。做不到就是形态错了，回 [界面形态决策树](#界面形态决策树先选型再动手) 重选，而不是继续往错形态里补内容。
+
+> ⚠️ 本 skill 仓库自身包含规则文档、模板与内部工程。**它们是事实源与素材，不是产物范本。**不要因为在仓库上下文里看到文档站式的结构就模仿它，也不要在本仓库里改代码充当交付。
 
 ## 定位与适用范围
 
@@ -145,9 +165,9 @@ description: "⚠️ 硬约束（最高优先级）：任何「生成/新建智�
 |---|---|---|
 | 设计 Token | [design-tokens.md](references/theme/design-tokens.md) | 主题变量取值表（**当前仅语义色层完整，字体/间距/圆角待补充**） |
 | 需求规格化（生成前第一步） | [requirement-intake.md](references/overview/requirement-intake.md) | 把任意颗粒度输入转成含形态选型与配置/扩展判定的需求文档 |
-| 工程结构与生成层级 | [project-structure.md](references/overview/project-structure.md) | 脚手架结构、依赖约定、组件层复用方式、PM demo 自动化预览 |
+| 工程结构与生成层级 | [project-structure.md](references/overview/project-structure.md) | **产物落在哪、独立工程内部结构与扩展入口**、交付校验命令 |
 | **扩展点地图** | [extension-map.md](references/overview/extension-map.md) | **要加新东西时先查这里**：改哪个文件、不要碰哪个文件 |
-| 质量门禁 | [quality-gates.md](references/overview/quality-gates.md) | G0（需求确认+配置判定）+ G1–G9 + 反面清单自查 |
+| 质量门禁 | [quality-gates.md](references/overview/quality-gates.md) | G0（需求确认+配置判定）+ **G0.5（产物形态正确）** + G1–G9 + 反面清单自查 |
 | 元数据 Schema | [metadata-schema.md](references/overview/metadata-schema.md) | 组件元数据 frontmatter 规范（含 `layer`/`exported`/`designRules`）+ `catalog.json` 约定 |
 
 ### 组件体系
@@ -195,7 +215,6 @@ description: "⚠️ 硬约束（最高优先级）：任何「生成/新建智�
 
 - **视觉 token 全量**：字体、间距、圆角、阴影与组件级 token，等待设计稿作为事实源。
 - **需求规格化映射**：补充从确认需求到剧本数据的映射规则。
-- **Website / Showcase**：当前功能作为内部展示基线保留；体验、信息架构与演示质量优化暂缓，不应反向影响 skill、模板或共享运行时。
 - **嵌入式参考实现**：继续按场景生成，不在当前版本固化第三套模板。
 
 版本升级、变更记录与发布前验证见 [CONTRIBUTING.md](../../CONTRIBUTING.md) 和 [CHANGELOG.md](../../CHANGELOG.md)。

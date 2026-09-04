@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-// 零依赖：扫描 references/patterns/*.md 与 references/component-selection/*.md 的 frontmatter meta，
+// 零依赖：扫描 references/patterns/*.md 与 references/components/**/*.md 的 frontmatter meta，
 // 生成机读索引 references/_generated/catalog.json。规范见 references/overview/metadata-schema.md。
 // 用法：node scripts/build-catalog.mjs
 
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const SKILL_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -12,10 +12,28 @@ const REFERENCES = join(SKILL_ROOT, 'references')
 const OUT_DIR = join(REFERENCES, '_generated')
 const OUT_FILE = join(OUT_DIR, 'catalog.json')
 
+// components 是六层子目录结构，需递归；与 check-component-docs.mjs 保持同一套排除规则。
 const SOURCE_DIRS = [
-  { dir: join(REFERENCES, 'patterns'), kind: 'layout-shell' },
-  { dir: join(REFERENCES, 'component-selection'), kind: 'component' },
+  { dir: join(REFERENCES, 'patterns'), kind: 'layout-shell', recursive: false },
+  { dir: join(REFERENCES, 'components'), kind: 'component', recursive: true },
 ]
+const EXCLUDED_DOCS = new Set(['README.md', 'base-inventory.md'])
+
+function markdownDocs(directory, recursive) {
+  let entries = []
+  try {
+    entries = readdirSync(directory, { withFileTypes: true })
+  } catch {
+    return []
+  }
+  return entries.flatMap((entry) => {
+    const path = join(directory, entry.name)
+    if (entry.isDirectory()) return recursive ? markdownDocs(path, recursive) : []
+    if (!entry.isFile() || !entry.name.endsWith('.md')) return []
+    if (EXCLUDED_DOCS.has(entry.name)) return []
+    return [path]
+  })
+}
 
 /** 极简 YAML frontmatter 解析：只支持本项目 meta 块用到的 string / string[] / nested map 结构。 */
 function parseFrontmatter(raw) {
@@ -77,21 +95,14 @@ function main() {
   const layoutShells = []
   const components = []
 
-  for (const { dir, kind } of SOURCE_DIRS) {
-    let entries = []
-    try {
-      entries = readdirSync(dir).filter((f) => f.endsWith('.md'))
-    } catch {
-      continue
-    }
-    for (const file of entries) {
-      const fullPath = join(dir, file)
+  for (const { dir, kind, recursive } of SOURCE_DIRS) {
+    for (const fullPath of markdownDocs(dir, recursive)) {
       const raw = readFileSync(fullPath, 'utf-8')
       const fm = parseFrontmatter(raw)
       const meta = fm?.meta
       if (!meta || !meta.id) continue
 
-      const docRelPath = `references/${dir.endsWith('patterns') ? 'patterns' : 'component-selection'}/${file}`
+      const docRelPath = relative(SKILL_ROOT, fullPath).replaceAll('\\', '/')
       const entry = { ...meta, doc: docRelPath }
 
       if (meta.kind === 'layout-shell' || kind === 'layout-shell') {

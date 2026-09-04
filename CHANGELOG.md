@@ -24,6 +24,9 @@
 
 ### Fixed
 
+- **产物形态错位（生成质量）**：新增第三道门「交付物只能是可运行的智能体应用」与 G0.5 硬门禁，明确禁止把产物做成规范导览站、组件图谱、落地页、配置/剧本编辑器或需求文档页，并要求首屏可直接发起委托、能走通一轮「委托 → 执行过程 → 结论 → 可点击交付物」。需求文档改为只写在对话回复里，不落盘、不渲染成页面。
+- **`project-structure.md` 视角错位**：改为消费者视角优先——产物是复制到**用户工作目录**的独立工程，校验只跑该工程自己的 `npm run gate`；仓库 monorepo 物化管线降级为「仅维护者」小节。此前通篇根级路径与命令会把 agent 的工作目录错误锚回本仓库。
+- **`catalog.json` 生成器已失效**：`build-catalog.mjs` 仍在扫描 Phase 3 已移除的 `references/component-selection/`，按 SKILL.md 指示重跑会把机读索引清空。现改为递归扫描 `references/components/`（与 `check-component-docs` 同一套排除规则），索引恢复为 2 个布局外壳 + 40 个组件且路径均有效。
 - **门禁与依赖健康**：消除两套模板的 Oxlint warning；移动断点与 Composer 专家选择不再通过 effect 同步派生状态，保留的 shadcn mixed-export API 均使用精确局部抑制。传递依赖 `qs` 已更新至无已知审计漏洞的版本，`npm audit` 结果为 0 vulnerabilities。
 
 ## [0.1.0] - 2026-09-03
