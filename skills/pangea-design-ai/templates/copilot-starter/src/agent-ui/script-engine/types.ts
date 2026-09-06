@@ -105,6 +105,8 @@ export type ProductConversationBlock = {
 export type ApprovalOutcomeData<TTarget> = {
   execution: ExecutionData<TTarget>
   assistant: AssistantMessageData<TTarget>
+  /** 审批落地后的产物块（结果卡、后续确认卡等）。审批结果必须留在同一轮，不另起 turn。 */
+  productBlock?: ProductConversationBlock
 }
 
 export type ConversationTurnData<TTarget> = {

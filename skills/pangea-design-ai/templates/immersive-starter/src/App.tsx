@@ -3,8 +3,9 @@ import { appConfig } from "@/components/agent-layout/app-config"
 import { createDraftScene } from "@/components/agent-layout/conversation-data"
 import { scenes } from "@/components/agent-layout/scenes"
 
+// 审批态无需手写：末轮 awaitingApproval 的场景会自动派生为「待批准」
 const initialPinnedConversations = [
-  { id: "pinned-1", title: "如果用一个符号元素形容报表，应该用什么最形象", approvalStatus: "pending" as const },
+  { id: "pinned-1", title: "如果用一个符号元素形容报表，应该用什么最形象" },
 ]
 const initialConversations = [
   { id: "chat-1", title: "帮我写个行业调研报告吧" },

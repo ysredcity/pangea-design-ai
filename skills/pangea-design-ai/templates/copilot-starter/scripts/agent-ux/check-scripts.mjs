@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// 验证剧本数据入口：TS 富场景由 tsc 检查；JSON 富场景额外校验 targetId 与审批契约。
+// 验证剧本数据入口：JSON 富场景全量校验；TS 富场景在 tsc 之外补结构化审批校验
+// （tsc 只能查类型，awaitingApproval/approvalOutcomes 都是可选字段，查不出"写在中间轮"或"缺一侧结果"）。
 // 用法：node check-scripts.mjs [--template immersive-starter|copilot-starter] [--template-dir <目录>]
 
 import { existsSync, readFileSync, statSync } from 'node:fs'
@@ -75,8 +76,18 @@ function validateScene(scene, issues) {
       const missing = [...HIGH_RISK_FIELDS].filter((key) => !keys.has(key))
       if (missing.length) addIssue(issues, `${path}.productBlock`, `高风险确认卡缺少字段：${missing.join('、')}`)
       if (!turn.awaitingApproval) addIssue(issues, path, '高风险确认卡必须显式设置 awaitingApproval')
-      if (!turn.approvalOutcomes?.approved || !turn.approvalOutcomes?.rejected) addIssue(issues, path, '高风险确认卡必须提供 approved 与 rejected 的结果')
     }
+
+    // 审批契约（双向）：awaitingApproval 本身就要求确认卡与双结果，不能只在 high-risk 分支里查。
+    if (turn?.awaitingApproval) {
+      if (turn !== scene.turns.at(-1)) addIssue(issues, path, 'awaitingApproval 必须写在场景末轮：待批准会阻断新指令，写在中间轮会静默失效')
+      if (block?.type !== 'confirm-card') addIssue(issues, path, 'awaitingApproval 必须配一张 confirm-card 产物块，否则用户无处批准')
+      const missingOutcomes = ['approved', 'rejected'].filter((outcome) => !turn.approvalOutcomes?.[outcome])
+      if (missingOutcomes.length) addIssue(issues, path, `审批轮必须同时提供 approved 与 rejected 的结果，缺少：${missingOutcomes.join('、')}`)
+    } else if (turn?.approvalOutcomes) {
+      addIssue(issues, path, '提供了 approvalOutcomes 却没有 awaitingApproval：审批结果永远不会渲染')
+    }
+
     for (const outcome of ['approved', 'rejected']) {
       if (turn?.approvalOutcomes?.[outcome]) {
         validateExecution(turn.approvalOutcomes[outcome].execution, `${path}.approvalOutcomes.${outcome}.execution`, issues)
@@ -109,6 +120,35 @@ function validateLegacyDocument(document, issues) {
   }
 }
 
+/**
+ * trigger 匹配是「子串命中 + 声明顺序首个命中优先」（script-engine/match.ts），
+ * 因此跨场景重复或互为子串的 keyword 会让命中结果依赖导出顺序——这类歧义必须在数据层拦住。
+ */
+function validateTriggers(scenes, issues) {
+  const keywords = []
+  for (const scene of scenes) {
+    if (scene?.trigger?.type !== 'keyword') continue
+    for (const pattern of scene.trigger.patterns ?? []) {
+      if (typeof pattern !== 'string' || !pattern.trim()) {
+        addIssue(issues, `scene "${scene.id}"`, 'trigger.patterns 含空字符串')
+        continue
+      }
+      keywords.push({ pattern, sceneId: scene.id })
+    }
+  }
+  for (const [index, current] of keywords.entries()) {
+    for (const other of keywords.slice(index + 1)) {
+      if (other.sceneId === current.sceneId) continue
+      if (other.pattern === current.pattern) {
+        addIssue(issues, `scene "${current.sceneId}"`, `trigger "${current.pattern}" 与 scene "${other.sceneId}" 完全重复：命中结果只取决于导出顺序`)
+      } else if (other.pattern.includes(current.pattern) || current.pattern.includes(other.pattern)) {
+        const [broad, narrow] = current.pattern.length <= other.pattern.length ? [current, other] : [other, current]
+        addIssue(issues, `scene "${broad.sceneId}"`, `trigger "${broad.pattern}" 是 scene "${narrow.sceneId}" 的 "${narrow.pattern}" 的子串：宽泛词会抢占更精确的场景，请改用专属动词短语`)
+      }
+    }
+  }
+}
+
 function validateJsonDocument(document, issues) {
   if (Array.isArray(document?.scenarios)) {
     validateLegacyDocument(document, issues)
@@ -124,6 +164,150 @@ function validateJsonDocument(document, issues) {
     if (ids.has(scene?.id)) addIssue(issues, `scene "${scene?.id}"`, 'scene id 重复')
     ids.add(scene?.id)
   }
+  validateTriggers(document.scenes, issues)
+}
+
+/**
+ * 去掉注释与字符串字面量内容，只保留结构性括号。
+ * 场景文案里含 `[[file:xxx]]` 这类内联标签，不清理字符串会把括号深度算错。
+ */
+function stripLiterals(source) {
+  let out = ''
+  let index = 0
+  while (index < source.length) {
+    const char = source[index]
+    const next = source[index + 1]
+    if (char === '/' && next === '/') {
+      const end = source.indexOf('\n', index)
+      index = end < 0 ? source.length : end
+      continue
+    }
+    if (char === '/' && next === '*') {
+      const end = source.indexOf('*/', index + 2)
+      index = end < 0 ? source.length : end + 2
+      continue
+    }
+    if (char === '"' || char === "'" || char === '`') {
+      index += 1
+      while (index < source.length) {
+        if (source[index] === '\\') { index += 2; continue }
+        if (source[index] === char) { index += 1; break }
+        index += 1
+      }
+      out += '""'
+      continue
+    }
+    out += char
+    index += 1
+  }
+  return out
+}
+
+/** 从 `key: [` 或 `key: {` 起，按括号深度截取其完整字面量，返回 [起点, 终点)。 */
+function literalRange(source, startIndex) {
+  const open = source[startIndex]
+  const close = open === '[' ? ']' : '}'
+  let depth = 0
+  for (let index = startIndex; index < source.length; index += 1) {
+    if (source[index] === open) depth += 1
+    else if (source[index] === close) {
+      depth -= 1
+      if (depth === 0) return [startIndex, index + 1]
+    }
+  }
+  return null
+}
+
+/** 把数组字面量按顶层逗号切成元素源码片段。 */
+function splitTopLevel(arraySource) {
+  const items = []
+  let depth = 0
+  let start = 1
+  for (let index = 1; index < arraySource.length - 1; index += 1) {
+    const char = arraySource[index]
+    if (char === '{' || char === '[' || char === '(') depth += 1
+    else if (char === '}' || char === ']' || char === ')') depth -= 1
+    else if (char === ',' && depth === 0) {
+      const item = arraySource.slice(start, index).trim()
+      if (item) items.push(item)
+      start = index + 1
+    }
+  }
+  const tail = arraySource.slice(start, arraySource.length - 1).trim()
+  if (tail) items.push(tail)
+  return items
+}
+
+/** 该 turn 片段的**顶层**是否含某个 key（排除嵌套在 approvalOutcomes 等子对象里的同名 key）。 */
+function hasOwnKey(objectSource, key) {
+  let depth = 0
+  for (let index = 0; index < objectSource.length; index += 1) {
+    const char = objectSource[index]
+    if (char === '{' || char === '[' || char === '(') { depth += 1; continue }
+    if (char === '}' || char === ']' || char === ')') { depth -= 1; continue }
+    if (depth !== 1) continue
+    if (!objectSource.startsWith(key, index)) continue
+    const before = objectSource[index - 1]
+    if (before && /[\w$]/.test(before)) continue
+    const after = objectSource.slice(index + key.length).match(/^\s*:/)
+    if (after) return true
+  }
+  return false
+}
+
+/** TS 场景的 trigger 冲突校验：把 `"<id>": { trigger: { … patterns: [...] } }` 抽成场景后复用同一套规则。 */
+function validateTsTriggers(raw, sourceFile, issues) {
+  const scenes = []
+  const scenePattern = /["']([\w-]+)["']\s*:\s*\{\s*trigger\s*:\s*\{([^}]*)\}/g
+  let match
+  while ((match = scenePattern.exec(raw))) {
+    const [, id, body] = match
+    const typeMatch = body.match(/type\s*:\s*["'](\w+)["']/)
+    const patternsMatch = body.match(/patterns\s*:\s*\[([^\]]*)\]/)
+    if (!patternsMatch) continue
+    const patterns = [...patternsMatch[1].matchAll(/["']([^"']*)["']/g)].map((item) => item[1])
+    scenes.push({ id, trigger: { type: typeMatch?.[1] ?? 'keyword', patterns } })
+  }
+  if (!scenes.length) return
+  const scoped = []
+  validateTriggers(scenes, scoped)
+  for (const issue of scoped) addIssue(issues, sourceFile, issue)
+}
+
+/**
+ * TS 富场景的结构化校验：tsc 只保证类型，查不出「awaitingApproval 写在中间轮」
+ * 「审批轮缺一侧结果」这类语义错误，这里用括号深度扫描补上。
+ */
+function validateTsScenes(sourceFile, issues) {
+  const raw = readFileSync(sourceFile, 'utf-8')
+  validateTsTriggers(raw, sourceFile, issues)
+  const source = stripLiterals(raw)
+  const turnsKey = /\bturns\s*:\s*\[/g
+  let match
+  let scanned = 0
+  while ((match = turnsKey.exec(source))) {
+    const arrayStart = source.indexOf('[', match.index)
+    const range = literalRange(source, arrayStart)
+    if (!range) continue
+    const turns = splitTopLevel(source.slice(range[0], range[1]))
+    if (!turns.length) continue
+    scanned += 1
+    const sceneLabel = `${sourceFile} / turns@${match.index}`
+    for (const [index, turn] of turns.entries()) {
+      if (!/\bawaitingApproval\s*:\s*true\b/.test(turn)) {
+        if (hasOwnKey(turn, 'approvalOutcomes')) addIssue(issues, `${sceneLabel} / turn[${index}]`, '提供了 approvalOutcomes 却没有 awaitingApproval: true：审批结果永远不会渲染')
+        continue
+      }
+      const path = `${sceneLabel} / turn[${index}]`
+      if (index !== turns.length - 1) addIssue(issues, path, 'awaitingApproval 必须写在场景末轮：待批准会阻断新指令，写在中间轮会静默失效')
+      if (!hasOwnKey(turn, 'productBlock')) addIssue(issues, path, 'awaitingApproval 必须配一张 confirm-card 产物块，否则用户无处批准')
+      if (!hasOwnKey(turn, 'approvalOutcomes')) addIssue(issues, path, '审批轮必须提供 approvalOutcomes 的 approved 与 rejected 结果')
+      else for (const outcome of ['approved', 'rejected']) {
+        if (!new RegExp(`\\b${outcome}\\s*:`).test(turn)) addIssue(issues, path, `审批轮缺少 ${outcome} 结果分支`)
+      }
+    }
+  }
+  return scanned
 }
 
 function resolveTemplateDirs() {
@@ -149,7 +333,17 @@ for (const templateDir of resolveTemplateDirs()) {
   const tsScenes = join(templateDir, 'src/components/agent-layout/scenes.ts')
   const jsonScenes = join(templateDir, 'src/mock/scenarios.json')
   if (existsSync(tsScenes)) {
-    console.log(`[check-scripts] ${tsScenes} 使用 TS 富场景入口（由 tsc 校验）。`)
+    // TS 场景入口的实际数据通常在 conversation-data.ts；两者都扫。
+    const issues = []
+    let scanned = 0
+    for (const candidate of [tsScenes, join(templateDir, 'src/components/agent-layout/conversation-data.ts')]) {
+      if (existsSync(candidate)) scanned += validateTsScenes(candidate, issues)
+    }
+    if (issues.length) {
+      console.error(`\n[check-scripts] ${tsScenes} 发现 ${issues.length} 处问题：`)
+      for (const issue of issues) console.error(`  - ${issue}`)
+      totalIssues += issues.length
+    } else console.log(`[check-scripts] ${tsScenes} 通过（TS 富场景入口：tsc 查类型 + 审批结构校验 ${scanned} 组 turns）。`)
     continue
   }
   if (!existsSync(jsonScenes)) {

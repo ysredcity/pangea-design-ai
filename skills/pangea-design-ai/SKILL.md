@@ -7,11 +7,29 @@ description: "⚠️ 硬约束（最高优先级）：任何「生成/新建智�
 
 智能体产品交互设计的 React 实现说明。
 
-> **当前稳定基线：v0.1.0（2026-09-03）**。该版本已固化两套独立脚手架、共享 Base UI 运行时、富场景剧本引擎、组件文档与根级质量门禁；具体发布记录见 [CHANGELOG.md](../../CHANGELOG.md)。
+> **当前稳定基线：v0.2.0（2026-09-06）**。在 v0.1.0（两套独立脚手架、共享 Base UI 运行时、富场景剧本引擎、组件文档与根级质量门禁）之上修好了审批链路、把审批契约校验接回、给场景补上自然语言进入路径，并压缩了文档阅读负担。逐版本发布记录见仓库的 `CHANGELOG.md`（**不随分发包提供**）。
 
-**设计规则事实源**：[references/design.md](references/design.md)，由两份上游合并而成——《[智能体产品交互设计指南 V1.4](../../docs/智能体产品交互设计指南V1.4.md)》（海信集团，提供骨架与三形态覆盖）+ 沉浸式工作台实测契约（提供已验证的具体数值与判定规则）。正文用〔指南〕/〔沉浸式契约〕/〔通用契约〕标注来源，冲突时以 design.md 为准。
+**设计规则事实源**：[references/design.md](references/design.md)，由两份上游合并而成——《智能体产品交互设计指南 V1.4》（海信集团，提供骨架与三形态覆盖；人读原文留在仓库 `docs/`，不随分发包提供）+ 沉浸式工作台实测契约（提供已验证的具体数值与判定规则）。正文用〔指南〕/〔沉浸式契约〕/〔通用契约〕标注来源，**冲突时以 design.md 为准**——design.md 本身是自洽的，不需要回查原文。
 
-## 🚦 最高优先级：两阶段强制门（先确认需求文档，再写代码）
+## � 按任务读取，不要无差别加载
+
+`references/` 有 50+ 个文档、3500+ 行。**不要通读**——按当前任务取最小必读集，其余按需查。
+
+| 任务 | 必读（最小集） | 按需补读 |
+|---|---|---|
+| **新建/生成一个智能体界面** | 本文件的三道门 + [requirement-intake.md](references/overview/requirement-intake.md)（阶段一）→ 确认后读 [project-structure.md](references/overview/project-structure.md#你在哪里工作先读这节) | 交付前过 [quality-gates.md](references/overview/quality-gates.md) |
+| 改配置：产品名/头像/侧栏/首屏推荐 | 模板的 `app-config.ts` 注释 | — |
+| 写/改对话场景剧本 | [conversation-contracts.md](references/components/conversation/conversation-contracts.md)（含**审批轮写作规范**） | 相关层的 `components/` 文档 |
+| 加高风险审批 | 上一行 + [confirm-card.md](references/components/conversation/confirm-card.md) | [design.md 3.4](references/design.md#34-操作确认)、[4.1](references/design.md#41-五种状态语言) |
+| 改执行过程层级（L1/L2/L3） | [components/process/](references/components/process/) | [design.md 3.2](references/design.md#32-执行过程透明) |
+| 加右侧面板/产物容器 | [components/artifact/](references/components/artifact/) | [design.md 3.5](references/design.md#35-结果呈现与产物容器) |
+| 加"配置覆盖不了"的新能力 | [extension-map.md](references/overview/extension-map.md) + [design.md 第七章](references/design.md#七扩展新能力的决策流程) | — |
+| 改颜色/字号/间距/圆角 | [design-tokens.md](references/theme/design-tokens.md) | [design.md 第六章](references/design.md#六视觉基础) |
+| 改响应式或动效 | [design.md 2.2](references/design.md#22-响应式与空间分配)、[4.3](references/design.md#43-动效原则) | 对应形态的 `patterns/` 文档 |
+
+下面「全局设计规则」表已给出**一句话结论**——结论够用时就不要展开 design.md 对应章节。
+
+## �🚦 最高优先级：两阶段强制门（先确认需求文档，再写代码）
 
 **任何「生成/新建智能体产品界面」的需求，必须分两个回合完成，禁止在同一轮里既出需求文档又出工程代码。**
 
@@ -211,10 +229,13 @@ description: "⚠️ 硬约束（最高优先级）：任何「生成/新建智�
 
 **v0.1.0** 是首个可管理的稳定基线：Phase 0–8 均已完成，包含合并后的设计规则与 G0–G9 门禁、组件文档与扩展地图、三张 shared 交互卡、TS/JSON 双数据源剧本引擎、Base UI 沉浸式/助手式模板，以及 package-owned 的完整 `ImmersiveAgentApp` 运行时。两套模板复制到仓库外后均可独立执行 `npm install && npm run gate`。
 
-当前不阻塞 v0.1.0、但应在后续版本单独处理的事项：
+**v0.2.0** 在此之上修正了实际试用暴露的问题：审批链路可用（结果可带产物块、审批态从场景末轮派生）、审批契约校验不再被路由绕过、场景可经 `trigger` 用自然语言进入且匹配不依赖声明顺序、新增产物形态硬门禁与按任务读取的最小必读集。
+
+当前不阻塞 v0.2.0、但应在后续版本单独处理的事项：
 
 - **视觉 token 全量**：字体、间距、圆角、阴影与组件级 token，等待设计稿作为事实源。
 - **需求规格化映射**：补充从确认需求到剧本数据的映射规则。
 - **嵌入式参考实现**：继续按场景生成，不在当前版本固化第三套模板。
+- **构建体积**：沉浸式初始 chunk 超过 500 kB，需要代码分割／按需加载。
 
-版本升级、变更记录与发布前验证见 [CONTRIBUTING.md](../../CONTRIBUTING.md) 和 [CHANGELOG.md](../../CHANGELOG.md)。
+版本升级、变更记录与发布前验证见仓库的 `CONTRIBUTING.md` 与 `CHANGELOG.md`（维护者文档，不随分发包提供）。

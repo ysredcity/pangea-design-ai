@@ -16,6 +16,7 @@ user-invocable: false
 | 富 Composer、内联标签、实体附件、连接器、专家或录音 | `templates/immersive-starter/src/components/agent-layout/composer.tsx` 与其 registry | 共享 `conversation/composer.tsx` 的 props |
 | 沉浸式身份开场、L1/L2/L3、澄清、富附件、消息操作与产品块结果 | `templates/immersive-starter/src/components/agent-layout/conversation-flow.tsx`；卡片适配在 `product-block-renderer.tsx`，由 rich Flow 本地拥有 action 结果 | shared `ConversationFlow` 的轻量 scene 与 props；把结果状态放回卡片 |
 | 待批准阻断（等待提示、输入禁用、会话标签、批准/拒绝收尾） | 场景轮的 `awaitingApproval` 与 `approvalOutcomes`（`conversation-data.ts`）+ `Conversation.approvalStatus`；状态由 `agent-shell.tsx` 更新，`conversation-page.tsx` 分发给 rich Flow 与 Composer `disabled` | 把审批状态放进 shared `ConfirmCard`；用卡片文案、按钮名或块 ID 推断待决；复用 Composer 的 `recording` 表达业务禁用 |
+| 新增一个可被用户说出来触达的对话场景 | `conversation-data.ts` 的 `conversationScenes` 新增条目，**并配 `trigger.patterns`**（专属动词短语；跨场景不得重复或互为子串）；首屏推荐语应命中某个 trigger | 只写场景不配 trigger（只能从侧栏进入）；用「出差」「费用」这类宽泛词；在 `agent-shell.tsx` 里加业务分支做匹配 |
 | 已有沉浸式面板的内容 | `templates/immersive-starter/src/components/agent-layout/panel-data.ts` | panel 类型、container 或 registry；除非真的新增容器类型 |
 | 新沉浸式面板容器类型 | `panel-types.ts`、`panel-containers.tsx`、`panel-registry.ts` | 仅改 `panel-data.ts` 后假定 renderer 自动存在 |
 | 沉浸式产物展示 | `templates/immersive-starter/src/components/agent-layout/{agent-shell,panel-*,image-viewer}.tsx` | 共享对话域中的容器分支 |

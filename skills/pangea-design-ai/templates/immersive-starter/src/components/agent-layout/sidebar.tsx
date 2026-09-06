@@ -56,7 +56,8 @@ export type Conversation = {
 // 保留示例数据的具名导出，避免改变模板使用者的深层导入 API。
 // oxlint-disable-next-line react/only-export-components
 export const initialPinnedConversations: Conversation[] = [
-  { id: "pinned-1", title: "如果用一个符号元素形容报表，应该用什么最形象", approvalStatus: "pending" },
+  // 审批态不在此手写：由场景末轮 awaitingApproval 派生（见 agent-shell 的 deriveApprovalStatus）
+  { id: "pinned-1", title: "如果用一个符号元素形容报表，应该用什么最形象" },
 ]
 
 // 保留示例数据的具名导出，避免改变模板使用者的深层导入 API。

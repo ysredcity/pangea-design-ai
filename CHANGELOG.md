@@ -16,14 +16,30 @@
 
 - **视觉 token**：补全字体、间距、圆角、阴影与组件级 token，等待设计稿作为事实源。
 - **需求规格化**：补充“生成剧本数据映射规则”。
-- **Website / Showcase**：v0.1.0 已保留可运行的文档、模板演示与 JSON 编辑能力；体验与信息架构优化暂缓到后续独立迭代，不阻塞 skill 发布。
+- **Website / Showcase**：保留为仓库内部展示基线；体验与信息架构优化暂缓，不阻塞 skill 发布。
+- **构建体积**：沉浸式与 website 的初始 chunk 均超过 500 kB，需要代码分割／按需加载，当前不通过提高告警阈值掩盖。
+
+## [0.2.0] - 2026-09-06
+
+围绕"实际试用后产出可用但过程冗长"的反馈做了一轮修正：把 skill 更名为 `pangea-design-ai`，修好审批链路的三处失效、把形同死代码的审批校验接回并补齐规则，给场景补上自然语言进入路径，并压缩 agent 的文档阅读负担。
 
 ### Added
 
-- **可分发归档**：新增 `releases/pangea-design-ai-v0.1.0.zip`，包含 v0.1.0 skill 入口、规则参考、校验脚本与两套脚手架源码；不包含 `node_modules`、构建产物或模板本地 `.workbuddy` 记忆。旧 `agent-ux-react-v0.1.0.zip` 保留为更名前的历史归档。
+- **沉浸式场景支持自然语言进入**：`ImmersiveConversationScene` 新增 `trigger`，新对话首句先经 `matchTrigger` 命中已写场景，未命中才回退 `createDraftScene`。此前沉浸式场景只能从侧栏按会话 id 点进去，用户新输入永远拿到草稿，新写的剧本（含审批场景）没有任何自然语言触达路径。命中后首轮用户消息会替换为用户的实际输入与真实附件，后续轮保持剧本。六个示例场景已配 trigger，其中「调研瑞幸」「本周工作进展／生成周报」两条首屏推荐现在能直接进入完整剧本。
+- **可分发归档**：`releases/pangea-design-ai-v0.2.0.zip`（285 个文件），含 skill 入口、规则参考、校验脚本与两套脚手架源码；不含 `node_modules`、构建产物或模板本地 `.workbuddy` 记忆。历史归档 `pangea-design-ai-v0.1.0.zip` 与更名前的 `agent-ux-react-v0.1.0.zip` 均保留。
+
+### Changed
+
+- **skill 更名为 `pangea-design-ai`**（原 `agent-ux-react`）：目录、`SKILL.md` frontmatter 的机器标识、根 workspace、同步脚本、组件文档 metadata 与 lockfile 路径均已同步。**升级方式**：重新安装新 ZIP 并删除旧的 `agent-ux-react/` 目录。运行时包名 `@agent-ux/agent-ui` 与既有 imports **保持不变**，不需要改动已生成的工程。
+- **`matchTrigger` 改为最长命中优先**：keyword 匹配不再是「按声明顺序首个命中」，而是取匹配到的最长 pattern，长度相同才回到声明顺序。此前把宽泛词写在前面会静默抢占后面更精确的场景，且重排导出顺序就会改变行为；现在结果与声明顺序无关。regex 仅在所有 keyword 均未命中时兜底。函数签名放宽为结构化泛型，沉浸式与 JSON 剧本共用同一份实现。
+- **压缩文档阅读负担**：SKILL.md 新增「按任务读取，不要无差别加载」路由表（`references/` 有 50+ 文档、3500+ 行），明确 9 类任务的最小必读集，并说明结论表够用时不必展开 design.md。这是针对"生成过程非常长"反馈的直接措施。
 
 ### Fixed
 
+- **审批链路可用性**：`ApprovalOutcomeData` 新增 `productBlock`，审批落地后可在同一轮给出结果卡等产物块；`ApprovalContinuation` 现在透传并渲染它。同时解开「没有 `productBlock` 就不渲染续流程」的隐藏耦合——续流程改由 `awaitingApproval` 判定，此前决策一落地该轮的结构化信息会全部消失，只剩一段文字。
+- **审批态改为从场景派生**：末轮 `awaitingApproval` 自动派生为「待批准」（`deriveApprovalStatus`），覆盖初始会话与**新建会话**两条路径。此前新写的审批场景在新对话里完全无表现（不禁用 Composer、无「需要你的批准」、侧栏无标记），且示例依赖在会话 meta 手写 `approvalStatus: 'pending'`；两处手写死数据已移除。
+- **审批契约校验此前是死代码**：`check-scripts.mjs` 对沉浸式模板整体短路（有 `scenes.ts` 就 `continue`），而它委托的 `tsc` 查不出这类语义错误。现改为对 TS 场景做括号深度扫描（跳过字符串与注释，避免 `[[file:…]]` 文案干扰），并把审批规则改为双向：`awaitingApproval` **必须在末轮**（写在中间轮会静默失效）、必须配 confirm-card、必须同时有 `approved` 与 `rejected`；孤立的 `approvalOutcomes` 会报错。
+- **trigger 歧义机检**：拦截跨场景**重复**（长度相同无法裁决，命中会退化为不确定）或**互为子串**（两个场景的语义边界没划清）的 keyword，并提示改用专属动词短语。规则同时覆盖 TS 场景与 JSON 剧本。
 - **产物形态错位（生成质量）**：新增第三道门「交付物只能是可运行的智能体应用」与 G0.5 硬门禁，明确禁止把产物做成规范导览站、组件图谱、落地页、配置/剧本编辑器或需求文档页，并要求首屏可直接发起委托、能走通一轮「委托 → 执行过程 → 结论 → 可点击交付物」。需求文档改为只写在对话回复里，不落盘、不渲染成页面。
 - **`project-structure.md` 视角错位**：改为消费者视角优先——产物是复制到**用户工作目录**的独立工程，校验只跑该工程自己的 `npm run gate`；仓库 monorepo 物化管线降级为「仅维护者」小节。此前通篇根级路径与命令会把 agent 的工作目录错误锚回本仓库。
 - **`catalog.json` 生成器已失效**：`build-catalog.mjs` 仍在扫描 Phase 3 已移除的 `references/component-selection/`，按 SKILL.md 指示重跑会把机读索引清空。现改为递归扫描 `references/components/`（与 `check-component-docs` 同一套排除规则），索引恢复为 2 个布局外壳 + 40 个组件且路径均有效。

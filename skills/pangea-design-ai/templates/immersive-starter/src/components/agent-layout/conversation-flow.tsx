@@ -160,7 +160,7 @@ export function ConversationFlow({ approvalStatus, scene, identity, experts, onO
 function ConversationTurn({ approvalStatus, clarificationSubmitted, current, experts, followUpPhase, identity, onClarificationSubmit, onOpenArtifact, onProductBlockAction, productActionResult, renderProductBlock, turn }: { approvalStatus?: "pending" | "approved" | "rejected"; clarificationSubmitted: boolean; current: boolean; experts: readonly WelcomeExpert[]; followUpPhase?: FollowUpPhase; identity: ProductIdentity; onClarificationSubmit: (formId: string) => void; onOpenArtifact: ArtifactRouter; onProductBlockAction: ProductBlockActionHandler; productActionResult?: ProductActionResult; renderProductBlock?: ProductBlockRenderer; turn: ConversationTurnData }) {
   const continuation = clarificationSubmitted ? turn.assistant?.clarification?.followUp : undefined
   const approvalPending = Boolean(current && turn.awaitingApproval && approvalStatus === "pending")
-  const approvalOutcome = current && turn.productBlock && turn.approvalOutcomes && approvalStatus && approvalStatus !== "pending"
+  const approvalOutcome = current && turn.awaitingApproval && turn.approvalOutcomes && approvalStatus && approvalStatus !== "pending"
     ? turn.approvalOutcomes[approvalStatus]
     : undefined
   return <section className="space-y-5">
@@ -182,7 +182,7 @@ function ConversationTurn({ approvalStatus, clarificationSubmitted, current, exp
       onClarificationSubmit={onClarificationSubmit}
       needsReply={current && turn.assistant?.kind === "question" && !continuation}
     />
-    {approvalOutcome && <ApprovalContinuation current={current} execution={approvalOutcome.execution} assistant={approvalOutcome.assistant} identity={identity} experts={experts} expert={turn.expert} onOpenArtifact={onOpenArtifact} />}
+    {approvalOutcome && <ApprovalContinuation current={current} execution={approvalOutcome.execution} assistant={approvalOutcome.assistant} productBlock={approvalOutcome.productBlock} renderProductBlock={renderProductBlock} productActionResult={productActionResult} onProductBlockAction={onProductBlockAction} identity={identity} experts={experts} expert={turn.expert} onOpenArtifact={onOpenArtifact} />}
     {continuation && <AssistantContinuation identity={identity} experts={experts} expert={turn.expert} followUp={continuation} phase={followUpPhase ?? "ready"} current={current} onOpenArtifact={onOpenArtifact} />}
   </section>
 }
@@ -203,7 +203,7 @@ function AssistantContinuation({ current, expert, followUp, identity, experts, o
   </div>
 }
 
-function ApprovalContinuation({ assistant, current, execution, expert, experts, identity, onOpenArtifact }: { assistant: ConversationTurnData["assistant"]; current: boolean; execution: ExecutionData; expert?: string; experts: readonly WelcomeExpert[]; identity: ProductIdentity; onOpenArtifact: ArtifactRouter }) {
+function ApprovalContinuation({ assistant, current, execution, expert, experts, identity, onOpenArtifact, onProductBlockAction, productActionResult, productBlock, renderProductBlock }: { assistant: ConversationTurnData["assistant"]; current: boolean; execution: ExecutionData; expert?: string; experts: readonly WelcomeExpert[]; identity: ProductIdentity; onOpenArtifact: ArtifactRouter; onProductBlockAction: ProductBlockActionHandler; productActionResult?: ProductActionResult; productBlock?: ProductConversationBlock; renderProductBlock?: ProductBlockRenderer }) {
   if (!assistant) return null
   return <div className="animate-in fade-in-0 duration-200 motion-reduce:animate-none">
     <AgentResponseBlock
@@ -214,6 +214,10 @@ function ApprovalContinuation({ assistant, current, execution, expert, experts, 
       current={current}
       onOpenArtifact={onOpenArtifact}
       assistant={assistant}
+      productBlock={productBlock}
+      renderProductBlock={renderProductBlock}
+      productActionResult={productActionResult}
+      onProductBlockAction={onProductBlockAction}
     />
   </div>
 }

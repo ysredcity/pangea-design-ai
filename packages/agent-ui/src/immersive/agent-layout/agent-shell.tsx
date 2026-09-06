@@ -12,7 +12,8 @@ import { TooltipProvider } from "../ui/tooltip"
 import { ArtifactPanel } from "./artifact-panel"
 import { ChatWorkspace } from "./chat-workspace"
 import { AgentSidebar, type Conversation } from "./sidebar"
-import type { ImmersiveAgentAppProps } from "../contracts"
+import { matchTrigger } from "../../script-engine/match"
+import type { ImmersiveAgentAppProps, ImmersiveConversationMeta, ImmersiveConversationScene, MessageAttachment } from "../contracts"
 import { splitSentContext } from "./message-context"
 import { ImageViewer } from "./image-viewer"
 import { panelViewKey, type ArtifactTarget, type ImageView, type PanelTab, type PanelView } from "./panel-types"
@@ -21,11 +22,42 @@ const SIDEBAR_WIDTH = 240
 const PANEL_MIN_WIDTH = 320
 const CHAT_MIN_WIDTH = 420
 
+/**
+ * 审批态由场景末轮派生：末轮 `awaitingApproval` 即为「待批准」。
+ * 只有末轮生效，因为待批准会阻断新指令；写在中间轮的 `awaitingApproval` 属于数据错误（由 check-scripts 拦截）。
+ * 会话 meta 里显式给出的 approved/rejected 优先，用于表达"已决策完成"的历史会话。
+ */
+function deriveApprovalStatus(scene: ImmersiveConversationScene | undefined, explicit?: "pending" | "approved" | "rejected") {
+  if (explicit) return explicit
+  return scene?.turns.at(-1)?.awaitingApproval ? ("pending" as const) : undefined
+}
+
+/**
+ * 新对话的自然语言入口：先按 trigger 命中预写场景，未命中才回退到 createDraftScene。
+ * 命中时把首轮用户消息替换成用户**实际输入**（含其真实附件），后续轮保持剧本——
+ * 否则用户会看到一段自己没说过的话，像是发错了对话。
+ * 场景 id 需要换成新的，避免与侧栏已有会话的 scene id 冲突。
+ */
+function resolveSceneForInput(content: string, scenes: readonly ImmersiveConversationScene[], attachments?: MessageAttachment[]): ImmersiveConversationScene | null {
+  const matched = matchTrigger(content, scenes)
+  if (!matched?.turns.length) return null
+  const [first, ...rest] = matched.turns
+  return {
+    ...matched,
+    id: `${matched.id}-${Date.now()}`,
+    turns: [{ ...first, user: { ...first.user, content, attachments: attachments?.length ? attachments : first.user.attachments } }, ...rest],
+  }
+}
+
 export function AgentShell({ config, scenes, initialPinnedConversations = [], initialConversations = [], createDraftScene }: ImmersiveAgentAppProps) {
   const scenesById = Object.fromEntries(scenes.map((scene) => [scene.id, scene]))
+  const withDerivedApproval = (item: ImmersiveConversationMeta): Conversation => {
+    const scene = scenesById[item.id]
+    return { ...item, scene, approvalStatus: deriveApprovalStatus(scene, item.approvalStatus) }
+  }
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null)
-  const [pinnedConversations, setPinnedConversations] = useState<Conversation[]>(() => initialPinnedConversations.map((item) => ({ ...item, scene: scenesById[item.id] })))
-  const [conversations, setConversations] = useState<Conversation[]>(() => initialConversations.map((item) => ({ ...item, scene: scenesById[item.id] })))
+  const [pinnedConversations, setPinnedConversations] = useState<Conversation[]>(() => initialPinnedConversations.map(withDerivedApproval))
+  const [conversations, setConversations] = useState<Conversation[]>(() => initialConversations.map(withDerivedApproval))
   const [renamingConversation, setRenamingConversation] = useState<Conversation | null>(null)
   const [renameTitle, setRenameTitle] = useState("")
   const [readConversationIds, setReadConversationIds] = useState<Set<string>>(() => new Set())
@@ -277,12 +309,14 @@ export function AgentShell({ config, scenes, initialPinnedConversations = [], in
               const { attachments, content, expert } = splitSentContext(message, context)
               // 标题去掉内联标签标记，只保留可读文本
               const title = content.replace(/\[\[[^:\]]+:([^\]]+)\]\]/g, "$1").trim() || attachments[0]?.name || context[0]?.label || "新对话"
+              const scene = resolveSceneForInput(content, scenes, attachments) ?? createDraftScene(content, expert, attachments)
               const newConversation: Conversation = {
                 id: `draft-${Date.now()}`,
                 title: title.slice(0, 36),
                 initialMessage: content,
                 expert,
-                scene: createDraftScene(content, expert, attachments),
+                scene,
+                approvalStatus: deriveApprovalStatus(scene),
               }
               setConversations((items) => [newConversation, ...items])
               openConversation(newConversation)

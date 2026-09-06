@@ -59,6 +59,11 @@ export const appConfig = {
   welcome: {
     greeting: "👋 Hey！有什么需要我搞定的？",
     expertIds: ["office", "document", "data", "research", "campus"],
+    /**
+     * 推荐语点击后等同于用户输入：命中某个场景的 `trigger.patterns` 才会进入已写剧本，
+     * 否则回退成 `createDraftScene` 草稿。想让一条推荐有完整演示效果，
+     * 就在 `conversation-data.ts` 里给对应场景配上能被这句话包含的 trigger。
+     */
     recommendations: [
       { expertId: "office", prompt: "创建飞书「需求内审评审流」评审内容清单文档" },
       { expertId: "document", prompt: "将《UI Skill 使用手册》精简为设计师快速上手指南" },

@@ -27,9 +27,11 @@ export type ProductConversationBlock = { id: string; type: string; data?: unknow
 export type AssistantMessageData = { attachments?: AssistantAttachment[]; clarification?: ClarificationFormData; content: string; timestamp: string; kind?: 'answer' | 'question' }
 export type ClarificationFollowUpData = { assistant: AssistantMessageData & { kind: 'question' }; execution: ExecutionData; id: string }
 export type ClarificationFormData = { defaultOpen?: boolean; description?: string; fields: ClarificationField[]; followUp?: ClarificationFollowUpData; id: string; initialValues?: Record<string, ClarificationFieldValue>; submitLabel?: string; title: string }
-export type ApprovalOutcomeData = { execution: ExecutionData; assistant: AssistantMessageData }
+export type ApprovalOutcomeData = { execution: ExecutionData; assistant: AssistantMessageData; productBlock?: ProductConversationBlock }
 export type ImmersiveConversationTurn = { id: string; awaitingApproval?: boolean; approvalOutcomes?: { approved: ApprovalOutcomeData; rejected: ApprovalOutcomeData }; expert?: string; user: { content: string; attachments?: MessageAttachment[]; timestamp?: string }; execution: ExecutionData; assistant?: AssistantMessageData; productBlock?: ProductConversationBlock }
-export type ImmersiveConversationScene = { id: string; title?: string; turns: ImmersiveConversationTurn[] }
+/** keyword 为子串匹配、最长命中优先；regex 仅在关键词全未命中时按声明顺序兜底。 */
+export type SceneTrigger = { type: 'keyword' | 'regex'; patterns: string[] }
+export type ImmersiveConversationScene = { id: string; title?: string; trigger?: SceneTrigger; turns: ImmersiveConversationTurn[] }
 
 export type ImmersiveConversationMeta = { id: string; title: string; loading?: boolean; unread?: boolean; waitingForReply?: boolean; approvalStatus?: 'pending' | 'approved' | 'rejected'; initialMessage?: string; expert?: string }
 export type ProductIdentity = { name: string; avatar: 'bot' }

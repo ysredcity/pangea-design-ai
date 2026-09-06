@@ -23,6 +23,7 @@ function rewriteForTemplate(sourceFile, content) {
     .replaceAll('../hooks/', '@/hooks/')
     .replaceAll('../lib/', '@/lib/')
     .replaceAll('../../conversation', '@/agent-ui/conversation')
+    .replaceAll('../../script-engine', '@/agent-ui/script-engine')
     .replaceAll('../contracts', '@/agent-ui/immersive/contracts')
 }
 
