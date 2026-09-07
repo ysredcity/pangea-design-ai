@@ -28,7 +28,8 @@ user-invocable: false
 
 | 路径 | 职责 |
 |---|---|
-| `src/agent-ui/conversation/` | 物化的共享对话域：消息、执行过程、Composer、三张交互卡、中立 `ArtifactRouter` / `ProductBlockAction` |
+| `src/agent-ui/conversation/` | 物化的基础对话域：`ConversationSurface`、兼容性轻量消息/Composer、交互卡与中立 action 契约 |
+| `src/components/agent-layout/conversation-section.tsx` | Agent/Copilot 共用的默认完整对话区：rich Flow、rich Composer、滚动/Footer 与草稿 |
 | `src/agent-ui/immersive/`（或 `copilot/`） | 物化的形态运行时入口与显式 contracts |
 | `src/components/agent-layout/` | 沉浸式壳层与产品装配：侧栏、对话区、右侧 Tab / 图片查看器、本地 panel adapter |
 | `src/components/ui/` | 物化的 Base UI 基础件 |
@@ -42,7 +43,7 @@ user-invocable: false
 改动前先查 [extension-map.md](extension-map.md)（改哪个文件、不要碰哪个文件）。
 
 - **沉浸式**：场景改 `agent-layout/scenes.ts` 与 `conversation-data.ts`，面板内容改 `panel-data.ts`，产品身份/导航/欢迎页专家与推荐改 `app-config.ts`。同产物重复打开只切换 Tab，切换会话立即清面板。
-- **Copilot**：产品页（示例为 `src/pages/ContractReview.tsx`）提供 `workspace` 与 `routeArtifact(target)`；交付物点击与产品块 action 经 `onProductBlockAction` 转为 artifact，**都只能更新左侧工作区，不出现右侧产物面板**。
+- **Copilot**：产品页（示例为 `src/pages/ContractReview.tsx`）提供 `workspace` 与 `routeArtifact(target)`；交付物点击与产品块 action **都只能更新主工作区，不出现右侧产物面板**。辅助区状态使用 `sidebar | floating | collapsed`；桌面 sidebar 始终 400px 贴右停靠，floating 为 400×600。Header 固定为新对话、历史、模式菜单、更多、关闭；完整正文直接复用 `ConversationSection` 的 rich Flow/Composer。
 - `AppConfig` 只承载身份、导航与欢迎页专家/推荐；**场景、主题、面板容器与产品块继续以 TypeScript 扩展，不把业务能力吞入 `AppConfig`**。
 - 产品块的固定插槽在 assistant 正文/附件之后、续流程之前；renderer 接收 `ProductBlockContext.onAction`，未知类型由产品 renderer 记录开发期警告并安全跳过。沉浸式 local renderer 消费本地 `data`/rich context，Copilot/shared renderer 消费 `payload`/shared context；**同名 renderer API 不可互换**。
 
@@ -61,7 +62,7 @@ npm run gate
 
 > 消费 skill 生成产品界面时**不需要这一节**。它只描述本 skill 仓库如何把共享源码同步进两套模板。
 
-单一源码在 `packages/agent-ui/src/`，`node scripts/sync-agent-ui.mjs` 把 `conversation/` 及对应的 `immersive/` 或 `copilot/` 写入模板的 `src/agent-ui/`，并物化质量脚本到 `scripts/agent-ux/`；`--check` 检测两个模板漂移。因此**模板内被同步覆盖的文件不应手改**，要改先改 `packages/agent-ui`。
+单一源码在 `packages/agent-ui/src/`，`node scripts/sync-agent-ui.mjs` 把 `conversation/` 及对应的 `immersive/` 或 `copilot/` 写入模板的 `src/agent-ui/`，把 canonical `theme.css/typeset.css` 同步给两套 active 模板，并物化质量脚本到 `scripts/agent-ux/`；`--check` 检测两个模板漂移。因此**模板内被同步覆盖的文件不应手改**，要改先改 `packages/agent-ui`。
 
 ```bash
 npm run sync:agent-ui

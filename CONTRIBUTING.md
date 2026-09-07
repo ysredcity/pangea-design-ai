@@ -4,7 +4,7 @@
 
 ## 版本与发布
 
-- 当前稳定基线为 **v0.2.0**。仓库根、`@agent-ux/agent-ui` 与两套 active 模板的 `package.json` 保持同一版本；更新后用 `npm install --package-lock-only` 重算根锁文件，不手改 lockfile。
+- 当前稳定基线为 **v0.3.0**。仓库根、`@agent-ux/agent-ui` 与两套 active 模板的 `package.json` 保持同一版本；更新后用 `npm install --package-lock-only` 重算根锁文件，不手改 lockfile。
 - 发布产物放在 `releases/pangea-design-ai-v<版本>.zip`，从 `skills/pangea-design-ai/` 打包，排除 `node_modules`、`dist`、`.DS_Store` 与模板本地 `.workbuddy`。历史归档保留，不覆盖或改名复用。
 - 采用 [Semantic Versioning](https://semver.org/lang/zh-CN/)：修复升 PATCH，向后兼容的新能力升 MINOR，破坏 skill 契约、模板扩展点或数据格式才升 MAJOR。
 - 每次发布把 `CHANGELOG.md` 的 `[Unreleased]` 内容移入带日期的版本段，同时更新 README、SKILL.md 与 PROJECT_CONTEXT 中影响使用者的版本状态。

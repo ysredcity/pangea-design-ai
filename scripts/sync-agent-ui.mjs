@@ -13,6 +13,12 @@ const files = (dir, pattern) => readdirSync(dir).flatMap((entry) => { const item
 
 function rewriteForTemplate(sourceFile, content) {
   const packagePath = relative(source, sourceFile).replaceAll('\\', '/')
+  if (packagePath === 'copilot/copilot-app.tsx') {
+    return content
+      .replaceAll("../immersive/agent-layout/", "@/components/agent-layout/")
+      .replaceAll("../immersive/ui/", "@/components/ui/")
+      .replaceAll("../immersive/contracts", "@/agent-ui/immersive/contracts")
+  }
   if (!packagePath.startsWith('immersive/')) {
     if (packagePath === 'conversation/confirm-card.tsx') return content.replace("import { Button } from '../ui/button'", "import { Button } from '@/components/ui/button'")
     return content
@@ -56,6 +62,16 @@ for (const template of templates) {
       [join(source, 'immersive/lib'), join(templateRoot, 'src/lib'), /\.ts$/],
     ]) for (const file of files(from, pattern)) changes += materialize(template, file, join(to, relative(from, file)))
     for (const css of ['theme.css', 'typeset.css']) changes += materialize(template, join(source, 'immersive', css), join(targetRoot, 'immersive', css))
+  }
+  if (template.shell === 'copilot') {
+    changes += materialize(template, join(source, 'immersive/contracts.ts'), join(targetRoot, 'immersive/contracts.ts'))
+    for (const [from, to, pattern] of [
+      [join(source, 'immersive/agent-layout'), join(templateRoot, 'src/components/agent-layout'), /\.(ts|tsx)$/],
+      [join(source, 'immersive/ui'), join(templateRoot, 'src/components/ui'), /\.(ts|tsx)$/],
+      [join(source, 'immersive/hooks'), join(templateRoot, 'src/hooks'), /\.ts$/],
+      [join(source, 'immersive/lib'), join(templateRoot, 'src/lib'), /\.ts$/],
+    ]) for (const file of files(from, pattern)) changes += materialize(template, file, join(to, relative(from, file)))
+    for (const css of ['theme.css', 'typeset.css']) changes += materialize(template, join(source, 'immersive', css), join(targetRoot, css))
   }
   for (const gate of ['check-tokens.mjs', 'check-scripts.mjs']) changes += materialize(template, join(skillScripts, gate), join(templateRoot, 'scripts/agent-ux', gate))
 }

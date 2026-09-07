@@ -4,7 +4,7 @@
 
 事实源 = [《智能体产品交互设计指南 V1.4》](docs/智能体产品交互设计指南V1.4.md)（海信集团）。技术栈 = **React 19 + Vite + TypeScript + Tailwind CSS v4 + shadcn/ui（Base UI）+ lucide-react**。
 
-> **当前稳定基线：v0.2.0（2026-09-06）**。该版本修复审批链路、恢复审批契约校验、补充自然语言场景入口，并降低 agent 的文档读取负担。
+> **当前稳定基线：v0.3.0（2026-09-06）**。该版本按设计稿完成 Copilot 侧边栏/浮窗/收起三态、五操作 Header，并让 Agent 与 Copilot 直接复用同一个 rich `ConversationSection`。
 
 ## 核心目的与受众
 

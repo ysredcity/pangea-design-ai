@@ -20,12 +20,12 @@ meta:
 # 对话页 ConversationPage
 
 ## 选型
-`ConversationPage` 是沉浸式活动会话的页面级组合器：标题操作、rich `ConversationFlow`、本地补发用户消息和 `Composer`。它接受壳层传入的会话及 router，不承担侧栏、会话列表或独立面板的状态。
+`ConversationPage` 是沉浸式活动会话的页面级壳层：标题操作和会话级回调。完整 rich 对话正文、Composer、本地补发消息与滚动由跨形态 `ConversationSection` 统一提供。页面接受壳层传入的会话及 router，不承担侧栏、会话列表或独立面板的状态。
 
 ## 事实源与 API
-当前仅导出 `ConversationPage(props)`。它接收 `AppConfig`、`Conversation`、`pinned`、侧栏停靠状态，以及新建会话、打开侧栏、置顶、重命名、`onOpenArtifact` 和 `onApprovalStatusChange` 回调。页面把 `config.identity`、`config.experts`、`config.renderProductBlock` 及会话审批状态下传 rich Flow，并将 pending 状态传入 rich Composer；确认决定由壳层更新会话状态。
+当前导出 `ConversationPage(props)`；同目录另导出供 Agent/Copilot 共同消费的 `ConversationSection`。页面接收 `AppConfig`、`Conversation`、`pinned`、侧栏停靠状态，以及新建会话、打开侧栏、置顶、重命名、`onOpenArtifact` 和 `onApprovalStatusChange` 回调，然后把 scene、identity、experts、renderer、审批与 artifact adapter 交给共享 section。
 
-`ConversationFlow` 以 `key={conversation.id}` 挂载，切换会话时重置其内部 rich-flow 状态。页面在会话 ID 改变时通过同一滚动容器同步定位到 `scrollHeight`，因此首次进入或切换任意长会话都默认看到最新消息。页面本地仅拥有滚动到底部按钮、标题截断检测与 `sentMessages`；后者不是会话数据源，也没有因 prop 切换而自动清空，不能把它文档化为跨会话持久消息。
+`ConversationSection` 以 `scene.id` 作为 rich Flow key/滚动 key，切换场景时重置过程状态并定位最新消息。草稿、follow-up 回填与 `sentMessages` 留在 section 内，不属于壳层会话事实源。
 
 ## 结构、状态与无障碍
 桌面 header 提供侧栏/新对话入口和会话操作；移动端换为可触达的浮层控制。图标按钮均带 `aria-label` 并由 Tooltip 解释；截断标题在实际溢出时显示 Tooltip。滚动按钮只在内容距底部超过阈值时出现，并滚到同一滚动容器底部。

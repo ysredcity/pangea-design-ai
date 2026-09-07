@@ -27,7 +27,8 @@ user-invocable: false
 
 | 实现层 | 事实源 | 可承载的内容 | 不可承载的内容 |
 |---|---|---|---|
-| **shared** | `packages/agent-ui/src/conversation/` | 轻量消息、浅层执行、基础 Composer、中立 `ArtifactTarget` / `ArtifactRouter`、产品块 renderer | Panel/Image adapter、Tab、Canvas、富澄清、L1/L2/L3 |
+| **shared rich section** | `packages/agent-ui/src/immersive/agent-layout/conversation-section.tsx` | Agent/Copilot 共用的 rich Flow、rich Composer、滚动/Footer、草稿与当前 section 消息 | Header、会话导航、Panel/ImageViewer、Copilot Canvas |
+| **shared lightweight（兼容）** | `packages/agent-ui/src/conversation/` | 轻量消息、浅层执行、基础 Composer、中立 `ArtifactTarget` / `ArtifactRouter`、产品块 renderer | 新 Copilot 默认对话 section、Panel/Image adapter、富澄清、L1/L2/L3 |
 | **immersive** | `templates/immersive-starter/src/components/agent-layout/` | 富 Composer、内联标签、附件、连接器、L1/L2/L3、澄清、右侧面板/图片 adapter | 强迫 Copilot 采用右侧产物容器 |
 | **copilot** | `packages/agent-ui/src/copilot/` 或 Copilot 产品装配页 | Copilot 壳层与 `routeArtifact(target)` 到左侧工作画布 | 沉浸式 Panel Tab 或 ImageViewer |
 | **产品块 adapter** | immersive local renderer 或 Copilot 产品页 renderer | 在校验后将形态专属 block 数据适配为 shared 卡片，并消费 `ProductBlockContext.onAction` | 将 local `data` renderer 与 shared `payload` renderer 视为可互换 API |
@@ -101,6 +102,8 @@ meta:
 | 组件或契约 | 实现层 / exported | 事实源 | 文档 |
 |---|---|---|---|
 | 共享对话契约 | shared / ✅ | `packages/agent-ui/src/conversation/types.ts` | [已完成](conversation/conversation-contracts.md) |
+| `ConversationSection` 跨形态完整对话区 | immersive runtime / ✅ | `packages/agent-ui/src/immersive/agent-layout/conversation-section.tsx` | [ConversationFlow](conversation/conversation-flow.md) · [ConversationPage](shell/conversation-page.md) |
+| `ConversationSurface` 对话视口与 Footer 表面 | shared / ✅ | `packages/agent-ui/src/conversation/conversation-surface.tsx` | [ConversationFlow](conversation/conversation-flow.md)（共享表面章节） |
 | `ConversationFlow` 对话流 | shared + immersive / ✅ | `packages/agent-ui/src/conversation/conversation-flow.tsx`；`templates/immersive-starter/.../conversation-flow.tsx` | [已完成](conversation/conversation-flow.md) |
 | `UserMessage` / `AgentIdentity` / `AssistantMessage` | immersive / ✅ | `templates/immersive-starter/.../conversation-flow.tsx` | [UserMessage](conversation/user-message.md) · [AgentIdentity](conversation/agent-identity.md) · [AssistantMessage](conversation/assistant-message.md) |
 | `AgentResponseBlock` / `ConversationTurn` / `AssistantContinuation` | immersive / ❌ 私有 | `templates/immersive-starter/.../conversation-flow.tsx` | [AgentResponseBlock](conversation/agent-response-block.md) · [ConversationTurn](conversation/conversation-turn.md) · [AssistantContinuation](conversation/assistant-continuation.md) |
@@ -128,7 +131,7 @@ meta:
 | 组件 | 实现层 / exported | 事实源 | 文档 |
 |---|---|---|---|
 | `AgentShell` / `ChatWorkspace` / `ConversationPage` / `AgentSidebar` | immersive / ✅ | `templates/immersive-starter/src/components/agent-layout/` | [AgentShell](shell/agent-shell.md) · [ChatWorkspace](shell/chat-workspace.md) · [ConversationPage](shell/conversation-page.md) · [AgentSidebar](shell/agent-sidebar.md) |
-| Copilot shell 与辅助区 | copilot / ✅ | `packages/agent-ui/src/copilot/copilot-app.tsx` + 产品装配页 | [Extension Map](../overview/extension-map.md) |
+| Copilot shell 与辅助区 | copilot + shared rich section / ✅ | `packages/agent-ui/src/copilot/copilot-app.tsx` + `packages/agent-ui/src/immersive/agent-layout/conversation-section.tsx` + 产品装配页 | [Copilot Shell](../patterns/copilot-shell.md) · [Extension Map](../overview/extension-map.md) |
 
 ### registry/ — 注册表与视觉映射
 

@@ -18,6 +18,29 @@
 - **需求规格化**：补充“生成剧本数据映射规则”。
 - **构建体积**：沉浸式初始 chunk 超过 500 kB，需要代码分割／按需加载，当前不通过提高告警阈值掩盖。
 
+## [0.3.0] - 2026-09-06
+
+Copilot 助手区按 Pangea AI Components 设计稿完成三态校准，并从“视觉近似共享”升级为直接复用 Agent 中间完整对话 section；两套模板继续保持独立壳层与产物路由。
+
+### Added
+
+- **Copilot 真实三态**：新增 `sidebar | floating | collapsed` 状态契约及受控/非受控 API。侧边栏桌面固定 400px 贴右全高；浮窗为 400×600px、右下 16px、16px 圆角与 xl 阴影；收起后优先使用宿主顶部导航入口，否则显示右下 44×44px Sparkles 按钮。
+- **完整对话 Section 跨形态复用**：新增 `ConversationSection`，Agent 与 Copilot 直接共用 rich `ConversationFlow`、rich `Composer`、Markdown、L1/L2/L3、附件、澄清、审批卡片、消息操作、滚动/Footer 与草稿状态，不再为 Copilot 维护轻量近似实现。
+- **Copilot Header 完整操作**：按设计稿固定为“新对话、历史对话、切换对话模式、更多、关闭”；模式菜单包含“侧边栏、浮动”，更多菜单包含“分享、设置”，并提供对应配置回调。
+- **可分发归档**：新增 `releases/pangea-design-ai-v0.3.0.zip`，保留全部历史归档；排除 `node_modules`、`dist`、`.DS_Store` 与模板本地 `.workbuddy`。
+
+### Changed
+
+- **Copilot 默认使用 rich scene**：合同审阅示例迁移到与 Agent 一致的富场景契约和产品块 renderer；附件、确认卡与执行过程由同一套组件渲染。Copilot 的 `routeArtifact(target)` 仍只更新主画布，不引入沉浸式右侧 Panel。
+- **物化管线扩展**：`sync-agent-ui.mjs` 现在把 `ConversationSection` 所需的 canonical Base UI、agent-layout、contracts、hooks、utils 与 theme/typeset 同步到 Copilot 独立模板，避免模板外依赖和双事实源。
+- **旧配置兼容**：历史 `assistantMode` 继续映射到新三态，但标记为 deprecated；新工程只使用 `assistantView/defaultAssistantView/onAssistantViewChange`。
+
+### Fixed
+
+- **侧边栏误呈浮窗**：移除 sidebar 对 floating class 的继承；桌面 sidebar 不再在 640–899px 区间错误显示圆角、阴影和右下悬浮定位。
+- **移动端 AI 不可达**：打开助手区时改为全屏，不再因断点 `hidden` 丢失对话入口。
+- **Copilot 组件视觉漂移**：删除未使用的旧 `CopilotShell.tsx`，并消除 Copilot 自建 Composer、卡片和轻量消息结构导致的 Agent/Copilot 双实现漂移。
+
 ## [0.2.0] - 2026-09-06
 
 围绕"实际试用后产出可用但过程冗长"的反馈做了一轮修正：把 skill 更名为 `pangea-design-ai`，修好审批链路的三处失效、把形同死代码的审批校验接回并补齐规则，给场景补上自然语言进入路径，并压缩 agent 的文档阅读负担。

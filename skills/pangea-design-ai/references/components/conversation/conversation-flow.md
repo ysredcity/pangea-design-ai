@@ -25,9 +25,13 @@ meta:
 
 ## 事实源与 API
 
-### Shared：中立轻量对话流
+### Cross-shape：完整 ConversationSection
 
-事实源：[`packages/agent-ui/src/conversation/conversation-flow.tsx`](../../../../../packages/agent-ui/src/conversation/conversation-flow.tsx)。仅导出 `ConversationFlow`：
+事实源：`packages/agent-ui/src/immersive/agent-layout/conversation-section.tsx`。它由 Agent `ConversationPage` 与 `CopilotApp` 共同消费，直接组合本节的 rich `ConversationFlow`、rich `Composer` 与 shared `ConversationSurface`，并统一草稿、当前 section 补发消息、follow-up 回填和审批 action 分发。Copilot 不再使用 shared 轻量 Flow/Composer 近似 rich section；两种形态只通过各自 `onOpenArtifact` adapter 区分 Panel/ImageViewer 与主画布。
+
+### Shared legacy：中立轻量对话流
+
+事实源：[`packages/agent-ui/src/conversation/conversation-flow.tsx`](../../../../../packages/agent-ui/src/conversation/conversation-flow.tsx)。该轻量实现仅为兼容既有独立消费方，不是 Copilot 新工程的默认 section。仅导出 `ConversationFlow`：
 
 ```ts
 {
@@ -38,7 +42,11 @@ meta:
 }
 ```
 
-它按 `ConversationScene.turns` 渲染用户消息、身份开场、可选浅层 execution、assistant 正文/产物及多个 `productBlocks`。运行中的 execution 默认展开，其余默认收起；只有 action 带 `target` 时才是调用 `openArtifact` 的按钮。`renderProductBlock` 收到 `{ turnId, isLatestTurn, openArtifact }`；共享文件内 `ConversationTurn` 是私有渲染辅助，不是公共导出。
+它按 `ConversationScene.turns` 以 40px 消息块间距渲染用户消息、身份开场、可选浅层 execution、assistant 正文/产物及多个 `productBlocks`；正文统一为 15px/24px。运行中的 execution 默认展开，其余默认收起；只有 action 带 `target` 时才是调用 `openArtifact` 的按钮。`renderProductBlock` 收到 `{ turnId, isLatestTurn, openArtifact, onAction }`；共享文件内 `ConversationTurn` 是私有渲染辅助，不是公共导出。
+
+### Shared：跨形态 ConversationSurface
+
+事实源：[`packages/agent-ui/src/conversation/conversation-surface.tsx`](../../../../../packages/agent-ui/src/conversation/conversation-surface.tsx)。`ConversationSurface` 不解释 scene，也不拥有 Panel/Canvas；它只统一滚动视口、内容与 Footer 最大宽度、定位到底部按钮、切换 `scrollKey` 后定位最新消息，以及“以上内容由AI生成”。它由跨形态 `ConversationSection` 统一装配，避免 Agent 与 Copilot 维护两套滚动与 Footer 容器。
 
 ### Immersive：完整工作台对话流
 
@@ -50,7 +58,7 @@ meta:
 
 共享执行只表达浅层状态与步骤，完成过程默认收起、运行中默认展开。沉浸式按结论优先展示：身份到过程间距 8px、过程到正文 20px；L1/L2/L3 只用于必要的长链路，简单任务保持 L1→L3。沉浸式用户消息为悬停操作栏预留空间且仅切换透明度，避免布局跳动；其隐藏 disclosure 内容保持挂载但通过 `aria-hidden` 与 `inert` 排除焦点。
 
-两种实现中，附件和动作仅在有用户可查看的 target 与 router 时可点击。沉浸式 `AssistantMessage` 处理 Markdown、澄清和消息动作；不要复制第二套回答结构。
+两种 Flow 的 scene 与富能力不同，但布局表面统一由 shared `ConversationSurface` 提供；不要把“共享表面”误写成“共享 rich Flow”。附件和动作仅在有用户可查看的 target 与 router 时可点击。沉浸式 `AssistantMessage` 处理 Markdown、澄清和消息动作；不要复制第二套回答结构。
 
 ## 组合边界
 

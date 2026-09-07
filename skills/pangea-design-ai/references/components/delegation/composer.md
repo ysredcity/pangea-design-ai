@@ -30,10 +30,16 @@ meta:
 事实源：[`packages/agent-ui/src/conversation/composer.tsx`](../../../../../packages/agent-ui/src/conversation/composer.tsx)。它只导出 `Composer`，props 为：
 
 ```ts
-{ onSend: (value: string) => void; placeholder?: string }
+{
+  onSend: (value: string) => void
+  placeholder?: string
+  value?: string
+  defaultValue?: string
+  onValueChange?: (value: string) => void
+}
 ```
 
-`placeholder` 默认是“输入你的问题…”。组件在本地维护 textarea 值，点击发送或未按 Shift 的 Enter 会 trim 后调用 `onSend(value)`，空白不发送并在发送后清空；Shift+Enter 保留换行。它没有受控草稿、附件、上下文标签、连接器、专家、录音或 `/`、`@` 菜单 API。
+`placeholder` 默认是“输入你的问题…”。组件支持受控和非受控 textarea：点击发送或未按 Shift 的 Enter 会 trim 后调用 `onSend(value)`，空白不发送并在发送后清空；Shift+Enter 保留换行。Copilot 用 `value + onValueChange` 把草稿提升到壳层，切换 sidebar/floating/collapsed 呈现容器时不丢失输入。输入容器使用共享 24px 圆角与 15px/24px 正文排版。它没有附件、上下文标签、连接器、专家、录音或 `/`、`@` 菜单 API。
 
 ### Immersive：富委托输入
 
@@ -47,7 +53,7 @@ Shared 输入用带 `aria-label` 的 textarea 与发送按钮，键盘提交保�
 
 ## 组合边界
 
-shared `Composer` 只能组合 shared `ConversationFlow` 的文本发送入口。不可把 `ContextItem[]`、`draft`、`selectedExpert` 或 `menuSide` 传给它。Immersive `Composer` 属于沉浸式壳层的数据与视觉体系，不能以 shared props 直接替换，也不得向 shared conversation 域泄漏其 adapter target。
+shared `Composer` 只提供轻量文本委托；`value/defaultValue/onValueChange` 仅用于文本草稿控制，不代表支持 rich `ContextItem[]`、`selectedExpert` 或 `menuSide`。Immersive `Composer` 属于沉浸式壳层的数据与视觉体系，不能以 shared props 直接替换，也不得向 shared conversation 域泄漏其 adapter target。两者可作为子节点放入同一个 shared `ConversationSurface`，但仍保留各自输入契约。
 
 ## 扩展方式
 
