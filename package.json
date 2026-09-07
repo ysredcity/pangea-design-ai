@@ -3,7 +3,10 @@
   "private": true,
   "version": "0.2.0",
   "type": "module",
-  "workspaces": ["packages/*", "skills/pangea-design-ai/templates/*", "website"],
+  "workspaces": [
+    "packages/*",
+    "skills/pangea-design-ai/templates/*"
+  ],
   "scripts": {
     "sync:agent-ui": "node scripts/sync-agent-ui.mjs",
     "check:agent-ui-drift": "node scripts/sync-agent-ui.mjs --check",
@@ -11,7 +14,6 @@
     "check:component-docs": "node skills/pangea-design-ai/scripts/check-component-docs.mjs",
     "gate:immersive": "npm run gate --workspace=immersive-starter",
     "gate:copilot": "npm run gate --workspace=copilot-starter",
-    "gate:website": "npm run gate --workspace=agent-ux-website",
-    "gate": "npm run check:agent-ui-types && npm run check:agent-ui-drift && npm run check:component-docs && npm run gate:immersive && npm run gate:copilot && npm run gate:website"
+    "gate": "npm run check:agent-ui-types && npm run check:agent-ui-drift && npm run check:component-docs && npm run gate:immersive && npm run gate:copilot"
   }
 }
