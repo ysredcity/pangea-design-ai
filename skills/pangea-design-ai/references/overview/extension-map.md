@@ -23,7 +23,9 @@ user-invocable: false
 | 新沉浸式面板容器类型 | `panel-types.ts`、`panel-containers.tsx`、`panel-registry.ts` | 仅改 `panel-data.ts` 后假定 renderer 自动存在 |
 | 沉浸式产物展示 | `templates/immersive-starter/src/components/agent-layout/{agent-shell,panel-*,image-viewer}.tsx` | 共享对话域中的容器分支 |
 | Copilot 产物展示与产品块 action 回写 | `skills/pangea-design-ai/templates/copilot-starter/src/pages/ContractReview.tsx` 的 `artifact` state、`routeArtifact={setArtifact}` 与 `onProductBlockAction`；传给 `packages/agent-ui/src/copilot/copilot-app.tsx` 的 `workspace` | 沉浸式 `ArtifactPanel`、右侧产物 Tab；把 action 结果写入 shared panel/canvas |
-| Copilot 辅助区三态 | `packages/agent-ui/src/copilot/copilot-app.tsx` 与 `CopilotConfig.assistantView/defaultAssistantView/onAssistantViewChange`；顶部重开入口用 `renderTopNavigationAssistantTrigger` | 业务页面复制壳层；继续新增旧 `assistantMode`；同时显示顶部和右下入口；在 Copilot 引入沉浸式 panel |
+| Copilot 辅助区三态与收起入口 | `packages/agent-ui/src/copilot/copilot-app.tsx` 与 `CopilotConfig.assistantView/defaultAssistantView/onAssistantViewChange/collapsedMode`；顶部重开入口用 `renderTopNavigationAssistantTrigger`；Composer 收起入口复用 rich `Composer` | 业务页面复制壳层；继续新增旧 `assistantMode`；同时显示多个收起入口；在 Copilot 引入沉浸式 panel |
+| Copilot 左侧工作区导航 | `packages/agent-ui/src/copilot/copilot-navigation.tsx` 与 `CopilotConfig.navigation`；对话维度复用 `ConversationHistoryList`，内容维度使用 `CopilotContentItem` | 在页面中复制第二套对话列表；把内容列表硬编码进 `copilot-app.tsx`；把导航切换做成右侧 Copilot 的模式菜单 |
+| Copilot 中央内容区 Header | `packages/agent-ui/src/copilot/copilot-workspace-header.tsx`、`packages/agent-ui/src/immersive/agent-layout/pill-button.tsx` 与 `CopilotConfig.workspace`；页面只提供面包屑和分享/置顶/导出回调 | 在业务页面复制 Header、面包屑或更多菜单；把内容区操作放进右侧对话 Header；另造非 PillButton 的 Header 操作 |
 | 产品身份、导航、欢迎专家/推荐 | `skills/pangea-design-ai/templates/immersive-starter/src/components/agent-layout/app-config.ts` 的 `AppConfig` | 用 AppConfig 代替业务场景、面板容器或产品块扩展 |
 
 ## 必守边界
@@ -31,6 +33,6 @@ user-invocable: false
 - **shared rich section**：`ConversationSection` 是 Agent/Copilot 的默认完整对话区，直接复用 rich Flow/Composer 与 `ConversationSurface`；两形态只适配 artifact 路由和壳层 Header。
 - **shared lightweight compatibility**：`conversation/` 下的轻量 Flow/Composer 只兼容既有独立消费方，不得再作为 Copilot 默认实现。
 - **immersive shell**：`ConversationPage` 只保留标题/导航等 Header 和会话 adapter；Panel/ImageViewer 生命周期仍在 AgentShell，不进入共享 section。
-- **Copilot shell**：只使用 `sidebar | floating | collapsed` 三态；sidebar 在桌面始终贴边停靠，Header 固定五项操作；`routeArtifact(target)` 只更新主画布。
+- **Copilot shell**：只使用 `sidebar | floating | collapsed` 三态；`collapsed` 通过 `collapsedMode` 互斥选择顶部导航、浮动按钮或 Composer；sidebar 在桌面始终贴边停靠；`routeArtifact(target)` 只更新主画布。
 
 产物是否可点击只由是否存在用户可查看的 `ArtifactTarget` 决定。沉浸式将其适配为 Tab/图片蒙层；Copilot 映射到左侧画布。三者共享语义，不共享容器。

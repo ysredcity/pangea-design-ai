@@ -68,6 +68,8 @@ const connectorOptions = [
 
 type ComposerProps = {
   disabled?: boolean
+  /** 产品明确需要调用外部连接器时才显示；默认隐藏。 */
+  showConnectorSelect?: boolean
   onSend?: (message: string, context: ContextItem[]) => void
   draft?: string
   onDraftChange?: (value: string) => void
@@ -77,7 +79,7 @@ type ComposerProps = {
   menuSide?: MenuSide
 }
 
-export function Composer({ disabled = false, onSend, draft, onDraftChange, selectedExpert, onSelectedExpertChange, menuSide = "above" }: ComposerProps) {
+export function Composer({ disabled = false, showConnectorSelect = false, onSend, draft, onDraftChange, selectedExpert, onSelectedExpertChange, menuSide = "above" }: ComposerProps) {
   const [uploads, setUploads] = useState<UploadItem[]>([])
   const [uncontrolledExpert, setUncontrolledExpert] = useState<string | null>(null)
   const [recording, setRecording] = useState(false)
@@ -96,7 +98,7 @@ export function Composer({ disabled = false, onSend, draft, onDraftChange, selec
   // 受控草稿（新对话页的推荐指令）直接参与判断，这样外部写入草稿时不必在 effect 里再 setState
   const hasText = hasContent || Boolean(draft?.trim())
   const interactionsDisabled = disabled || recording
-  const canSend = !disabled && (hasText || uploads.length > 0 || experts.length > 0 || enabledConnectors.size > 0)
+  const canSend = !disabled && (hasText || uploads.length > 0 || experts.length > 0 || (showConnectorSelect && enabledConnectors.size > 0))
 
   /**
    * 读取可编辑区，同时产出两种文本：
@@ -251,7 +253,7 @@ export function Composer({ disabled = false, onSend, draft, onDraftChange, selec
     if (disabled || !canSend) return
     const { markup, tags } = readEditor()
     const uploadContext: ContextItem[] = uploads.map((file) => ({ id: file.id, label: file.name, type: "upload", size: file.size, target: createLocalFilePreview(file.name, file.size) }))
-    const connectorContext: ContextItem[] = Array.from(enabledConnectors).map((label) => ({ id: `连接器-${label}`, label, type: "连接器" }))
+    const connectorContext: ContextItem[] = showConnectorSelect ? Array.from(enabledConnectors).map((label) => ({ id: `连接器-${label}`, label, type: "连接器" })) : []
     onSend?.(markup.trim(), [...uploadContext, ...tags, ...experts, ...connectorContext])
     if (editorRef.current) editorRef.current.textContent = ""
     savedRangeRef.current = null
@@ -320,7 +322,7 @@ export function Composer({ disabled = false, onSend, draft, onDraftChange, selec
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <AddContextMenu disabled={interactionsDisabled} onLocalUpload={() => fileInputRef.current?.click()} onSelect={addContext} />
           <div className="flex min-w-0 items-center gap-2 overflow-x-auto px-1">
-            <ConnectorMenu disabled={interactionsDisabled} enabled={enabledConnectors} onEnabledChange={setEnabledConnectors} />
+            {showConnectorSelect ? <ConnectorMenu disabled={interactionsDisabled} enabled={enabledConnectors} onEnabledChange={setEnabledConnectors} /> : null}
             {experts.map((expert) => (
               <span key={expert.id} className="flex h-9 shrink-0 items-center gap-1 rounded-full bg-primary-bg px-2 text-sm font-medium text-primary">
                 <ExpertAvatar expert={expert.label} className="size-5 [&_svg]:size-3" /><span className="px-0.5">{expert.label}</span>

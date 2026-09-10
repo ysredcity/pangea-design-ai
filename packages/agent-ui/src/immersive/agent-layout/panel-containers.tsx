@@ -16,12 +16,13 @@ function ToolbarRow({ children, className }: { children: ReactNode; className?: 
 }
 
 /** 容器操作栏右侧的操作组，末尾统一带「更多操作」 */
-function ToolbarActions({ children }: { children?: ReactNode }) {
-  return <div className="flex shrink-0 items-center gap-1">{children}<IconButton aria-label="更多操作"><MoreHorizontal /></IconButton></div>
+function ToolbarActions({ children, actions }: { children?: ReactNode; actions?: ReactNode }) {
+  return <div className="flex shrink-0 items-center gap-1">{children}<IconButton aria-label="更多操作"><MoreHorizontal /></IconButton>{actions}</div>
 }
 
-export function SearchResultsToolbar({ view }: { view: Extract<PanelView, { type: "search-results" }> }) {
-  return <div className="shrink-0 border-b px-5 py-3"><p className="text-sm text-muted-foreground">找到 {view.results.length} 条相关结果</p></div>
+export function SearchResultsToolbar({ view, actions }: { view: Extract<PanelView, { type: "search-results" }>; actions?: ReactNode }) {
+  if (!actions) return <div className="shrink-0 border-b px-5 py-3"><p className="text-sm text-muted-foreground">找到 {view.results.length} 条相关结果</p></div>
+  return <ToolbarRow><p className="min-w-0 flex-1 truncate text-sm text-muted-foreground">找到 {view.results.length} 条相关结果</p><ToolbarActions actions={actions} /></ToolbarRow>
 }
 
 export function SearchResultsBody({ onNavigate, view }: { onNavigate: (view: PanelView) => void; view: Extract<PanelView, { type: "search-results" }> }) {
@@ -37,11 +38,11 @@ function SearchResultItem({ onClick, result }: { onClick: () => void; result: Se
   </button>
 }
 
-export function BrowserToolbar({ view }: { view: Extract<PanelView, { type: "browser" }> }) {
+export function BrowserToolbar({ view, actions }: { view: Extract<PanelView, { type: "browser" }>; actions?: ReactNode }) {
   return <ToolbarRow>
     <IconButton aria-label="返回" disabled><ArrowLeft /></IconButton>
     <div className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-lg bg-secondary px-3 text-xs text-muted-foreground"><Globe2 className="size-3.5 shrink-0" /><span className="truncate">{view.url}</span></div>
-    <ToolbarActions><IconButton aria-label="在新窗口打开"><ExternalLink /></IconButton></ToolbarActions>
+    <ToolbarActions actions={actions}><IconButton aria-label="在新窗口打开"><ExternalLink /></IconButton></ToolbarActions>
   </ToolbarRow>
 }
 
@@ -54,12 +55,12 @@ export function BrowserBody({ view }: { view: Extract<PanelView, { type: "browse
   </article></div>
 }
 
-export function FilePreviewToolbar({ view }: { view: Extract<PanelView, { type: "file-preview" }> }) {
+export function FilePreviewToolbar({ view, actions }: { view: Extract<PanelView, { type: "file-preview" }>; actions?: ReactNode }) {
   return <ToolbarRow className="bg-background px-4">
     <FileText className="size-4 shrink-0 text-muted-foreground" />
     <span className="min-w-0 flex-1 truncate text-sm">{view.fileName}</span>
     <span className="shrink-0 text-xs text-ring">{view.fileType ?? "文档"}</span>
-    <ToolbarActions><IconButton aria-label="下载"><Download /></IconButton><IconButton aria-label="在新窗口打开"><ExternalLink /></IconButton></ToolbarActions>
+    <ToolbarActions actions={actions}><IconButton aria-label="下载"><Download /></IconButton><IconButton aria-label="在新窗口打开"><ExternalLink /></IconButton></ToolbarActions>
   </ToolbarRow>
 }
 

@@ -13,11 +13,12 @@ type NewConversationPageProps = {
   isSidebarDocked: boolean
   onOpenSidebar: () => void
   onStartConversation: (message: string, context: ContextItem[]) => void
+  compact?: boolean
 }
 
 type SuggestionItem = { expert: WelcomeExpert; prompt: string }
 
-export function NewConversationPage({ config, isSidebarDocked, onOpenSidebar, onStartConversation }: NewConversationPageProps) {
+export function NewConversationPage({ config, isSidebarDocked, onOpenSidebar, onStartConversation, compact = false }: NewConversationPageProps) {
   const [selectedExpert, setSelectedExpert] = useState<string | null>(null)
   const [recommendationMode, setRecommendationMode] = useState<"initial" | "expert" | "hidden">("initial")
   const [draft, setDraft] = useState("")
@@ -67,9 +68,9 @@ export function NewConversationPage({ config, isSidebarDocked, onOpenSidebar, on
           </Tooltip>
         )}
       </header>
-      <div className="flex min-h-0 flex-1 flex-col items-center overflow-hidden px-4">
-        <div className="flex w-full max-w-3xl flex-1 flex-col items-center justify-center py-3">
-          <div className="w-full translate-y-[-4%]">
+      <div className={compact ? "flex min-h-0 flex-none flex-col items-center overflow-hidden px-4" : "flex min-h-0 flex-1 flex-col items-center overflow-hidden px-4"}>
+        <div className={compact ? "flex w-full max-w-3xl flex-none flex-col items-center pb-6 pt-24" : "flex w-full max-w-3xl flex-1 flex-col items-center justify-center py-3"}>
+          <div className={compact ? "w-full" : "w-full translate-y-[-4%]"}>
             <h1 className="text-center text-2xl font-medium leading-9 tracking-[-0.48px] md:text-3xl md:tracking-[-0.6px]">{config.welcome.greeting}</h1>
             <div className="mt-4"><Composer onSend={onStartConversation} draft={draft} onDraftChange={setDraft} selectedExpert={selectedExpert} onSelectedExpertChange={handleExpertChange} menuSide="below" /></div>
             {recommendationMode === "initial" && (

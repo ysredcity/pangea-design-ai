@@ -1,2 +1,5 @@
 export * from './copilot-app'
 export * from './copilot-config'
+export * from './copilot-home-page'
+export * from './copilot-navigation'
+export * from './copilot-workspace-header'

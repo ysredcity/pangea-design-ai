@@ -1,4 +1,4 @@
-import { useRef, useState, type ComponentType } from "react"
+import { useRef, useState, type ComponentType, type ReactNode } from "react"
 import {
   ChevronRight,
   IndentDecrease,
@@ -100,6 +100,36 @@ type AgentSidebarProps = {
   readConversationIds: Set<string>
 }
 
+export type ConversationHistoryListProps = {
+  activeConversationId?: string | null
+  conversations: Conversation[]
+  onPinnedChange?: (conversation: Conversation, pinned: boolean) => void
+  onRename?: (conversation: Conversation) => void
+  onSelectConversation: (conversation: Conversation) => void
+  pinnedConversations: Conversation[]
+  readConversationIds?: Set<string>
+  drawer?: boolean
+}
+
+/** Shared collapsible group header used by conversation and Copilot content lists. */
+export function CollapsibleGroupHeader({ label, open, onOpenChange, action }: { label: string; open: boolean; onOpenChange: (open: boolean) => void; action?: ReactNode }) {
+  return (
+    <div className="flex min-w-0 items-center">
+      <SidebarGroupLabel
+        render={<button type="button" />}
+        className="group/label min-w-0 flex-1 cursor-pointer rounded-[10px] px-2 text-sm font-normal text-sidebar-foreground hover:bg-sidebar-accent"
+        onClick={() => onOpenChange(!open)}
+      >
+        <span className="truncate">{label}</span>
+        <span className="grid size-4 shrink-0 place-items-center opacity-0 transition-opacity group-hover/label:opacity-100 group-focus-visible/label:opacity-100">
+          <ChevronRight className={cn("size-3.5 transition-transform", open && "rotate-90")} />
+        </span>
+      </SidebarGroupLabel>
+      {action}
+    </div>
+  )
+}
+
 export function AgentSidebar({
   config,
   activeConversationId,
@@ -177,36 +207,20 @@ export function AgentSidebar({
           </SidebarMenu>
         </SidebarGroup>
 
-        {pinnedConversations.length > 0 && (
-          <ConversationGroup
-            drawer={drawer}
-            label="已置顶"
-            open={pinnedOpen}
-            onOpenChange={setPinnedOpen}
-            conversations={pinnedConversations}
-            onPinnedChange={onPinnedChange}
-            onRename={onRename}
-            onSelectConversation={onSelectConversation}
-            activeConversationId={activeConversationId}
-            readConversationIds={readConversationIds}
-            pinned
-          />
-        )}
-
-        {conversations.length > 0 && (
-          <ConversationGroup
-            drawer={drawer}
-            label="对话"
-            open={conversationsOpen}
-            onOpenChange={setConversationsOpen}
-            conversations={conversations}
-            onPinnedChange={onPinnedChange}
-            onRename={onRename}
-            onSelectConversation={onSelectConversation}
-            activeConversationId={activeConversationId}
-            readConversationIds={readConversationIds}
-          />
-        )}
+        <ConversationHistoryList
+          activeConversationId={activeConversationId}
+          conversations={conversations}
+          onPinnedChange={onPinnedChange}
+          onRename={onRename}
+          onSelectConversation={onSelectConversation}
+          pinnedConversations={pinnedConversations}
+          readConversationIds={readConversationIds}
+          drawer={drawer}
+          pinnedOpen={pinnedOpen}
+          onPinnedOpenChange={setPinnedOpen}
+          conversationsOpen={conversationsOpen}
+          onConversationsOpenChange={setConversationsOpen}
+        />
       </SidebarContent>
 
       <SidebarFooter className={cn("flex-row justify-end p-3", drawer && "p-4")}>
@@ -232,6 +246,45 @@ export function AgentSidebar({
       </SidebarFooter>
 
     </ShadcnSidebar>
+  )
+}
+
+/** 与 Agent 左侧导航共用的历史对话分组列表。 */
+export function ConversationHistoryList({
+  activeConversationId = null,
+  conversations,
+  onPinnedChange = () => undefined,
+  onRename = () => undefined,
+  onSelectConversation,
+  pinnedConversations,
+  readConversationIds = new Set(),
+  drawer = false,
+  pinnedOpen: controlledPinnedOpen,
+  onPinnedOpenChange,
+  conversationsOpen: controlledConversationsOpen,
+  onConversationsOpenChange,
+}: ConversationHistoryListProps & {
+  pinnedOpen?: boolean
+  onPinnedOpenChange?: (open: boolean) => void
+  conversationsOpen?: boolean
+  onConversationsOpenChange?: (open: boolean) => void
+}) {
+  const [uncontrolledPinnedOpen, setUncontrolledPinnedOpen] = useState(true)
+  const [uncontrolledConversationsOpen, setUncontrolledConversationsOpen] = useState(true)
+  const pinnedOpen = controlledPinnedOpen ?? uncontrolledPinnedOpen
+  const conversationsOpen = controlledConversationsOpen ?? uncontrolledConversationsOpen
+  const setPinnedOpen = onPinnedOpenChange ?? setUncontrolledPinnedOpen
+  const setConversationsOpen = onConversationsOpenChange ?? setUncontrolledConversationsOpen
+
+  return (
+    <div className="flex min-h-0 w-full flex-col">
+      {pinnedConversations.length > 0 && (
+        <ConversationGroup drawer={drawer} label="已置顶" open={pinnedOpen} onOpenChange={setPinnedOpen} conversations={pinnedConversations} onPinnedChange={onPinnedChange} onRename={onRename} onSelectConversation={onSelectConversation} activeConversationId={activeConversationId} readConversationIds={readConversationIds} pinned />
+      )}
+      {conversations.length > 0 && (
+        <ConversationGroup drawer={drawer} label="对话" open={conversationsOpen} onOpenChange={setConversationsOpen} conversations={conversations} onPinnedChange={onPinnedChange} onRename={onRename} onSelectConversation={onSelectConversation} activeConversationId={activeConversationId} readConversationIds={readConversationIds} />
+      )}
+    </div>
   )
 }
 
@@ -293,16 +346,7 @@ function ConversationGroup({
 }) {
   return (
     <SidebarGroup className={cn("group/conversation-group gap-0.5 p-2", drawer && "p-3")}>
-      <SidebarGroupLabel
-        render={<button type="button" />}
-        className="group/label h-8 cursor-pointer rounded-[10px] px-2 text-sm font-normal text-sidebar-foreground hover:bg-sidebar-accent"
-        onClick={() => onOpenChange(!open)}
-      >
-        <span>{label}</span>
-        <span className="grid size-4 place-items-center opacity-0 transition-opacity group-hover/label:opacity-100 group-focus-visible/label:opacity-100">
-          <ChevronRight className={cn("size-3.5 transition-transform", open && "rotate-90")} />
-        </span>
-      </SidebarGroupLabel>
+      <CollapsibleGroupHeader label={label} open={open} onOpenChange={onOpenChange} />
       {open && (
         <SidebarGroupContent>
           <SidebarMenu>

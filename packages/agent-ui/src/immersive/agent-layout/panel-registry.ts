@@ -1,4 +1,4 @@
-import type { ComponentType } from "react"
+import type { ComponentType, ReactNode } from "react"
 import { FileText, Globe2, Search } from "lucide-react"
 
 import { BrowserBody, BrowserToolbar, FilePreviewBody, FilePreviewToolbar, SearchResultsBody, SearchResultsToolbar } from "./panel-containers"
@@ -14,8 +14,8 @@ import type { PanelView } from "./panel-types"
 export type PanelContainer<V extends PanelView = PanelView> = {
   /** Tab 使用的类型图标 */
   icon: typeof Search
-  /** 容器自己的操作栏：放类型相关操作，不放到顶部 Tab 行 */
-  Toolbar?: ComponentType<{ view: V }>
+  /** 容器自己的操作栏：放类型相关操作；Copilot 模态容器可追加全局操作 */
+  Toolbar?: ComponentType<{ view: V; actions?: ReactNode }>
   Body: ComponentType<{ view: V; onNavigate: (view: PanelView) => void }>
 }
 

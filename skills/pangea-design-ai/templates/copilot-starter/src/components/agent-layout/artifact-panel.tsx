@@ -20,15 +20,17 @@ type ArtifactPanelProps = {
   onNavigate: (view: PanelView) => void
   /** 未提供时不显示全屏切换入口（窄屏强制全屏） */
   onToggleFullscreen?: () => void
+  hideTabs?: boolean
 }
 
-export function ArtifactPanel({ activeTabId, fullscreen, onClose, onCloseTab, onNavigate, onSelectTab, onToggleFullscreen, tabs }: ArtifactPanelProps) {
+export function ArtifactPanel({ activeTabId, fullscreen, hideTabs = false, onClose, onCloseTab, onNavigate, onSelectTab, onToggleFullscreen, tabs }: ArtifactPanelProps) {
   const view = tabs.find((tab) => tab.id === activeTabId) ?? tabs[0]
   if (!view) return null
   const { Body, Toolbar } = panelContainers[view.type] as PanelContainer
-  return <aside aria-label="独立面板" className="flex h-full min-w-80 flex-1 flex-col border-l bg-background">
-    <PanelHeader activeTabId={view.id} fullscreen={fullscreen} onClose={onClose} onCloseTab={onCloseTab} onSelectTab={onSelectTab} onToggleFullscreen={onToggleFullscreen} tabs={tabs} />
-    {Toolbar && <Toolbar view={view} />}
+  const globalActions = <><PanelHeaderAction label={fullscreen ? "退出全屏" : "全屏"} onClick={onToggleFullscreen}>{fullscreen ? <Minimize2 /> : <MoveDiagonal />}</PanelHeaderAction><PanelHeaderAction label="关闭" onClick={onClose}><X /></PanelHeaderAction></>
+  return <aside aria-label="独立面板" className="flex h-full min-w-80 flex-1 flex-col bg-background">
+    {!hideTabs && <PanelHeader activeTabId={view.id} fullscreen={fullscreen} onClose={onClose} onCloseTab={onCloseTab} onSelectTab={onSelectTab} onToggleFullscreen={onToggleFullscreen} tabs={tabs} />}
+    {Toolbar && <Toolbar view={view} actions={hideTabs ? globalActions : undefined} />}
     <Body view={view} onNavigate={onNavigate} />
   </aside>
 }

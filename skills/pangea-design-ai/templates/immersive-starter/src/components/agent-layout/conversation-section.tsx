@@ -10,6 +10,7 @@ type ConversationSectionProps = {
   approvalStatus?: "pending" | "approved" | "rejected"
   experts: readonly WelcomeExpert[]
   identity: ProductIdentity
+  initialDraft?: string
   onApprovalDecision?: (status: "approved" | "rejected") => void
   onOpenArtifact: (target: ArtifactTarget) => void
   onProductBlockAction?: (action: ProductBlockAction) => void
@@ -25,13 +26,14 @@ export function ConversationSection({
   approvalStatus,
   experts,
   identity,
+  initialDraft = "",
   onApprovalDecision,
   onOpenArtifact,
   onProductBlockAction,
   renderProductBlock,
   scene,
 }: ConversationSectionProps) {
-  const [composerDraft, setComposerDraft] = useState("")
+  const [composerDraft, setComposerDraft] = useState(initialDraft)
   const [sentMessages, setSentMessages] = useState<{ content: string; timestamp: string; attachments: MessageAttachment[] }[]>([])
   const awaitingApproval = approvalStatus === "pending"
 

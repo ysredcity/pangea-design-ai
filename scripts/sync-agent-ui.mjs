@@ -19,6 +19,29 @@ function rewriteForTemplate(sourceFile, content) {
       .replaceAll("../immersive/ui/", "@/components/ui/")
       .replaceAll("../immersive/contracts", "@/agent-ui/immersive/contracts")
   }
+  if (packagePath === 'copilot/copilot-new-conversation.tsx') {
+    return content
+      .replaceAll("../immersive/agent-layout/", "@/components/agent-layout/")
+      .replaceAll("../immersive/ui/", "@/components/ui/")
+  }
+  if (packagePath === 'copilot/copilot-home-page.tsx') {
+    return content
+      .replaceAll("../immersive/agent-layout/", "@/components/agent-layout/")
+      .replaceAll("../immersive/contracts", "@/agent-ui/immersive/contracts")
+      .replaceAll("../immersive/lib/", "@/lib/")
+  }
+  if (packagePath === 'copilot/copilot-navigation.tsx') {
+    return content
+      .replaceAll("../immersive/agent-layout/", "@/components/agent-layout/")
+      .replaceAll("../immersive/ui/", "@/components/ui/")
+      .replaceAll("../immersive/lib/", "@/lib/")
+  }
+  if (packagePath === 'copilot/copilot-workspace-header.tsx') {
+    return content
+      .replaceAll("../immersive/agent-layout/", "@/components/agent-layout/")
+      .replaceAll("../immersive/ui/", "@/components/ui/")
+      .replaceAll("../immersive/lib/", "@/lib/")
+  }
   if (!packagePath.startsWith('immersive/')) {
     if (packagePath === 'conversation/confirm-card.tsx') return content.replace("import { Button } from '../ui/button'", "import { Button } from '@/components/ui/button'")
     return content
