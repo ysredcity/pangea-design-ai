@@ -223,7 +223,7 @@ export function CopilotApp({ config, scene, resourcePanel, navigationPanel, work
         config={{ ...config.navigation, globalItems: config.navigation.globalItems?.map((item) => ({ ...item, onClick: () => { if (item.id === 'home') { closeArtifact(); setCentralConversation(null); setActiveContentId('home'); setView('collapsed') } item.onClick?.() } })) }}
         activeContentId={activeContentId}
         activeConversationId={centralConversation?.id}
-        onContentSelect={(item) => { closeArtifact(); setCentralConversation(null); setActiveContentId(item.id); onContentSelect?.(item); if (item.target) routeArtifact(item.target) }}
+        onContentSelect={(item) => { closeArtifact(); setCentralConversation(null); setActiveContentId(item.id); setView('collapsed'); onContentSelect?.(item); if (item.target) routeArtifact(item.target) }}
         onCollapse={() => setResourceOpen(false)}
         conversations={historyConversations}
         pinnedConversations={historyPinned}
@@ -289,7 +289,7 @@ export function CopilotApp({ config, scene, resourcePanel, navigationPanel, work
           </div>
         ) : null}
         {view === 'collapsed' && !centralConversation && !homeOpen && collapsedMode === 'floating-button' ? (
-          <button type="button" aria-label="展开 AI 对话辅助区" title="展开 AI 对话辅助区" onClick={() => setView('sidebar')} className="fixed bottom-8 right-8 z-20 flex size-11 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-xl hover:bg-accent">
+          <button type="button" aria-label="展开 AI 对话辅助区" title="展开 AI 对话辅助区" onClick={() => setView('sidebar')} className="fixed bottom-8 right-8 z-20 flex size-11 items-center justify-center rounded-full border border-foreground bg-foreground text-background shadow-xl hover:bg-foreground/90">
             <Sparkles className="size-5" />
           </button>
         ) : null}
