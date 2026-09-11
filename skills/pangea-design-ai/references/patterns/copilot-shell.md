@@ -12,8 +12,8 @@ meta:
   keyStructure: [左侧资源或项目区, 中间主工作区, AI对话辅助区]
   variants: [侧边栏, 浮动窗口, 收起到顶部导航, 收起到浮动按钮, 收起到 Composer]
   composeWith: [agent-ui/conversation-surface, agent-ui/conversation-flow, agent-ui/composer, agent-ui/confirm-card]
-  composeBoundary: [AI是配角不能压缩主工作区到不可用, 产物只更新主画布不引入沉浸式Panel]
-  pitfalls: [不要复制第二套对话容器, 不要同时显示顶部与右下两个重开入口, 不要在移动端隐藏AI入口]
+  composeBoundary: [AI是配角不能压缩主工作区到不可用, 导航内容更新主画布, 对话产物使用专注模态或图片查看器]
+  pitfalls: [不要复制第二套对话容器, 不要同时显示顶部与右下两个重开入口, 不要把形态容器状态放进共享conversation域, 不要在移动端隐藏AI入口]
   previewRoute: /
   source: packages/agent-ui/src/copilot/copilot-app.tsx
   tags: [布局, 助手式, 侧边栏, 浮窗, 收起]
@@ -49,7 +49,7 @@ Copilot 左侧导航可同时承载全局页面入口与两类工作数据：报
 />
 ```
 
-Header 的纯图标按钮必须提供 `aria-label` 与 Tooltip；统一使用 `PillButton`（基于 shadcn `Button` 的 `ghost + sm`，28px 紧凑胶囊按钮）。移动端触控目标再按无障碍规范扩展至至少 44px。工作区正文自行负责报表、文档或画布的 GUI 交互，产物路由只更新正文，不引入沉浸式右侧产物面板。
+Header 的纯图标按钮必须提供 `aria-label` 与 Tooltip；统一使用 `PillButton`（基于 shadcn `Button` 的 `ghost + sm`，28px 紧凑胶囊按钮）。移动端触控目标再按无障碍规范扩展至至少 44px。工作区正文自行负责报表、文档或画布的 GUI 交互；导航内容项可通过 `routeArtifact(target)` 更新正文，对话流中的文件、网页、搜索结果和图片则使用 Copilot 壳层的专注模态或图片查看器，不占用第二个并排面板。
 
 ## 结构与三态
 
@@ -91,7 +91,7 @@ type CopilotConfig = {
 ```
 
 - `assistantView` 存在时为受控模式；否则由 `defaultAssistantView` 初始化内部状态。
-- Header 的新对话、历史、分享、设置分别调用同名配置回调；壳层不伪造业务数据。
+- Header 的新对话、历史分别调用同名配置回调；模式切换和关闭更新助手区状态。`onShare`/`onOpenSettings` 仅保留旧配置的类型兼容，不再对应右侧对话 Header 入口；分享、置顶和导出由中央 `workspace` 配置承载。
 - `collapsedMode` 决定收起后的唯一入口：`top-navigation` 优先调用 `renderTopNavigationAssistantTrigger`（未提供时使用内置顶部按钮）；`floating-button` 显示右下浮动按钮；`composer` 在主工作区底部复用 rich `Composer`，发送后打开对话并保留草稿。
 - `collapsedMode` 应在产品配置入口固定一次；同一产品的所有页面使用同一值，不能暴露为用户运行时的模式切换项。
 - 旧 `assistantMode: panel | floating | overlay-drawer | side-drawer` 仅用于 v0.2.0 生成工程兼容：`floating → floating`，其余 → `sidebar`。新工程不得继续写旧值。
@@ -106,7 +106,7 @@ Copilot 和沉浸式共同消费 `packages/agent-ui/src/immersive/agent-layout/c
 - 可滚动内容视口、定位到底部、Footer 与“以上内容由AI生成”；
 - 草稿与当前 section 内补发的用户消息。
 
-两种形态只保留壳层 adapter：沉浸式把 artifact 路由到 Panel/ImageViewer，Copilot 把同一 target 更新到主画布。不得在 Copilot 新建轻量 Flow/Composer，也不得把完整 `AgentShell` 或 Panel Tab 搬入 Copilot。
+两种形态只保留壳层 adapter：沉浸式把 artifact 路由到并排 Panel/ImageViewer；Copilot 将导航内容交给宿主工作区，并把对话产物适配到无 Tab 模态 `ArtifactPanel` 或 `ImageViewer`。不得在 Copilot 新建轻量 Flow/Composer，也不得把完整 `AgentShell` 或 Panel Tab 搬入 Copilot。
 
 ## 响应式降级
 
@@ -117,8 +117,8 @@ Copilot 和沉浸式共同消费 `packages/agent-ui/src/immersive/agent-layout/c
 
 ## 产物边界
 
-`routeArtifact(target)` 与产品块 action 只更新中间主画布。Copilot 不使用沉浸式右侧产物 Panel；共享 conversation 域也不包含 Canvas、Panel 或 Tab 字段。
+共享 conversation 域只输出中立 `ArtifactTarget`，不包含 Canvas、Panel 或 Tab 字段。Copilot 壳层按来源适配：带 target 的导航内容项调用宿主 `routeArtifact(target)` 更新中央工作区；对话附件与产品块产物使用无 Tab 模态 `ArtifactPanel`，图片使用 `ImageViewer`。专注容器可以复用沉浸式的展示组件，但不能引入右侧并排 Tab 生命周期。
 
 ## 与脚手架对应
 
-实际入口是物化后的 `src/agent-ui/copilot/copilot-app.tsx`。产品页提供 `workspace`、`routeArtifact`、场景及可选产品块 renderer。旧 `src/components/layout/CopilotShell.tsx` 已删除，避免形成第二套壳层事实源。
+实际入口是物化后的 `src/agent-ui/copilot/copilot-app.tsx`。产品页提供 `workspace`、`routeArtifact`、场景及可选产品块 renderer；`routeArtifact` 负责宿主工作区内容路由，对话产物查看由 Copilot 壳层负责。旧 `src/components/layout/CopilotShell.tsx` 已删除，避免形成第二套壳层事实源。

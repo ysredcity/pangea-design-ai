@@ -43,7 +43,7 @@ user-invocable: false
 改动前先查 [extension-map.md](extension-map.md)（改哪个文件、不要碰哪个文件）。
 
 - **沉浸式**：场景改 `agent-layout/scenes.ts` 与 `conversation-data.ts`，面板内容改 `panel-data.ts`，产品身份/导航/欢迎页专家与推荐改 `app-config.ts`。同产物重复打开只切换 Tab，切换会话立即清面板。
-- **Copilot**：产品页（示例为 `src/pages/ContractReview.tsx`）提供 `workspace` 与 `routeArtifact(target)`；交付物点击与产品块 action **都只能更新主工作区，不出现右侧产物面板**。辅助区状态使用 `sidebar | floating | collapsed`；桌面 sidebar 始终 400px 贴右停靠，floating 为 400×600。Header 固定为新对话、历史、模式菜单、关闭；收起后由产品级固定的 `collapsedMode` 选择顶部导航、浮动按钮或主工作区 Composer 入口；完整正文直接复用 `ConversationSection` 的 rich Flow/Composer。
+- **Copilot**：产品页（示例为 `src/pages/ContractReview.tsx`）提供 `workspace`、配置和场景；导航内容项的 `target` 通过 `routeArtifact(target)` 更新中央工作区，对话附件/产品块产物由 Copilot 壳层使用无 Tab 模态 `ArtifactPanel` 或 `ImageViewer` 专注展示，不增加右侧并排 Tab。辅助区状态使用 `sidebar | floating | collapsed`；桌面 sidebar 始终 400px 贴右停靠，floating 为 400×600。Header 固定为新对话、历史、模式菜单、关闭；收起后由产品级固定的 `collapsedMode` 选择顶部导航、浮动按钮或主工作区 Composer 入口；完整正文直接复用 `ConversationSection` 的 rich Flow/Composer。
 - `AppConfig` 只承载身份、导航与欢迎页专家/推荐；**场景、主题、面板容器与产品块继续以 TypeScript 扩展，不把业务能力吞入 `AppConfig`**。
 - 产品块的固定插槽在 assistant 正文/附件之后、续流程之前；renderer 接收 `ProductBlockContext.onAction`，未知类型由产品 renderer 记录开发期警告并安全跳过。沉浸式 local renderer 消费本地 `data`/rich context，Copilot/shared renderer 消费 `payload`/shared context；**同名 renderer API 不可互换**。
 

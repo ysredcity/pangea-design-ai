@@ -1,5 +1,5 @@
 import { ArrowLeft, Check, History, MessageSquarePlus, PanelLeftClose, PanelLeftOpen, PanelRight, PictureInPicture2, Sparkles, X } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { useId, useRef, useState, type ReactNode } from 'react'
 
 import type { ProductBlockAction } from '../conversation'
 import type { AppConfig, ArtifactTarget, ConversationScene, ImmersiveProductBlockRenderer } from '../immersive/contracts'
@@ -60,6 +60,12 @@ export function CopilotApp({ config, scene, resourcePanel, navigationPanel, work
   const [activeArtifactTabId, setActiveArtifactTabId] = useState<string | null>(null)
   const [artifactFullscreen, setArtifactFullscreen] = useState(false)
   const [imageArtifact, setImageArtifact] = useState<ImageView | null>(null)
+  const generatedIdPrefix = useId().replaceAll(':', '')
+  const generatedIdCounter = useRef(0)
+  const nextGeneratedId = (scope: string) => {
+    generatedIdCounter.current += 1
+    return `${scope}-${generatedIdPrefix}-${generatedIdCounter.current}`
+  }
   const view = config.assistantView ?? uncontrolledView
   const collapsedMode: CopilotCollapsedMode = config.collapsedMode ?? 'floating-button'
   const homeOpen = activeContentId === 'home' && !centralConversation
@@ -97,7 +103,7 @@ export function CopilotApp({ config, scene, resourcePanel, navigationPanel, work
 
   const createConversationScene = (content: string): ConversationScene => ({
     ...scene,
-    id: `copilot-${Date.now()}`,
+    id: nextGeneratedId('copilot'),
     turns: scene.turns.length > 0
       ? scene.turns.map((turn, index) => index === 0 ? { ...turn, user: { ...turn.user, content } } : turn)
       : [],
@@ -114,7 +120,7 @@ export function CopilotApp({ config, scene, resourcePanel, navigationPanel, work
       setImageArtifact(target)
       return
     }
-    const tab: PanelTab = { ...target, id: `copilot-panel-${Date.now()}-${Math.random().toString(36).slice(2, 8)}` }
+    const tab: PanelTab = { ...target, id: nextGeneratedId('copilot-panel') }
     // Copilot 不提供 Tab 切换：新制品直接替换当前模态容器内容。
     setArtifactTabs([tab])
     setActiveArtifactTabId(tab.id)
@@ -176,7 +182,7 @@ export function CopilotApp({ config, scene, resourcePanel, navigationPanel, work
     const { attachments, content, expert } = splitSentContext(message, context)
     const title = content.replace(/\[\[[^:\]]+:([^\]]+)\]\]/g, '$1').trim() || attachments[0]?.name || context[0]?.label || '新对话'
     const conversation: Conversation = {
-      id: `draft-${Date.now()}`,
+      id: nextGeneratedId('draft'),
       title: title.slice(0, 36),
       initialMessage: content,
       expert,

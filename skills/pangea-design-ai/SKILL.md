@@ -7,7 +7,7 @@ description: "⚠️ 硬约束（最高优先级）：任何「生成/新建智�
 
 智能体产品交互设计的 React 实现说明。
 
-> **当前稳定基线：v0.3.0（2026-09-06）**。在 v0.2.0（审批链路、自然语言场景入口与按任务读取）之上，按 Pangea AI Components 设计稿完成 Copilot 三态和 Header 校准，并让 Agent/Copilot 直接复用同一个 rich `ConversationSection`。逐版本发布记录见仓库的 `CHANGELOG.md`（**不随分发包提供**）。
+> **当前稳定基线：v1.0.0（2026-09-11）**。在 v0.3.0 的 Copilot 三态与共享 rich `ConversationSection` 之上，补齐主页、内容/对话导航、中央工作区 Header、历史与新建对话、三种收起入口和专注产物查看链路。该版本调整了 Copilot 默认入口与产物路由契约，升级既有工程前请阅读仓库 `CHANGELOG.md` 的 Breaking Changes（`CHANGELOG.md` **不随分发包提供**）。
 
 **设计规则事实源**：[references/design.md](references/design.md)，由两份上游合并而成——《智能体产品交互设计指南 V1.4》（海信集团，提供骨架与三形态覆盖；人读原文留在仓库 `docs/`，不随分发包提供）+ 沉浸式工作台实测契约（提供已验证的具体数值与判定规则）。正文用〔指南〕/〔沉浸式契约〕/〔通用契约〕标注来源，**冲突时以 design.md 为准**——design.md 本身是自洽的，不需要回查原文。
 

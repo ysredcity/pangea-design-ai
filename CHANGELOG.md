@@ -18,6 +18,33 @@
 - **需求规格化**：补充“生成剧本数据映射规则”。
 - **构建体积**：沉浸式初始 chunk 超过 500 kB，需要代码分割／按需加载，当前不通过提高告警阈值掩盖。
 
+## [1.0.0] - 2026-09-11
+
+Copilot 从单一“主画布 + 右侧助手”模板升级为完整产品壳层，补齐主页、左侧工作区导航、中央内容 Header、历史/新建/集中式对话和产品级收起入口。该版本同时正式调整 Copilot 的默认入口与产物展示契约，升级前请阅读 Breaking Changes。
+
+### Added
+
+- **完整 Copilot 产品壳层**：新增配置化 `CopilotHomePage`、`CopilotNavigation` 与 `CopilotWorkspaceHeader`。左侧导航支持全局入口、内容/对话双维度、置顶/最近分组、搜索与内容选择；中央工作区统一提供面包屑、分享、置顶和导出入口。
+- **主页与集中式对话流程**：`CopilotConfig` 新增 `home`、`welcome`、`navigation`、`workspace` 等配置；支持推荐报表、新建对话、历史列表、分页推荐、重命名/置顶，以及复用沉浸式 `ConversationPage` 的中央全页对话。
+- **三种产品级收起入口**：新增 `collapsedMode: 'top-navigation' | 'floating-button' | 'composer'`。同一产品只显示一种重开入口；Composer 入口发送后保留草稿并打开 sidebar。
+- **Composer 产品参数化**：沉浸式/Copilot 可配置连接器可见性、专家选项与专家视觉映射；`ConversationSection` 新增 `initialDraft`，用于从收起态 Composer 无损进入完整对话。
+- **Copilot 专注产物容器**：对话中的文件、网页和搜索结果可在无 Tab 模态 `ArtifactPanel` 中查看，图片使用 `ImageViewer`，并支持全屏；左侧导航内容仍可通过宿主 `routeArtifact(target)` 更新中央工作区。
+- **可分发归档**：新增 `releases/pangea-design-ai-v1.0.0.zip`，保留 v0.3.0 及更早历史归档。
+
+### Changed
+
+- **Breaking — 默认入口改为新对话主页**：Copilot 初始状态现在优先显示欢迎语、专家与推荐内容；即使传入 `scene`，也需在用户选择推荐或发送消息后进入 `ConversationSection`。需要旧版“打开即显示 scene”流程的产品应显式调整自己的入口装配。
+- **Breaking — 对话产物不再全部交给宿主画布**：`routeArtifact(target)` 不再接收对话流内全部产物事件；对话附件/产品块改由 Copilot 内部模态或图片查看器展示，导航内容项的 `target` 仍交给宿主工作区。升级时应把依赖对话产物回调更新主画布的逻辑迁移到新的容器或产品 action。
+- **Breaking — 对话 Header 收敛**：右侧对话 Header 固定为新对话、历史、模式切换、关闭；分享、置顶、导出迁移到中央 `CopilotWorkspaceHeader`。旧 `onShare`/`onOpenSettings` 字段仅保留类型兼容，不再提供原 Header 菜单入口。
+- **Breaking — Copilot 默认隐藏连接器**：需要连接器选择器的产品必须显式设置 `showConnectorSelect: true`；沉浸式仍默认显示。
+- **模板示例扩展**：Copilot starter 从单页合同审阅示例升级为覆盖主页、工作区导航、中央报表、历史对话与多种收起入口的完整产品示例；同步管线同步新增公共组件及其 Base UI、hooks、contracts 与主题依赖。
+
+### Fixed
+
+- **Linux 独立部署**：Copilot 模板固定声明 Rolldown、Tailwind Oxide 与 Lightning CSS 的 Linux x64 glibc 原生 optional bindings，并重算独立 lockfile，修复部分 Linux 构建环境缺少可选原生包的问题。
+- **默认对话与样式一致性**：统一新对话初始状态、导航/工作区/Header 间距和交互样式，避免进入模板后直接落入残留场景或出现壳层视觉漂移。
+- **生成 ID 的 React 纯度**：对话、草稿和专注容器 ID 改为 `useId` 前缀 + 本地递增序列，移除 render 作用域中的 `Date.now()` / `Math.random()`，Copilot lint 不再产生 purity warning。
+
 ## [0.3.0] - 2026-09-06
 
 Copilot 助手区按 Pangea AI Components 设计稿完成三态校准，并从“视觉近似共享”升级为直接复用 Agent 中间完整对话 section；两套模板继续保持独立壳层与产物路由。

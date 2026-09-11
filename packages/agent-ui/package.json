@@ -1,7 +1,7 @@
 {
   "name": "@agent-ux/agent-ui",
   "private": true,
-  "version": "0.3.0",
+  "version": "1.0.0",
   "type": "module",
   "description": "Base UI agent conversation source, materialized into independent templates.",
   "main": "src/index.ts",

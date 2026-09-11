@@ -4,7 +4,7 @@
 
 ## 版本与发布
 
-- 当前稳定基线为 **v0.3.0**。仓库根、`@agent-ux/agent-ui` 与两套 active 模板的 `package.json` 保持同一版本；更新后用 `npm install --package-lock-only` 重算根锁文件，不手改 lockfile。
+- 当前稳定基线为 **v1.0.0**。仓库根、`@agent-ux/agent-ui` 与两套 active 模板的 `package.json` 保持同一版本；更新后用 `npm install --package-lock-only` 重算根锁文件，不手改 lockfile。
 - 发布产物放在 `releases/pangea-design-ai-v<版本>.zip`，从 `skills/pangea-design-ai/` 打包，排除 `node_modules`、`dist`、`.DS_Store` 与模板本地 `.workbuddy`。历史归档保留，不覆盖或改名复用。
 - 采用 [Semantic Versioning](https://semver.org/lang/zh-CN/)：修复升 PATCH，向后兼容的新能力升 MINOR，破坏 skill 契约、模板扩展点或数据格式才升 MAJOR。
 - 每次发布把 `CHANGELOG.md` 的 `[Unreleased]` 内容移入带日期的版本段，同时更新 README、SKILL.md 与 PROJECT_CONTEXT 中影响使用者的版本状态。
@@ -15,8 +15,8 @@
 - `packages/agent-ui/src/conversation/` 是共享对话域；消息、执行过程、Composer、交付物入口和中立 `ArtifactRouter` 以此为事实源。
 - `packages/agent-ui/src/immersive/` 与 `/copilot/` 是形态层出口。共享域不能 import 面板、Tab、Canvas 或任意壳层类型。
 - `scripts/sync-agent-ui.mjs` 将共享源码与匹配壳层物化到两个独立模板。先改 package，再运行 `npm run sync:agent-ui`，最后运行 `npm run check:agent-ui-drift`。
-- 沉浸式产物进入右侧面板或图片查看器；Copilot 产物只能通过 `routeArtifact(target)` 更新左侧工作区。不得给 Copilot 增加沉浸式右侧产物面板。
-- `AppConfig` 只描述身份、导航及欢迎页专家/推荐。场景、主题、面板容器和产品块保留 TypeScript 扩展能力。
+- 沉浸式产物进入右侧面板或图片查看器；Copilot 的导航内容可通过 `routeArtifact(target)` 更新中央工作区，对话产物由 Copilot 壳层的无 Tab 模态 `ArtifactPanel` 或 `ImageViewer` 专注展示。容器适配仍不得进入共享 conversation 域。
+- 产品身份、主页、工作区导航、欢迎页、Composer 能力和收起入口优先通过配置表达；场景、主题、产品块和自定义容器保留 TypeScript 扩展能力。
 
 ## 验证
 

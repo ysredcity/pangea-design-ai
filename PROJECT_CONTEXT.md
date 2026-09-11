@@ -1,6 +1,6 @@
 # 项目上下文台账（PROJECT_CONTEXT）
 
-> 本文件是跨会话、跨软件、跨电脑的单一事实源。只记录对后续工作仍有用的当前事实、关键决策、文件地图和待办。最后更新：**2026-09-06**。
+> 本文件是跨会话、跨软件、跨电脑的单一事实源。只记录对后续工作仍有用的当前事实、关键决策、文件地图和待办。最后更新：**2026-09-11**。
 
 ## 1. 项目定位
 
@@ -10,7 +10,7 @@
 - 使用者：PM 用 mock 数据制作高保真 demo；开发者在同一底座上继续接入真实业务。
 - 形态：沉浸式 Agent 和助手式 Copilot 各有独立模板；嵌入式按场景设计，不固化模板。
 - 设计规则事实源：`skills/pangea-design-ai/references/design.md`。
-- 当前稳定版本：**v0.3.0（2026-09-06）**。
+- 当前稳定版本：**v1.0.0（2026-09-11）**。
 
 ## 2. 当前状态
 
@@ -20,9 +20,11 @@
 - `references/` 已覆盖设计规则、质量门禁、需求规格化、组件六层目录、扩展点地图、设计 token 和两种界面形态。
 - `templates/immersive-starter/` 与 `templates/copilot-starter/` 均为可独立复制运行的 Vite 工程。
 - `packages/agent-ui/` 是共享对话域和双形态运行时的唯一源码；`scripts/sync-agent-ui.mjs` 单向物化 TypeScript 与 canonical theme/typeset 到两套模板，模板不依赖 monorepo 才能运行。
-- Copilot 对话辅助区已统一为 `sidebar | floating | collapsed` 三态：桌面侧栏 400px 贴右全高、浮窗 400×600px、收起后优先宿主顶部入口否则右下 44×44px Sparkles；旧 `assistantMode` 仅保留兼容映射。
-- Copilot Header 固定按新对话、历史对话、模式菜单、更多、关闭排列；模式菜单含侧边栏/浮动，更多含分享/设置。
-- Agent 与 Copilot 共同消费 `ConversationSection` 的 rich Flow、rich Composer、Markdown、执行过程、卡片、滚动/Footer 和草稿；两形态只保留各自 Header 与 artifact adapter。
+- Copilot 已从单一画布助手扩展为完整产品壳层：配置化主页、左侧全局入口与内容/对话双维度导航、中央 `CopilotWorkspaceHeader`、历史/新建/集中式对话均已落地。
+- Copilot 对话辅助区使用 `sidebar | floating | collapsed` 三态；`collapsedMode` 在产品级互斥选择 `top-navigation | floating-button | composer`，移动端打开后全屏。
+- 右侧对话 Header 固定为新对话、历史、模式切换、关闭；分享、置顶、导出归属中央工作区 Header，旧 `onShare`/`onOpenSettings` 仅保留类型兼容。
+- Copilot 产物按来源分流：导航内容项通过宿主 `routeArtifact(target)` 更新中央工作区；对话文件/网页/搜索结果进入无 Tab 专注模态，图片进入 `ImageViewer`，不增加右侧并排 Tab。
+- Agent 与 Copilot 共同消费 `ConversationSection` 的 rich Flow、rich Composer、Markdown、执行过程、卡片、滚动/Footer 和草稿；Composer 的连接器、专家选项与视觉映射可按产品配置。
 - 运行时包名保持 `@agent-ux/agent-ui`；skill 更名不扩展为破坏性的 package/import 重命名。
 
 ### 关键能力
@@ -32,7 +34,7 @@
 - 审批状态由场景末轮 `awaitingApproval` 派生，不在会话 meta 重复手写；审批结果支持 `productBlock`。
 - `check-scripts.mjs` 校验审批末轮、确认卡、approved/rejected 双分支、孤立 outcomes 和 trigger 冲突。
 - 根级门禁包含 package 类型检查、模板漂移、组件文档和两套模板 gate。
-- v0.3.0 根级 `npm run gate`、`git diff --check` 与从 ZIP 解压到仓库外后的双模板独立 `npm install && npm run gate` 均已通过；同步漂移为 0，组件文档 40 份通过。沉浸式与 Copilot 均有初始 chunk >500 kB 的已知警告，未通过提高阈值掩盖。
+- v1.0.0 根级 `npm run gate`、`git diff --check` 与从 ZIP 解压到仓库外后的双模板独立 `npm install && npm run gate` 均已通过；同步漂移为 0，组件文档 40 份通过，Copilot lint 无 warning。沉浸式与 Copilot 均有初始 chunk >500 kB 的已知构建警告，未通过提高阈值掩盖；Copilot 独立安装的 `npm audit` 仍报告 1 个 moderate 传递依赖问题。
 
 ### Website
 
@@ -43,9 +45,9 @@
 
 ### 发布物
 
-- 当前归档：`releases/pangea-design-ai-v0.3.0.zip`（330 entries，683,858 bytes；SHA-256 `27e433189bdd7b348ee487725a60a622989a9ed6f0c693b3a4ba71c5ddc89edc`）。
-- 历史归档继续保留：`pangea-design-ai-v0.2.0.zip`、`pangea-design-ai-v0.1.0.zip`、`agent-ux-react-v0.1.0.zip`。
-- ZIP 排除 `node_modules`、`dist`、`.DS_Store` 和模板 `.workbuddy`；归档根目录、版本号、关键共享组件与 CRC 均已验证，排除项命中为 0。
+- 当前归档：`releases/pangea-design-ai-v1.0.0.zip`（337 entries，707,306 bytes；SHA-256 `e4a2f5d8c3b23cebc859b4e470fbf551a7c8b0f4569b2deb9225f1c4d8778176`）。
+- 历史归档继续保留：`pangea-design-ai-v0.3.0.zip`、`pangea-design-ai-v0.2.0.zip`、`pangea-design-ai-v0.1.0.zip`、`agent-ux-react-v0.1.0.zip`。
+- ZIP 排除 `node_modules`、`dist`、`.DS_Store` 和模板 `.workbuddy`；发布前校验归档根目录、版本号、关键组件、CRC 与双模板独立安装。
 - 不自动执行 `git commit` 或 `git push`。
 
 ## 3. 不可破坏的关键决策
@@ -54,9 +56,9 @@
 2. **两套模板独立**：沉浸式与 Copilot 的空间优先级和响应式方向不同，不做运行时形态切换。
 3. **共享源码、独立交付**：先改 `packages/agent-ui`，再同步到模板；不得直接手改物化文件。模板复制到仓库外仍须可安装、构建和运行。
 4. **数据与呈现分层**：共享 conversation 域保持中立，不依赖沉浸式 Panel/Tab 或 Copilot Canvas。
-5. **产物路由按形态分流**：沉浸式进入右侧面板或图片查看器；Copilot 只更新左侧工作区。
-6. **共享完整对话 Section**：Agent 与 Copilot 直接复用同一个 `ConversationSection`（rich Flow、rich Composer、滚动/Footer、草稿）；Header、Panel/ImageViewer 与 Canvas adapter 留在形态壳层。
-7. **Copilot 三态契约**：新 API 只使用 `sidebar | floating | collapsed` 并支持受控/非受控状态；桌面 sidebar 不隐式降级浮窗，移动端全屏；旧四值 `assistantMode` 仅兼容，不作为新实现入口。
+5. **产物路由按形态与来源分流**：共享域只描述中立 `ArtifactTarget`；沉浸式进入并排 Panel 或图片查看器；Copilot 导航内容更新中央工作区，对话产物进入无 Tab 专注模态或图片查看器。
+6. **共享完整对话 Section**：Agent 与 Copilot 直接复用同一个 `ConversationSection`（rich Flow、rich Composer、滚动/Footer、草稿）；Header、并排 Panel、宿主 Canvas 与专注模态 adapter 留在形态壳层。
+7. **Copilot 壳层契约**：助手区只使用 `sidebar | floating | collapsed`，收起入口由 `collapsedMode` 在顶部导航、浮动按钮、Composer 中互斥选择；主页、导航和中央 Header 优先通过 `CopilotConfig` 配置。旧四值 `assistantMode` 仅兼容，不作为新实现入口。
 8. **审批单一事实源**：`approvalStatus` 从场景末轮派生；审批续流程由 `awaitingApproval` 判定。
 9. **trigger 不依赖声明顺序**：keyword 最长命中优先；跨场景重复或互为子串由机检拦截，不使用领域黑名单。
 10. **文档按任务与受众分层**：agent 只读当前任务需要的最小文档集合，避免生成过程被 50+ 份参考文档拖长；README 与 CHANGELOG 只记录核心 skill/runtime 能力，不记录内部 showcase 的建设或退役过程。
@@ -100,7 +102,11 @@ agent-ued-guide/
 - 对话/审批续流程：`packages/agent-ui/src/immersive/agent-layout/conversation-flow.tsx`
 - 跨形态完整对话区：`packages/agent-ui/src/immersive/agent-layout/conversation-section.tsx`
 - 跨形态底层表面：`packages/agent-ui/src/conversation/conversation-surface.tsx`
-- Copilot 三态与产物路由壳层：`packages/agent-ui/src/copilot/copilot-app.tsx`
+- Copilot 完整产品壳层：`packages/agent-ui/src/copilot/copilot-app.tsx`
+- Copilot 公共配置与数据契约：`packages/agent-ui/src/copilot/copilot-config.ts`
+- Copilot 左侧导航：`packages/agent-ui/src/copilot/copilot-navigation.tsx`
+- Copilot 主页：`packages/agent-ui/src/copilot/copilot-home-page.tsx`
+- Copilot 中央工作区 Header：`packages/agent-ui/src/copilot/copilot-workspace-header.tsx`
 - trigger 匹配：`packages/agent-ui/src/script-engine/match.ts`
 - 剧本类型：`packages/agent-ui/src/script-engine/types.ts`
 - 剧本机检：`skills/pangea-design-ai/scripts/check-scripts.mjs`
@@ -129,13 +135,14 @@ git diff --check
 
 - [ ] 等待视觉事实源：完整调色板、字体/字号/字重、间距、圆角、阴影、基础布局和核心组件设计稿；收到后回填 `design-tokens.md` 与模板主题。
 - [ ] 补充需求规格化中的“生成剧本数据映射规则”。
-- [ ] 优化沉浸式初始 chunk（当前 >500 kB）；不得仅提高告警阈值掩盖问题。
+- [ ] 优化沉浸式与 Copilot 初始 chunk（当前均 >500 kB）；不得仅提高告警阈值掩盖问题。
 - [ ] 验证 PM Demo 自动预览在真实 agent 执行环境中的可靠性。
 - [ ] 视真实产品需求决定是否提供 Embedded 参考实现。
 - [ ] 若未来重启 website，先建立新的目标与方案，不恢复旧实现作为默认答案。
 
 ## 7. 变更日志（台账）
 
+- **2026-09-11 — v1.0.0**：Copilot 升级为完整产品壳层，新增配置化主页、内容/对话导航、中央工作区 Header、历史/新建/集中式对话、三种收起入口和专注产物容器；Composer 能力参数化并修复 Linux 独立部署。该版本正式调整默认入口、对话产物路由和 Header 扩展点。
 - **2026-09-06 — v0.3.0**：发布 Copilot sidebar/floating/collapsed 三态与五操作 Header；Agent/Copilot 改为直接复用 rich `ConversationSection`；同步 canonical Base UI/theme 到 Copilot 独立模板；归档 `pangea-design-ai-v0.3.0.zip`。
 - **2026-09-06 — Copilot Figma 校准与 rich section 复用**：修正 sidebar 误呈浮窗；Header 按新对话/历史/模式/更多/关闭实现及菜单；抽取 Agent/Copilot 共用 `ConversationSection`，Copilot 改用同一 rich Flow、Composer、Markdown、执行过程和卡片，同时保持产物只更新主画布。
 - **2026-09-06 — Copilot 三态与共享对话表面**：按 Figma `12838:5913` 将助手区收敛为 sidebar/floating/collapsed，增加受控/非受控状态与顶部/右下重开入口；新增跨形态 `ConversationSurface`，对齐 Composer、主题和响应式，同时保持 Copilot 产物只更新主画布。
