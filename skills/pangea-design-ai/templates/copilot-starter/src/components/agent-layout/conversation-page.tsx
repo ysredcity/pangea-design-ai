@@ -59,7 +59,10 @@ export function ConversationPage({ config, conversation, createDraftScene, isSid
 
       <ConversationSection
         approvalStatus={conversation.approvalStatus}
+        composerExpertOptions={config.composerExpertOptions}
+        composerExpertVisualKeys={config.composerExpertVisualKeys}
         scene={scene}
+        showConnectorSelect={config.showConnectorSelect ?? true}
         identity={config.identity}
         experts={config.experts}
         renderProductBlock={config.renderProductBlock}

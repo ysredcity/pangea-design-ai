@@ -63,17 +63,35 @@ export function CopilotApp({ config, scene, resourcePanel, navigationPanel, work
   const view = config.assistantView ?? uncontrolledView
   const collapsedMode: CopilotCollapsedMode = config.collapsedMode ?? 'floating-button'
   const homeOpen = activeContentId === 'home' && !centralConversation
+  const copilotExperts = config.home
+    ? config.home.welcome.expertIds.flatMap((id) => config.home?.experts.find((expert) => expert.id === id) ?? [])
+    : []
+  const copilotExpertOptions = copilotExperts.map((expert) => expert.label)
+  const copilotExpertVisualKeys = Object.fromEntries(copilotExperts.map((expert) => [expert.label, expert.visualKey]))
+  const showConnectorSelect = config.showConnectorSelect ?? false
 
   const setView = (next: CopilotAssistantView) => {
     if (config.assistantView === undefined) setUncontrolledView(next)
     config.onAssistantViewChange?.(next)
   }
 
+  const openNewAssistantConversation = () => {
+    closeArtifact()
+    setHistoryOpen(false)
+    setRecommendationPage(0)
+    setConversationDraft('')
+    setIsNewConversation(true)
+    setView('sidebar')
+  }
+
   const conversationPageConfig: AppConfig = {
     identity: { name: config.identity.name, avatar: 'bot' },
     navigation: [],
-    experts: [],
+    experts: copilotExperts,
     welcome: { greeting: '', expertIds: [], recommendations: [], expertRecommendations: {} },
+    composerExpertOptions: copilotExpertOptions,
+    composerExpertVisualKeys: copilotExpertVisualKeys,
+    showConnectorSelect,
     renderProductBlock,
   }
 
@@ -151,7 +169,6 @@ export function CopilotApp({ config, scene, resourcePanel, navigationPanel, work
     setHistoryPinned((items) => items.map((item) => item.id === central.id ? central : item))
     setHistoryConversations((items) => items.map((item) => item.id === central.id ? central : item))
     setHistoryOpen(false)
-    setIsNewConversation(false)
     setView('collapsed')
   }
 
@@ -195,6 +212,9 @@ export function CopilotApp({ config, scene, resourcePanel, navigationPanel, work
       ) : isNewConversation ? (
         <CopilotNewConversation
           welcome={config.welcome}
+          expertOptions={copilotExpertOptions}
+          expertVisualKeys={copilotExpertVisualKeys}
+          showConnectorSelect={showConnectorSelect}
           page={recommendationPage}
           onChangePage={setRecommendationPage}
           onStartConversation={(message) => { setConversationDraft(message); setIsNewConversation(false) }}
@@ -204,7 +224,10 @@ export function CopilotApp({ config, scene, resourcePanel, navigationPanel, work
           scene={scene}
           initialDraft={conversationDraft}
           identity={{ name: config.identity.name, avatar: 'bot' }}
-          experts={[]}
+          composerExpertOptions={copilotExpertOptions}
+          composerExpertVisualKeys={copilotExpertVisualKeys}
+          experts={copilotExperts}
+          showConnectorSelect={showConnectorSelect}
           onOpenArtifact={openArtifact}
           renderProductBlock={renderProductBlock}
           onProductBlockAction={onProductBlockAction}
@@ -220,10 +243,10 @@ export function CopilotApp({ config, scene, resourcePanel, navigationPanel, work
     <div className="flex h-dvh w-full overflow-hidden bg-background-desktop">
       {resourceOpen ? navigationPanel ?? (config.navigation ? <CopilotNavigation
         identity={config.identity}
-        config={{ ...config.navigation, globalItems: config.navigation.globalItems?.map((item) => ({ ...item, onClick: () => { if (item.id === 'home') { closeArtifact(); setCentralConversation(null); setActiveContentId('home'); setView('collapsed') } item.onClick?.() } })) }}
+        config={{ ...config.navigation, globalItems: config.navigation.globalItems?.map((item) => ({ ...item, onClick: () => { if (item.id === 'home') { closeArtifact(); setCentralConversation(null); setActiveContentId('home'); setConversationDraft(''); setIsNewConversation(true); setView('collapsed') } item.onClick?.() } })) }}
         activeContentId={activeContentId}
         activeConversationId={centralConversation?.id}
-        onContentSelect={(item) => { closeArtifact(); setCentralConversation(null); setActiveContentId(item.id); setView('collapsed'); onContentSelect?.(item); if (item.target) routeArtifact(item.target) }}
+        onContentSelect={(item) => { closeArtifact(); setCentralConversation(null); setActiveContentId(item.id); setConversationDraft(''); setIsNewConversation(true); setView('collapsed'); onContentSelect?.(item); if (item.target) routeArtifact(item.target) }}
         onCollapse={() => setResourceOpen(false)}
         conversations={historyConversations}
         pinnedConversations={historyPinned}
@@ -262,7 +285,7 @@ export function CopilotApp({ config, scene, resourcePanel, navigationPanel, work
           ) : (
             homeOpen && config.home ? (
               <CopilotHomePage
-                config={config.home}
+                config={{ ...config.home, composerExpertOptions: copilotExpertOptions, composerExpertVisualKeys: copilotExpertVisualKeys, showConnectorSelect }}
                 isNavigationDocked={resourceOpen}
                 onOpenNavigation={() => setResourceOpen(true)}
                 onStartConversation={startCentralConversation}
@@ -285,11 +308,11 @@ export function CopilotApp({ config, scene, resourcePanel, navigationPanel, work
         </div>
         {view === 'collapsed' && !centralConversation && !homeOpen && collapsedMode === 'top-navigation' ? (
           <div className="absolute right-4 top-1 z-20">
-            {renderTopNavigationAssistantTrigger?.(() => setView('sidebar')) ?? <button type="button" aria-label="打开 AI 对话辅助区" title="打开 AI 对话辅助区" onClick={() => setView('sidebar')} className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 text-sm font-medium text-foreground shadow-sm hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"><PanelRight className="size-4" />对话</button>}
+            {renderTopNavigationAssistantTrigger?.(openNewAssistantConversation) ?? <button type="button" aria-label="打开 AI 对话辅助区" title="打开 AI 对话辅助区" onClick={openNewAssistantConversation} className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 text-sm font-medium text-foreground shadow-sm hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"><PanelRight className="size-4" />对话</button>}
           </div>
         ) : null}
         {view === 'collapsed' && !centralConversation && !homeOpen && collapsedMode === 'floating-button' ? (
-          <button type="button" aria-label="展开 AI 对话辅助区" title="展开 AI 对话辅助区" onClick={() => setView('sidebar')} className="fixed bottom-8 right-8 z-20 flex size-11 items-center justify-center rounded-full border border-foreground bg-foreground text-background shadow-xl hover:bg-foreground/90">
+          <button type="button" aria-label="展开 AI 对话辅助区" title="展开 AI 对话辅助区" onClick={openNewAssistantConversation} className="fixed bottom-8 right-8 z-20 flex size-11 items-center justify-center rounded-full border border-foreground bg-foreground text-background shadow-xl hover:bg-foreground/90">
             <Sparkles className="size-5" />
           </button>
         ) : null}

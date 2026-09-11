@@ -2,6 +2,7 @@ import { FileSearch, ListChecks, RefreshCcw, Scale, type LucideIcon } from 'luci
 
 import type { CopilotRecommendation, CopilotWelcome } from './copilot-config'
 import { Composer } from '@/components/agent-layout/composer'
+import type { ExpertVisualKey } from '@/components/agent-layout/resource-visuals'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
@@ -20,13 +21,16 @@ const fallbackWelcome: CopilotWelcome = {
 }
 
 type CopilotNewConversationProps = {
+  expertOptions?: readonly string[]
+  expertVisualKeys?: Readonly<Record<string, ExpertVisualKey>>
+  showConnectorSelect?: boolean
   welcome?: CopilotWelcome
   onStartConversation: (message: string) => void
   page: number
   onChangePage: (page: number) => void
 }
 
-export function CopilotNewConversation({ welcome = fallbackWelcome, onStartConversation, page, onChangePage }: CopilotNewConversationProps) {
+export function CopilotNewConversation({ expertOptions, expertVisualKeys, showConnectorSelect = false, welcome = fallbackWelcome, onStartConversation, page, onChangePage }: CopilotNewConversationProps) {
   const pages = welcome.recommendationPages.length > 0 ? welcome.recommendationPages : fallbackWelcome.recommendationPages
   const activePage = page % pages.length
   const recommendations = pages[activePage]
@@ -68,7 +72,7 @@ export function CopilotNewConversation({ welcome = fallbackWelcome, onStartConve
       </div>
       <footer className="shrink-0 px-4 pb-4 pt-3">
         <div className="mx-auto w-full max-w-[768px]">
-          <Composer menuSide="below" onSend={(message) => onStartConversation(message)} />
+          <Composer expertOptions={expertOptions} expertVisualKeys={expertVisualKeys} showConnectorSelect={showConnectorSelect} menuSide="below" onSend={(message) => onStartConversation(message)} />
         </div>
       </footer>
     </div>

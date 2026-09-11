@@ -8,6 +8,8 @@ import { splitSentContext } from "./message-context"
 
 type ConversationSectionProps = {
   approvalStatus?: "pending" | "approved" | "rejected"
+  composerExpertOptions?: readonly string[]
+  composerExpertVisualKeys?: Readonly<Record<string, WelcomeExpert['visualKey']>>
   experts: readonly WelcomeExpert[]
   identity: ProductIdentity
   initialDraft?: string
@@ -16,6 +18,7 @@ type ConversationSectionProps = {
   onProductBlockAction?: (action: ProductBlockAction) => void
   renderProductBlock?: ProductBlockRenderer
   scene: ConversationScene
+  showConnectorSelect?: boolean
 }
 
 /**
@@ -24,6 +27,8 @@ type ConversationSectionProps = {
  */
 export function ConversationSection({
   approvalStatus,
+  composerExpertOptions,
+  composerExpertVisualKeys,
   experts,
   identity,
   initialDraft = "",
@@ -32,6 +37,7 @@ export function ConversationSection({
   onProductBlockAction,
   renderProductBlock,
   scene,
+  showConnectorSelect = true,
 }: ConversationSectionProps) {
   const [composerDraft, setComposerDraft] = useState(initialDraft)
   const [sentMessages, setSentMessages] = useState<{ content: string; timestamp: string; attachments: MessageAttachment[] }[]>([])
@@ -59,6 +65,9 @@ export function ConversationSection({
       footer={
         <Composer
           disabled={awaitingApproval}
+          expertOptions={composerExpertOptions}
+          expertVisualKeys={composerExpertVisualKeys}
+          showConnectorSelect={showConnectorSelect}
           draft={composerDraft}
           onDraftChange={setComposerDraft}
           onSend={(message, context) => {

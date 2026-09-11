@@ -20,7 +20,7 @@ import { createLocalFilePreview, fileTypeLabel, formatFileSize } from "./file-me
 import { contextIcons, type ContextType } from "./icon-registry"
 import { formatInlineTag, INLINE_TAG_CLASS } from "./inline-tag"
 import { IconButton } from "./icon-button"
-import { ExpertAvatar, LibraryFileIcon } from "./resource-visuals"
+import { ExpertAvatar, LibraryFileIcon, type ExpertVisualKey } from "./resource-visuals"
 import type { ArtifactTarget } from "./panel-types"
 
 export type ContextItem = { id: string; label: string; type: ContextType; size?: number; target?: ArtifactTarget }
@@ -31,14 +31,19 @@ type UploadItem = { id: string; name: string; size: number }
 const inlineContextTypes = ["文件库", "最近的对话", "技能"] as const
 type InlineContextType = (typeof inlineContextTypes)[number]
 
-const contextMenus: Array<{ label: Exclude<ContextType, "upload" | "连接器">; items: string[] }> = [
+const defaultExpertOptions = ["日常办公专家", "文档处理专家", "数据分析专家", "市场调研专家", "园区生活专家", "用户体验专家", "行业研究专家"] as const
+type ContextMenu = { label: Exclude<ContextType, "upload" | "连接器">; items: string[] }
+
+const defaultContextMenus: ContextMenu[] = [
   { label: "文件库", items: ["智能体产品交互设计指南.pdf", "行业调研资料汇总.docx", "项目周报模板.xlsx"] },
   { label: "最近的对话", items: ["杭州出差安排", "整理本周项目进展", "瑞幸行业调研"] },
-  { label: "专家", items: ["日常办公专家", "文档处理专家", "数据分析专家", "市场调研专家", "园区生活专家", "用户体验专家", "行业研究专家"] },
+  { label: "专家", items: [...defaultExpertOptions] },
   { label: "技能", items: ["深度研究", "文档总结", "数据可视化"] },
 ]
 
-const inlineMenus = contextMenus.filter((menu): menu is { label: InlineContextType; items: string[] } => inlineContextTypes.includes(menu.label as InlineContextType))
+function createContextMenus(expertOptions: readonly string[] = defaultExpertOptions): ContextMenu[] {
+  return defaultContextMenus.map((menu) => menu.label === "专家" ? { ...menu, items: [...expertOptions] } : menu)
+}
 
 /**
  * 输入框快捷键：`/` 引用能力，`@` 引用上下文。
@@ -70,6 +75,10 @@ type ComposerProps = {
   disabled?: boolean
   /** 产品明确需要调用外部连接器时才显示；默认隐藏。 */
   showConnectorSelect?: boolean
+  /** Overrides the shared Agent expert list for product-specific Copilot menus. */
+  expertOptions?: readonly string[]
+  /** Visual keys for custom expert options, shared with the home recommendation avatars. */
+  expertVisualKeys?: Readonly<Record<string, ExpertVisualKey>>
   onSend?: (message: string, context: ContextItem[]) => void
   draft?: string
   onDraftChange?: (value: string) => void
@@ -79,7 +88,7 @@ type ComposerProps = {
   menuSide?: MenuSide
 }
 
-export function Composer({ disabled = false, showConnectorSelect = false, onSend, draft, onDraftChange, selectedExpert, onSelectedExpertChange, menuSide = "above" }: ComposerProps) {
+export function Composer({ disabled = false, showConnectorSelect = false, expertOptions, expertVisualKeys, onSend, draft, onDraftChange, selectedExpert, onSelectedExpertChange, menuSide = "above" }: ComposerProps) {
   const [uploads, setUploads] = useState<UploadItem[]>([])
   const [uncontrolledExpert, setUncontrolledExpert] = useState<string | null>(null)
   const [recording, setRecording] = useState(false)
@@ -91,6 +100,8 @@ export function Composer({ disabled = false, showConnectorSelect = false, onSend
   const iconTemplatesRef = useRef<HTMLDivElement>(null)
   const savedRangeRef = useRef<Range | null>(null)
   const mediaStreamRef = useRef<MediaStream | null>(null)
+  const contextMenus = createContextMenus(expertOptions)
+  const inlineMenus = contextMenus.filter((menu): menu is { label: InlineContextType; items: string[] } => inlineContextTypes.includes(menu.label as InlineContextType))
 
   const effectiveExpert = selectedExpert === undefined ? uncontrolledExpert : selectedExpert
   const experts: ContextItem[] = effectiveExpert ? [{ id: `专家-${effectiveExpert}`, label: effectiveExpert, type: "专家" }] : []
@@ -265,7 +276,7 @@ export function Composer({ disabled = false, showConnectorSelect = false, onSend
 
   return (
     <div className="relative w-full">
-      {trigger && <TriggerMenu triggerKey={trigger.key} side={menuSide} onSelect={insertAtTrigger} />}
+      {trigger && <TriggerMenu menus={contextMenus} triggerKey={trigger.key} side={menuSide} onSelect={insertAtTrigger} />}
       <div className="flex max-h-52 w-full flex-col overflow-hidden rounded-3xl border bg-background shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-shadow hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] focus-within:border-input min-[660px]:max-h-60">
       {/* 内联标签图标模板：插入标签时克隆这里的 SVG，保证与菜单图标一致 */}
       <div ref={iconTemplatesRef} className="hidden" aria-hidden="true">
@@ -320,7 +331,7 @@ export function Composer({ disabled = false, showConnectorSelect = false, onSend
           event.currentTarget.value = ""
         }} />
         <div className="flex min-w-0 flex-1 items-center gap-2">
-          <AddContextMenu disabled={interactionsDisabled} onLocalUpload={() => fileInputRef.current?.click()} onSelect={addContext} />
+          <AddContextMenu menus={contextMenus} expertVisualKeys={expertVisualKeys} disabled={interactionsDisabled} onLocalUpload={() => fileInputRef.current?.click()} onSelect={addContext} />
           <div className="flex min-w-0 items-center gap-2 overflow-x-auto px-1">
             {showConnectorSelect ? <ConnectorMenu disabled={interactionsDisabled} enabled={enabledConnectors} onEnabledChange={setEnabledConnectors} /> : null}
             {experts.map((expert) => (
@@ -351,9 +362,9 @@ export function Composer({ disabled = false, showConnectorSelect = false, onSend
  * `/` 与 `@` 的引用菜单：与 Composer 同宽，浮在其上方，按分组排列。
  * onMouseDown 阻止默认行为以避免点击时输入框失焦，否则 blur 会先关掉菜单。
  */
-function TriggerMenu({ onSelect, side, triggerKey }: { onSelect: (label: string, type: InlineContextType) => void; side: MenuSide; triggerKey: TriggerKey }) {
+function TriggerMenu({ menus, onSelect, side, triggerKey }: { menus: ContextMenu[]; onSelect: (label: string, type: InlineContextType) => void; side: MenuSide; triggerKey: TriggerKey }) {
   const { hint, types } = triggerMenus[triggerKey]
-  const groups = types.map((type) => ({ type, items: contextMenus.find((menu) => menu.label === type)?.items ?? [] }))
+  const groups = types.map((type) => ({ type, items: menus.find((menu) => menu.label === type)?.items ?? [] }))
 
   return (
     <div
@@ -533,7 +544,7 @@ function VoiceWave() {
   )
 }
 
-function AddContextMenu({ disabled, onLocalUpload, onSelect }: { disabled?: boolean; onLocalUpload: () => void; onSelect: (label: string, type: ContextType) => void }) {
+function AddContextMenu({ menus, expertVisualKeys, disabled, onLocalUpload, onSelect }: { menus: ContextMenu[]; expertVisualKeys?: Readonly<Record<string, ExpertVisualKey>>; disabled?: boolean; onLocalUpload: () => void; onSelect: (label: string, type: ContextType) => void }) {
   return (
     <DropdownMenu>
       <Tooltip>
@@ -542,7 +553,7 @@ function AddContextMenu({ disabled, onLocalUpload, onSelect }: { disabled?: bool
       </Tooltip>
       <DropdownMenuContent align="start" side="top" sideOffset={8} className="w-52">
         <DropdownMenuItem onClick={onLocalUpload}><Upload />本地上传</DropdownMenuItem>
-        {contextMenus.map(({ items, label }) => {
+        {menus.map(({ items, label }) => {
           const ContextIcon = contextIcons[label]
           return (
           <div key={label} className="contents">
@@ -552,7 +563,7 @@ function AddContextMenu({ disabled, onLocalUpload, onSelect }: { disabled?: bool
               <DropdownMenuSubTrigger><ContextIcon />{label}</DropdownMenuSubTrigger>
               <DropdownMenuSubContent className="w-60">
                 {items.map((item) => <DropdownMenuItem key={item} onClick={() => onSelect(item, label)}>
-                  {label === "文件库" ? <LibraryFileIcon fileName={item} /> : label === "专家" ? <ExpertAvatar expert={item} /> : <ContextIcon />}
+                  {label === "文件库" ? <LibraryFileIcon fileName={item} /> : label === "专家" ? <ExpertAvatar expert={item} visualKey={expertVisualKeys?.[item]} /> : <ContextIcon />}
                   <span className="min-w-0 truncate">{item}</span>
                 </DropdownMenuItem>)}
               </DropdownMenuSubContent>

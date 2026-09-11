@@ -59,6 +59,8 @@ export type AssistantMode = 'panel' | 'floating' | 'overlay-drawer' | 'side-draw
 export type CopilotConfig = {
   identity: AgentIdentity
   title?: string
+  /** Whether this Copilot product exposes connector selection in Composer; hidden by default. */
+  showConnectorSelect?: boolean
   /** Central home page. It reuses the immersive Agent new-conversation surface. */
   home?: Pick<AppConfig, 'experts' | 'welcome'> & {
     reports?: readonly CopilotHomeReport[]

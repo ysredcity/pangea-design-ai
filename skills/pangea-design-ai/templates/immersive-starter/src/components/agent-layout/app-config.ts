@@ -28,6 +28,7 @@ export type AppConfig = {
   identity: ProductIdentity
   navigation: readonly NavigationItem[]
   experts: readonly WelcomeExpert[]
+  showConnectorSelect?: boolean
   welcome: {
     greeting: string
     expertIds: readonly string[]
@@ -55,6 +56,7 @@ export const appConfig = {
     { id: "ux", label: "用户体验专家", visualKey: "ux" },
     { id: "industry", label: "行业研究专家", visualKey: "industry" },
   ],
+  showConnectorSelect: true,
   renderProductBlock,
   welcome: {
     greeting: "👋 Hey！有什么需要我搞定的？",

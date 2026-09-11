@@ -8,6 +8,9 @@ import type { CopilotHomeReport, CopilotHomeReportTab } from './copilot-config'
 
 export type CopilotHomePageProps = {
   config: Pick<AppConfig, 'experts' | 'welcome'> & {
+    composerExpertOptions?: readonly string[]
+    composerExpertVisualKeys?: Readonly<Record<string, AppConfig['experts'][number]['visualKey']>>
+    showConnectorSelect?: boolean
     reports?: readonly CopilotHomeReport[]
     reportTabs?: readonly CopilotHomeReportTab[]
   }

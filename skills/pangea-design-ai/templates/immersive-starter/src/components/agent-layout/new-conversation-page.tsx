@@ -9,7 +9,7 @@ import { IconButton } from "./icon-button"
 import { AgentAvatar } from "./resource-visuals"
 
 type NewConversationPageProps = {
-  config: Pick<AppConfig, "experts" | "welcome">
+  config: Pick<AppConfig, "experts" | "welcome" | "composerExpertOptions" | "composerExpertVisualKeys" | "showConnectorSelect">
   isSidebarDocked: boolean
   onOpenSidebar: () => void
   onStartConversation: (message: string, context: ContextItem[]) => void
@@ -72,7 +72,7 @@ export function NewConversationPage({ config, isSidebarDocked, onOpenSidebar, on
         <div className={compact ? "flex w-full max-w-3xl flex-none flex-col items-center pb-6 pt-24" : "flex w-full max-w-3xl flex-1 flex-col items-center justify-center py-3"}>
           <div className={compact ? "w-full" : "w-full translate-y-[-4%]"}>
             <h1 className="text-center text-2xl font-medium leading-9 tracking-[-0.48px] md:text-3xl md:tracking-[-0.6px]">{config.welcome.greeting}</h1>
-            <div className="mt-4"><Composer onSend={onStartConversation} draft={draft} onDraftChange={setDraft} selectedExpert={selectedExpert} onSelectedExpertChange={handleExpertChange} menuSide="below" /></div>
+            <div className="mt-4"><Composer expertOptions={config.composerExpertOptions} expertVisualKeys={config.composerExpertVisualKeys} showConnectorSelect={config.showConnectorSelect ?? true} onSend={onStartConversation} draft={draft} onDraftChange={setDraft} selectedExpert={selectedExpert} onSelectedExpertChange={handleExpertChange} menuSide="below" /></div>
             {recommendationMode === "initial" && (
               <div className="mt-8 flex flex-wrap justify-center gap-2">
                 {featuredExperts.map((expert) => (

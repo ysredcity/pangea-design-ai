@@ -31,6 +31,7 @@ const contentItems: readonly CopilotContentItem[] = reports.map((report, index) 
 const config: CopilotConfig = {
   identity: { name: 'SmartReport' },
   title: 'AI 审阅',
+  showConnectorSelect: false,
   home: {
     experts: [
       { id: 'operations', label: '经营分析专家', visualKey: 'industry' },
